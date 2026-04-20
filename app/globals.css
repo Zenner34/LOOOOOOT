@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background: #0b0d10;
+  color: #e6e6e6;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.panel {
+  background: #16181c;
+  border: 1px solid #2a2e35;
+  border-radius: 0.5rem;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-md border border-neutral-700 bg-neutral-800 px-3 py-1.5 text-sm font-medium text-neutral-100 hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-md bg-amber-500 px-3 py-1.5 text-sm font-semibold text-black hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+.btn-danger {
+  @apply inline-flex items-center justify-center rounded-md bg-red-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-red-500;
+}
+
+.input, select.input, textarea.input {
+  @apply w-full rounded-md border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm text-neutral-100 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500;
+}
+
+.label {
+  @apply block text-xs uppercase tracking-wide text-neutral-400 mb-1;
+}
+
+.table {
+  @apply w-full text-sm;
+}
+.table thead th {
+  @apply px-3 py-2 text-left text-xs uppercase tracking-wide text-neutral-400 border-b border-neutral-800;
+}
+.table tbody td {
+  @apply px-3 py-2 border-b border-neutral-900;
+}
+.table tbody tr:hover {
+  @apply bg-neutral-900;
+}
+
+/* Wowhead tooltip link helper */
+a.wh {
+  @apply text-amber-300 hover:text-amber-200;
+}

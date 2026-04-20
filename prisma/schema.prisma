@@ -1,0 +1,147 @@
+// WoW TBC Loot Tracker
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Phase {
+  id    Int    @id @default(autoincrement())
+  name  String
+  order Int    @unique
+  raids Raid[]
+}
+
+model Raid {
+  id        Int    @id @default(autoincrement())
+  name      String
+  shortName String @unique
+  order     Int
+  phaseId   Int
+  phase     Phase  @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+  bosses    Boss[]
+
+  @@index([phaseId])
+}
+
+model Boss {
+  id     Int    @id @default(autoincrement())
+  name   String
+  order  Int
+  raidId Int
+  raid   Raid   @relation(fields: [raidId], references: [id], onDelete: Cascade)
+  items  Item[]
+
+  @@unique([raidId, name])
+  @@index([raidId])
+}
+
+model Item {
+  id         Int          @id @default(autoincrement())
+  name       String
+  slot       String?
+  itemLevel  Int?
+  wowheadId  Int?         @unique
+  notes      String?
+  bossId     Int
+  boss       Boss         @relation(fields: [bossId], references: [id], onDelete: Cascade)
+  weights    ItemWeight[]
+  awards     LootAward[]
+
+  @@index([bossId])
+}
+
+model ItemWeight {
+  id     Int    @id @default(autoincrement())
+  itemId Int
+  spec   String
+  weight Float
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, spec])
+  @@index([itemId])
+}
+
+model Character {
+  id        Int            @id @default(autoincrement())
+  name      String         @unique
+  class     String
+  spec      String
+  role      String // 'tank' | 'heal' | 'dps'
+  active    Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  memberships RosterMember[]
+  attendance Attendance[]
+  awards     LootAward[]
+}
+
+model Roster {
+  id          Int            @id @default(autoincrement())
+  name        String         @unique
+  description String?
+  createdAt   DateTime       @default(now())
+  members     RosterMember[]
+  raidNights  RaidNight[]
+  awards      LootAward[]
+}
+
+model RosterMember {
+  id          Int       @id @default(autoincrement())
+  rosterId    Int
+  characterId Int
+  memberRole  String    @default("main") // 'main' | 'bench' | 'trial'
+  roster      Roster    @relation(fields: [rosterId], references: [id], onDelete: Cascade)
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([rosterId, characterId])
+  @@index([rosterId])
+  @@index([characterId])
+}
+
+model RaidNight {
+  id         Int          @id @default(autoincrement())
+  rosterId   Int
+  date       DateTime
+  notes      String?
+  roster     Roster       @relation(fields: [rosterId], references: [id], onDelete: Cascade)
+  attendance Attendance[]
+  awards     LootAward[]
+
+  @@index([rosterId])
+}
+
+model Attendance {
+  id          Int       @id @default(autoincrement())
+  raidNightId Int
+  characterId Int
+  status      String // 'present' | 'late' | 'absent'
+  raidNight   RaidNight @relation(fields: [raidNightId], references: [id], onDelete: Cascade)
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([raidNightId, characterId])
+  @@index([raidNightId])
+  @@index([characterId])
+}
+
+model LootAward {
+  id          Int        @id @default(autoincrement())
+  itemId      Int
+  characterId Int
+  rosterId    Int
+  raidNightId Int?
+  awardedAt   DateTime   @default(now())
+  notes       String?
+  item        Item       @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  character   Character  @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  roster      Roster     @relation(fields: [rosterId], references: [id], onDelete: Cascade)
+  raidNight   RaidNight? @relation(fields: [raidNightId], references: [id], onDelete: SetNull)
+
+  @@index([itemId])
+  @@index([characterId])
+  @@index([rosterId])
+  @@index([raidNightId])
+}
