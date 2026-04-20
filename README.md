@@ -9,7 +9,7 @@ tabs showing item count and a **BiS-weighted score** per spec.
 
 - Next.js 14 (App Router) + TypeScript
 - Tailwind CSS
-- Prisma + Postgres (Supabase in prod; any Postgres works locally)
+- Prisma + Postgres (Neon in prod; any Postgres works locally)
 - bcryptjs + HMAC-signed cookie auth (single admin password, reads public)
 
 ## Local dev
@@ -40,17 +40,18 @@ AUTH_SECRET="<long hex string>"
 
 Log in at `/login` to unlock admin actions.
 
-## Deploying to Vercel (with Supabase Postgres)
+## Deploying to Vercel (with Neon Postgres)
 
-### 1. Create the Supabase project
+### 1. Create the Neon project
 
-1. https://supabase.com → new project.
-2. Project Settings → Database → copy **both**:
-   - **Connection pooling (Transaction)** URI — this is `DATABASE_URL` (port `6543`, add `?pgbouncer=true&connection_limit=1`)
-   - **Connection string (URI)** — this is `DIRECT_URL` (port `5432`)
-3. URL-encode special characters in the password.
+1. https://neon.tech → new project.
+2. Dashboard → Connection Details → copy the connection string. It looks like:
+   `postgresql://<user>:<pw>@ep-xxxx-pooler.<region>.aws.neon.tech/<db>?sslmode=require`
+3. Derive the two URLs Prisma needs:
+   - **`DATABASE_URL`** = pooled (keep `-pooler` in hostname), append `&pgbouncer=true&connect_timeout=15`
+   - **`DIRECT_URL`**   = same URL but **remove `-pooler`** from the hostname
 
-### 2. Run the initial migration + seed against Supabase
+### 2. Run the initial migration + seed against Neon
 
 From your local machine (once):
 
@@ -79,8 +80,8 @@ Project → Settings → Environment Variables (Production + Preview):
 
 | Var | Value |
 |---|---|
-| `DATABASE_URL` | pooled Supabase URI (port 6543, `?pgbouncer=true&connection_limit=1`) |
-| `DIRECT_URL` | direct Supabase URI (port 5432) |
+| `DATABASE_URL` | pooled Neon URI (hostname contains `-pooler`, with `&pgbouncer=true&connect_timeout=15`) |
+| `DIRECT_URL` | direct Neon URI (same URL without `-pooler` in hostname) |
 | `ADMIN_PASSWORD_HASH` | bcrypt hash — in Vercel's UI you do **not** need to escape `$` |
 | `AUTH_SECRET` | long random hex string |
 
