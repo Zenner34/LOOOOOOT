@@ -9,40 +9,82 @@ tabs showing item count and a **BiS-weighted score** per spec.
 
 - Next.js 14 (App Router) + TypeScript
 - Tailwind CSS
-- Prisma + SQLite
+- Prisma + Postgres (Supabase in prod; any Postgres works locally)
 - bcryptjs + HMAC-signed cookie auth (single admin password, reads public)
 
-## Quick start
+## Local dev
 
 ```bash
 npm install
-cp .env.example .env   # then edit with your own hash + secret (see below)
-npx prisma migrate dev
-npx tsx prisma/seed.ts  # seeds 5 phases, 9 raids, 50 bosses, ~420 items with BiS weights
-npm run dev
+cp .env.example .env          # fill in DATABASE_URL, DIRECT_URL, hash, secret
+npx prisma migrate dev        # creates tables in your Postgres
+npx tsx prisma/seed.ts        # seeds 5 phases, 9 raids, 50 bosses, ~420 items
+npm run dev                   # http://localhost:3000
 ```
 
-Open http://localhost:3000 — `/overview` is the landing page.
-
-### Set the admin password
+### Admin password
 
 ```bash
-# Generate a bcrypt hash for your password (escape $ in .env, see below)
+# Generate a bcrypt hash
 node -e "console.log(require('bcryptjs').hashSync('your-pw-here', 10))"
-
 # Generate an auth secret
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-Put them in `.env`. **Escape every `$` in the bcrypt hash** as `\$` because Next.js expands
-env vars dotenv-style:
+Put them in `.env`. **Escape every `$` in the bcrypt hash** as `\$` (Next.js expands env vars dotenv-style):
 
 ```
 ADMIN_PASSWORD_HASH="\$2a\$10\$...rest...of...hash"
 AUTH_SECRET="<long hex string>"
 ```
 
-Log in at `/login` to unlock admin actions (create rosters, add characters, assign loot, mark attendance).
+Log in at `/login` to unlock admin actions.
+
+## Deploying to Vercel (with Supabase Postgres)
+
+### 1. Create the Supabase project
+
+1. https://supabase.com → new project.
+2. Project Settings → Database → copy **both**:
+   - **Connection pooling (Transaction)** URI — this is `DATABASE_URL` (port `6543`, add `?pgbouncer=true&connection_limit=1`)
+   - **Connection string (URI)** — this is `DIRECT_URL` (port `5432`)
+3. URL-encode special characters in the password.
+
+### 2. Run the initial migration + seed against Supabase
+
+From your local machine (once):
+
+```bash
+DATABASE_URL="<pooled>" DIRECT_URL="<direct>" npx prisma migrate deploy
+DATABASE_URL="<pooled>" DIRECT_URL="<direct>" npx tsx prisma/seed.ts
+```
+
+(The `vercel-build` script also runs `prisma migrate deploy` on every deploy, so future schema
+changes pushed to the repo apply automatically.)
+
+### 3. Deploy
+
+```bash
+npm i -g vercel
+vercel login
+vercel            # first run: answer prompts, link project
+vercel --prod
+```
+
+Or push to GitHub and import the repo at https://vercel.com/new.
+
+### 4. Set env vars in Vercel
+
+Project → Settings → Environment Variables (Production + Preview):
+
+| Var | Value |
+|---|---|
+| `DATABASE_URL` | pooled Supabase URI (port 6543, `?pgbouncer=true&connection_limit=1`) |
+| `DIRECT_URL` | direct Supabase URI (port 5432) |
+| `ADMIN_PASSWORD_HASH` | bcrypt hash — in Vercel's UI you do **not** need to escape `$` |
+| `AUTH_SECRET` | long random hex string |
+
+Redeploy. Log in at `/login` and you're live.
 
 ## Data model
 
