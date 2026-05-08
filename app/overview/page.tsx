@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export default async function OverviewPage({
   searchParams,
 }: {
-  searchParams: { roster?: string; role?: string };
+  searchParams: { roster?: string; bucket?: string };
 }) {
   const rosters = await prisma.roster.findMany({
     orderBy: { createdAt: "asc" },

@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CLASS_COLOR } from "@/lib/specs";
+import { CLASS_COLOR, BUCKETS, BUCKET_LABEL, bucketForSpec, type Bucket } from "@/lib/specs";
 import { weightedScore, itemCount, weightFor, type ScoringAward } from "@/lib/scoring";
 import { WowheadLink } from "@/lib/wowhead";
 
@@ -14,6 +14,14 @@ type Award = ScoringAward & {
   character: Character;
   roster: { id: number; name: string };
   item: ScoringAward["item"] & { boss: { name: string; raid: { shortName: string; name: string } } };
+};
+
+const EMPTY_LABEL: Record<Bucket, string> = {
+  all:    "characters",
+  tank:   "tanks",
+  heal:   "healers",
+  melee:  "melee dps",
+  caster: "caster dps",
 };
 
 export default function OverviewClient({
@@ -29,20 +37,22 @@ export default function OverviewClient({
 }) {
   const router = useRouter();
   const params = useSearchParams();
-  const [tab, setTab] = useState<"tank" | "heal" | "dps">((params.get("role") as any) ?? "tank");
+
+  const initialBucket = ((params.get("bucket") as Bucket) ?? "all");
+  const [tab, setTab] = useState<Bucket>(BUCKETS.includes(initialBucket) ? initialBucket : "all");
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
   const [sort, setSort] = useState<"score" | "count" | "name">("score");
 
   function setRoster(v: string) {
     const sp = new URLSearchParams(params);
     sp.set("roster", v);
-    sp.set("role", tab);
+    sp.set("bucket", tab);
     router.push(`/overview?${sp.toString()}`);
   }
-  function setTabAndUrl(t: "tank" | "heal" | "dps") {
+  function setTabAndUrl(t: Bucket) {
     setTab(t);
     const sp = new URLSearchParams(params);
-    sp.set("role", t);
+    sp.set("bucket", t);
     router.replace(`/overview?${sp.toString()}`);
   }
 
@@ -56,9 +66,22 @@ export default function OverviewClient({
     return m;
   }, [awards]);
 
+  // Per-bucket counts shown next to each tab.
+  const bucketCounts = useMemo(() => {
+    const counts: Record<Bucket, number> = { all: characters.length, tank: 0, heal: 0, melee: 0, caster: 0 };
+    for (const c of characters) {
+      const b = bucketForSpec(c.spec);
+      if (b) counts[b]++;
+    }
+    return counts;
+  }, [characters]);
+
   const rows = useMemo(() => {
     return characters
-      .filter(c => c.role === tab)
+      .filter(c => {
+        if (tab === "all") return true;
+        return bucketForSpec(c.spec) === tab;
+      })
       .map(c => {
         const mine = awardsByChar.get(c.id) ?? [];
         return {
@@ -77,7 +100,12 @@ export default function OverviewClient({
   }, [characters, tab, awardsByChar, sort]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5 animate-fade-in">
+      <div>
+        <span className="heading-eyebrow">Roster</span>
+        <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
+      </div>
+
       <div className="flex flex-wrap items-end gap-3">
         <div>
           <label className="label">Roster</label>
@@ -101,19 +129,20 @@ export default function OverviewClient({
         </div>
       </div>
 
-      <div className="flex gap-2 border-b border-neutral-800">
-        {[
-          { k: "tank", label: "Tanks" },
-          { k: "heal", label: "Healers" },
-          { k: "dps",  label: "DPS" },
-        ].map(t => (
+      <div className="flex gap-1 border-b border-white/[0.06] overflow-x-auto">
+        {BUCKETS.map(b => (
           <button
-            key={t.k}
-            onClick={() => setTabAndUrl(t.k as any)}
-            className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px ${
-              tab === t.k ? "border-vermillion-500 text-vermillion-200" : "border-transparent text-neutral-400 hover:text-white"
+            key={b}
+            onClick={() => setTabAndUrl(b)}
+            className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition flex items-center gap-2 ${
+              tab === b ? "border-vermillion-500 text-vermillion-200" : "border-transparent text-neutral-400 hover:text-white"
             }`}
-          >{t.label}</button>
+          >
+            {BUCKET_LABEL[b]}
+            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${tab === b ? "bg-vermillion-500/15 text-vermillion-200" : "bg-white/5 text-neutral-400"}`}>
+              {bucketCounts[b]}
+            </span>
+          </button>
         ))}
       </div>
 
@@ -133,8 +162,8 @@ export default function OverviewClient({
             {rows.map(r => {
               const isOpen = expanded[r.character.id] ?? false;
               return (
-                <>
-                  <tr key={r.character.id}>
+                <Fragment key={r.character.id}>
+                  <tr>
                     <td className="font-medium" style={{ color: CLASS_COLOR[r.character.class] ?? "#fff" }}>
                       {r.character.name}
                     </td>
@@ -159,8 +188,8 @@ export default function OverviewClient({
                     </td>
                   </tr>
                   {isOpen && r.awards.length > 0 && (
-                    <tr key={`${r.character.id}-x`}>
-                      <td colSpan={6} className="bg-neutral-950">
+                    <tr>
+                      <td colSpan={6} className="bg-black/30">
                         <table className="table">
                           <thead>
                             <tr><th>Item</th><th>Boss</th><th>Raid</th><th className="text-right">Weight (for spec)</th><th>Date</th></tr>
@@ -180,11 +209,11 @@ export default function OverviewClient({
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               );
             })}
             {rows.length === 0 && (
-              <tr><td colSpan={6} className="py-6 text-center text-neutral-500">No {tab === "heal" ? "healers" : tab === "tank" ? "tanks" : "dps"} in this roster yet.</td></tr>
+              <tr><td colSpan={6} className="py-10 text-center text-neutral-500">No {EMPTY_LABEL[tab]} in this roster yet.</td></tr>
             )}
           </tbody>
         </table>
