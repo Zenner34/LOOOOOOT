@@ -8,18 +8,30 @@ import { usePathname } from "next/navigation";
 // Material bottom navigation). Hidden at md and up since desktop has the
 // horizontal nav.
 
-const ITEMS = [
+const ITEMS: Array<{ href: string; label: string; icon: any; adminOnly?: boolean }> = [
   { href: "/overview",    label: "Overview", icon: IconOverview },
   { href: "/loot",        label: "Loot",     icon: IconLoot },
-  { href: "/loot/assign", label: "Assign",   icon: IconAssign },
+  { href: "/loot/assign", label: "Assign",   icon: IconAssign, adminOnly: true },
   { href: "/players",     label: "Players",  icon: IconPlayers },
   { href: "/attendance",  label: "Nights",   icon: IconCalendar },
 ];
 
-export default function MobileTabBar() {
+// Public-only fallback set so non-admins still see 5 tabs (Loot moves into
+// the slot Assign would have occupied; Roster fills the gap).
+const PUBLIC_ITEMS: Array<{ href: string; label: string; icon: any }> = [
+  { href: "/overview",   label: "Overview", icon: IconOverview },
+  { href: "/loot",       label: "Loot",     icon: IconLoot },
+  { href: "/players",    label: "Players",  icon: IconPlayers },
+  { href: "/rosters",    label: "Roster",   icon: IconRoster },
+  { href: "/attendance", label: "Nights",   icon: IconCalendar },
+];
+
+export default function MobileTabBar({ admin }: { admin: boolean }) {
   const pathname = usePathname();
   const isActive = (href: string) =>
     href === "/overview" ? pathname === href : pathname.startsWith(href);
+
+  const items = admin ? ITEMS : PUBLIC_ITEMS;
 
   return (
     <nav
@@ -28,7 +40,7 @@ export default function MobileTabBar() {
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0)" }}
     >
       <ul className="grid grid-cols-5">
-        {ITEMS.map(item => {
+        {items.map(item => {
           const active = isActive(item.href);
           const Icon = item.icon;
           return (
@@ -85,6 +97,13 @@ function IconPlayers({ active }: { active: boolean }) {
       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
       <circle cx="9" cy="7" r="4" />
       <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+function IconRoster({ active }: { active: boolean }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 7h18M3 12h18M3 17h12" />
     </svg>
   );
 }

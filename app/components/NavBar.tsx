@@ -6,18 +6,20 @@ import { useEffect, useState } from "react";
 import LogoutButton from "./LogoutButton";
 
 const NAV = [
-  { href: "/overview",    label: "Overview"   },
-  { href: "/loot",        label: "Loot"       },
-  { href: "/loot/assign", label: "Assign"     },
-  { href: "/rosters",     label: "Roster"     },
-  { href: "/players",     label: "Players"    },
-  { href: "/characters",  label: "Characters" },
-  { href: "/attendance",  label: "Attendance" },
+  { href: "/overview",    label: "Overview"                  },
+  { href: "/loot",        label: "Loot"                      },
+  { href: "/loot/assign", label: "Assign",     adminOnly: true },
+  { href: "/rosters",     label: "Roster"                    },
+  { href: "/players",     label: "Players"                   },
+  { href: "/characters",  label: "Characters"                },
+  { href: "/attendance",  label: "Attendance"                },
 ];
 
 export default function NavBar({ admin }: { admin: boolean }) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const visibleNav = NAV.filter(item => !item.adminOnly || admin);
 
   const isActive = (href: string) =>
     href === "/overview" ? pathname === href : pathname.startsWith(href);
@@ -64,7 +66,7 @@ export default function NavBar({ admin }: { admin: boolean }) {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex gap-0.5 flex-1 overflow-x-auto">
-            {NAV.map(item => (
+            {visibleNav.map(item => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -130,7 +132,7 @@ export default function NavBar({ admin }: { admin: boolean }) {
               </button>
             </div>
             <nav className="px-2 py-3 flex flex-col gap-1">
-              {NAV.map(item => (
+              {visibleNav.map(item => (
                 <Link
                   key={item.href}
                   href={item.href}

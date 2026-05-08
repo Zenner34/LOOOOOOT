@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { isAdmin } from "@/lib/auth";
 import AssignClient from "./AssignClient";
@@ -5,6 +6,10 @@ import AssignClient from "./AssignClient";
 export const dynamic = "force-dynamic";
 
 export default async function AssignPage() {
+  // Send non-admins to login rather than rendering an empty admin shell.
+  if (!(await isAdmin())) {
+    redirect("/login?next=/loot/assign");
+  }
   const [phases, rosters, recent] = await Promise.all([
     prisma.phase.findMany({
       orderBy: { order: "asc" },
@@ -38,5 +43,5 @@ export default async function AssignPage() {
       include: { item: true, character: true, roster: true },
     }),
   ]);
-  return <AssignClient phases={phases} rosters={rosters} recent={recent} admin={await isAdmin()} />;
+  return <AssignClient phases={phases} rosters={rosters} recent={recent} admin={true} />;
 }

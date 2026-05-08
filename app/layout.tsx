@@ -38,8 +38,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="font-sans pb-[68px] md:pb-0">
         <NavBar admin={admin} />
         <main className="mx-auto max-w-7xl px-4 py-6 md:py-8">{children}</main>
-        <MobileTabBar />
-        <CommandPalette />
+        <MobileTabBar admin={admin} />
+        <CommandPalette admin={admin} />
         <Toaster
           theme="dark"
           position="top-right"

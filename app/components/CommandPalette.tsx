@@ -9,18 +9,19 @@ type Player = { id: number; displayName: string };
 type Character = { id: number; name: string; class: string; spec: string; playerId: number | null };
 type Boss = { id: number; name: string; raid: { id: number; name: string; shortName: string; phaseId: number } };
 
-const PAGES: Array<{ label: string; href: string; hint?: string }> = [
+const PAGES: Array<{ label: string; href: string; hint?: string; adminOnly?: boolean }> = [
   { label: "Overview",   href: "/overview",    hint: "go to overview" },
   { label: "Loot",       href: "/loot",        hint: "browse the loot catalog" },
-  { label: "Assign",     href: "/loot/assign", hint: "award loot (admin)" },
+  { label: "Assign",     href: "/loot/assign", hint: "award loot",                adminOnly: true },
   { label: "Roster",     href: "/rosters",     hint: "members and roles" },
   { label: "Players",    href: "/players",     hint: "mains + alts" },
   { label: "Characters", href: "/characters",  hint: "raw character list" },
   { label: "Attendance", href: "/attendance",  hint: "raid nights" },
 ];
 
-export default function CommandPalette() {
+export default function CommandPalette({ admin = false }: { admin?: boolean }) {
   const router = useRouter();
+  const visiblePages = PAGES.filter(p => !p.adminOnly || admin);
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<{ players: Player[]; characters: Character[]; bosses: Boss[] } | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -98,7 +99,7 @@ export default function CommandPalette() {
           </Command.Empty>
 
           <Command.Group heading="Pages" className="px-1 [&>div[cmdk-group-heading]]:px-2 [&>div[cmdk-group-heading]]:py-1.5 [&>div[cmdk-group-heading]]:text-[10px] [&>div[cmdk-group-heading]]:font-semibold [&>div[cmdk-group-heading]]:uppercase [&>div[cmdk-group-heading]]:tracking-wider [&>div[cmdk-group-heading]]:text-neutral-500">
-            {PAGES.map(p => (
+            {visiblePages.map(p => (
               <Command.Item
                 key={p.href}
                 value={`page ${p.label} ${p.hint ?? ""}`}
