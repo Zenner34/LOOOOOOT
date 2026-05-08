@@ -68,6 +68,7 @@ export default function PlayerDetailClient({
 
   const lastAt = awards[0]?.awardedAt ?? null;
   const daysAgo = daysSince(lastAt);
+  const mainChar = player.characters.find(c => c.isMain) ?? player.characters[0];
 
   // Group awards by raid night (or "Off-night" bucket if no raidNight).
   const grouped = useMemo(() => {
@@ -161,7 +162,10 @@ export default function PlayerDetailClient({
         <Link href="/players" className="text-xs text-neutral-500 hover:text-vermillion-200">← Players</Link>
         <div className="mt-2">
           <span className="heading-eyebrow">Player</span>
-          <h1 className="text-2xl font-bold tracking-tight">{player.displayName}</h1>
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2.5">
+            {mainChar && <ClassIcon cls={mainChar.class} size={28} />}
+            {player.displayName}
+          </h1>
         </div>
         <div className="mt-3 grid grid-cols-3 sm:flex gap-2 sm:gap-3 text-sm">
           <Stat label="Items" value={String(totalCount)} />

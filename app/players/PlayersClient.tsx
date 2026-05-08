@@ -229,11 +229,13 @@ function PlayerCard({
   onRemove: (id: number) => Promise<void>;
 }) {
   const [adding, setAdding] = useState(false);
+  const mainChar = player.characters.find(c => c.isMain) ?? player.characters[0];
 
   return (
     <div className="panel p-4">
       <div className="flex items-baseline justify-between flex-wrap gap-2">
-        <div className="flex items-baseline gap-3">
+        <div className="flex items-center gap-3">
+          {mainChar && <ClassIcon cls={mainChar.class} size={20} />}
           <Link href={`/players/${player.id}`} className="text-lg font-semibold text-vermillion-200 hover:text-vermillion-100 transition">
             {player.displayName}
           </Link>
