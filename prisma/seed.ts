@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 // Override hand-authored IDs with verified ones from the canonical TBC item DB.
 // The hand-authored list had ~66% wrong IDs (Vanilla items with same name, etc).
 // lib/wowhead-ids.json is generated from `wow-classic-items` package data.
-const VERIFIED: Record<string, number> = VERIFIED_IDS as any;
+const VERIFIED: Record<string, { id: number; icon?: string }> = VERIFIED_IDS as any;
 
 async function main() {
   for (const [phaseIdx, phase] of TBC_DATA.entries()) {
@@ -45,7 +45,7 @@ async function main() {
           // Prefer the verified ID from lib/wowhead-ids.json over the hand-authored
           // one. If neither is available the item ships without a tooltip rather
           // than linking to the wrong item.
-          let wowheadId: number | null = VERIFIED[item.name] ?? item.wowheadId ?? null;
+          let wowheadId: number | null = VERIFIED[item.name]?.id ?? item.wowheadId ?? null;
           if (wowheadId != null) {
             const claimed = await prisma.item.findUnique({ where: { wowheadId } });
             if (claimed && claimed.id !== existing?.id) wowheadId = null;

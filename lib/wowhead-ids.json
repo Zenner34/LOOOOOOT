@@ -1,244 +1,970 @@
 {
-  "Adornment of Stolen Souls": 28762,
-  "Aldori Legacy Defender": 28825,
-  "Amani Divining Staff": 33494,
-  "Amani Mask of Death": 33810,
-  "Amani Punisher": 33283,
-  "Amice of Brilliant Light": 32273,
-  "Angelista's Sash": 30895,
-  "Apolyon, the Soul-Render": 34247,
-  "Apostle of Argus": 30908,
-  "Aran's Soothing Sapphire": 28728,
-  "Arcanite Steam-Pistol": 29949,
-  "Axe of Frozen Death": 38237,
-  "Band of Al'ar": 29922,
-  "Band of Devastation": 32526,
-  "Band of the Swift Paw": 33580,
-  "Bands of Indwelling": 28511,
-  "Barbaric Legstraps": 27773,
-  "Beastmaw Pauldrons": 28589,
-  "Belt of Divine Guidance": 32519,
-  "Belt of Natural Power": 30042,
-  "Belt of One-Hundred Deaths": 30106,
-  "Belt of Seething Fury": 30915,
-  "Belt of the Silent Path": 34929,
-  "Berserker's Call": 33831,
-  "Big Bad Wolf's Head": 28583,
-  "Big Bad Wolf's Paw": 28584,
-  "Black Bow of the Betrayer": 32336,
-  "Bladed Chaos Tunic": 34397,
-  "Bladed Shoulderpads of the Merciless": 28755,
-  "Bladespire Warbands": 28795,
-  "Blind-Seers Icon": 32361,
-  "Bloodmaw Magus-Blade": 28802,
-  "Boneweave Girdle": 32346,
-  "Boots of Effortless Striking": 30060,
-  "Boots of Oceanic Fury": 32242,
-  "Boots of the Colossus": 27813,
-  "Boots of the Divine Light": 32609,
-  "Boots of the Incorrupt": 28663,
-  "Boots of the Shifting Nightmare": 30050,
-  "Botanist's Gloves of Growth": 32328,
-  "Bracers of Maliciousness": 28514,
-  "Bracers of the White Stag": 28453,
-  "Brighthelm of Justice": 30048,
-  "Brute Cloak of the Ogre-Magi": 28797,
-  "Chestguard of the Fallen Champion": 29754,
-  "Chestguard of the Fallen Defender": 29753,
-  "Chestguard of the Fallen Hero": 29755,
-  "Chestguard of the Forgotten Conqueror": 31089,
-  "Chestguard of the Forgotten Protector": 31091,
-  "Chestguard of the Forgotten Vanquisher": 31090,
-  "Chestguard of the Vanquished Champion": 30236,
-  "Chestguard of the Vanquished Defender": 30237,
-  "Chestguard of the Vanquished Hero": 30238,
-  "Choker of Animalistic Fury": 30059,
-  "Choker of Endless Nightmares": 32260,
-  "Choker of Serrated Blades": 32591,
-  "Cincture of Will": 28652,
-  "Claw of Molten Fury": 32946,
-  "Claw of the Phoenix": 29948,
-  "Collar of Cho'gall": 28804,
-  "Cord of Nature's Sustenance": 28655,
-  "Cord of Screaming Terrors": 30064,
-  "Cover of Ursoc the Mighty": 34403,
-  "Cowl of Beastly Rage": 32088,
-  "Cowl of Nature's Breath": 28803,
-  "Cowl of the Grand Engineer": 29986,
-  "Crimson Girdle of the Indomitable": 28566,
-  "Crown of Empowered Fate": 32354,
-  "Crown of the Sun": 29990,
-  "Crux of the Apocalypse": 34329,
-  "Crystal Spire of Karabor": 32500,
-  "Crystalforge Gauntlets": 30130,
-  "Crystalforge War-Helm": 30131,
-  "Crystalheart Pulse-Staff": 28782,
-  "Dagger of Bad Mojo": 33389,
-  "Dragonspine Trophy": 28830,
-  "Earring of Soulful Meditation": 30665,
-  "Earthsoul Britches": 27800,
-  "Emerald Ripper": 28524,
-  "Eye of Magtheridon": 28789,
-  "Faceguard of the Endless Watch": 30731,
-  "Fang of Kalecgos": 34165,
-  "Fang of Vashj": 30103,
-  "Fang of the Leviathan": 30095,
-  "Fathom-Helm of the Deeps": 30728,
-  "Fathomstone": 30049,
-  "Fel Reaver's Piston": 30619,
-  "Fists of Mukoa": 32234,
-  "Gauntlets of Enforcement": 32280,
-  "Gauntlets of Martial Perfection": 28824,
-  "Girdle of Ruination": 24256,
-  "Girdle of Stability": 32333,
-  "Girdle of Treachery": 28750,
-  "Girdle of Zaetar": 29984,
-  "Girdle of the Invulnerable": 30096,
-  "Girdle of the Lightbearer": 32606,
-  "Girdle of the Righteous Path": 29965,
-  "Glaive of the Pit": 28774,
-  "Glimmering Naaru Sliver": 34430,
-  "Glorious Gauntlets of Crestfall": 30112,
-  "Gloves of Dexterous Manipulation": 28506,
-  "Gloves of Saintly Blessings": 28508,
-  "Gloves of the Fallen Champion": 29757,
-  "Gloves of the Fallen Defender": 29758,
-  "Gloves of the Fallen Hero": 29756,
-  "Gloves of the Forgotten Conqueror": 31092,
-  "Gloves of the Forgotten Protector": 31094,
-  "Gloves of the Forgotten Vanquisher": 31093,
-  "Gloves of the Vanquished Champion": 30239,
-  "Gloves of the Vanquished Defender": 30240,
-  "Gloves of the Vanquished Hero": 30241,
-  "Glowing Breastplate of Truth": 30065,
-  "Gnarled Chestpiece of the Ancients": 30075,
-  "Golden Staff of the Sin'dorei": 34337,
-  "Gorehowl": 28773,
-  "Grand Magister's Staff of Torrents": 34182,
-  "Grip of Mannoroth": 34203,
-  "Gronn-Stitched Girdle": 28828,
-  "Hammer of Sanctification": 34335,
-  "Hand of the Deceiver": 34331,
-  "Handguards of Defiled Worlds": 34344,
-  "Helm of the Fallen Champion": 29760,
-  "Helm of the Fallen Defender": 29761,
-  "Helm of the Fallen Hero": 29759,
-  "Helm of the Forgotten Conqueror": 31097,
-  "Helm of the Forgotten Protector": 31095,
-  "Helm of the Forgotten Vanquisher": 31096,
-  "Helm of the Vanquished Champion": 30242,
-  "Helm of the Vanquished Defender": 30243,
-  "Helm of the Vanquished Hero": 30244,
-  "Hex Shrunken Head": 33829,
-  "Illidari Runeshield": 34011,
-  "Jade Ring of the Everliving": 28763,
-  "Kaz'rogal's Hardened Heart": 30889,
-  "Leggings of Channeled Elements": 30916,
-  "Leggings of Divine Retribution": 32341,
-  "Leggings of the Fallen Champion": 29766,
-  "Leggings of the Fallen Defender": 29767,
-  "Leggings of the Fallen Hero": 29765,
-  "Leggings of the Forgotten Conqueror": 31098,
-  "Leggings of the Forgotten Protector": 31100,
-  "Leggings of the Forgotten Vanquisher": 31099,
-  "Leggings of the Immortal Beast": 34385,
-  "Leggings of the Immortal Night": 34188,
-  "Leggings of the Pursuit": 34914,
-  "Leggings of the Seventh Circle": 30734,
-  "Leggings of the Vanquished Champion": 30245,
-  "Leggings of the Vanquished Defender": 30246,
-  "Leggings of the Vanquished Hero": 30247,
-  "Luminescent Rod of the Naaru": 30080,
-  "Malchazeen": 28768,
-  "Malefic Girdle": 28654,
-  "Malefic Mask of the Shadows": 28796,
-  "Mantle of Abrahmis": 28743,
-  "Memento of Tyrande": 32496,
-  "Mender's Heart-Ring": 28661,
-  "Mindstorm Wristbands": 29918,
-  "Moroes' Lucky Pocket Watch": 28528,
-  "Muramasa": 34214,
-  "Myrmidon's Treads": 32268,
-  "Nathrezim Mindblade": 28770,
-  "Nether Shadow Tunic": 32252,
-  "Netherbane": 29924,
-  "Pauldrons of Stone Resolve": 33481,
-  "Pauldrons of the Fallen Champion": 29763,
-  "Pauldrons of the Fallen Defender": 29764,
-  "Pauldrons of the Fallen Hero": 29762,
-  "Pauldrons of the Forgotten Conqueror": 31101,
-  "Pauldrons of the Forgotten Protector": 31103,
-  "Pauldrons of the Forgotten Vanquisher": 31102,
-  "Pauldrons of the Vanquished Champion": 30248,
-  "Pauldrons of the Vanquished Defender": 30249,
-  "Pauldrons of the Vanquished Hero": 30250,
-  "Pendant of the Perilous": 30022,
-  "Pendant of the Violet Eye": 28727,
-  "Phoenix-Ring of Rebirth": 29920,
-  "Pillar of Ferocity": 30883,
-  "Prism of Inner Calm": 30621,
-  "Red Belt of Battle": 30032,
-  "Ribbon of Sacrifice": 28590,
-  "Rifle of the Stoic Guardian": 32325,
-  "Ring of Calming Waves": 32238,
-  "Ring of Captured Storms": 32247,
-  "Ring of Lethality": 30052,
-  "Ring of Recurrence": 28753,
-  "Ring of Unrelenting Storms": 30667,
-  "Rip-Flayer Leggings": 28740,
-  "Robe of Hateful Echoes": 30056,
-  "Robes of Faltered Light": 34233,
-  "Romulo's Poison Vial": 28579,
-  "Royal Cloak of the Sunstriders": 29992,
-  "Ruby Drape of the Mysticant": 28766,
-  "Runetotem's Mantle": 30111,
-  "Scaled Greaves of the Marksman": 30739,
-  "Serpent Spine Longbow": 30105,
-  "Serpent-Coil Braid": 30720,
-  "Shadow-Cloak of Dalaran": 28570,
-  "Shadow-Walker's Cord": 32265,
-  "Shadowmoon Destroyer's Drape": 32323,
-  "Shermanar Great-Ring": 28675,
-  "Shivering Felspine": 34183,
-  "Shoulderpads of Vehemence": 34195,
-  "Shoulderpads of the Stranger": 30055,
-  "Shroud of Forgiveness": 32337,
-  "Shroud of Redeemed Souls": 34205,
-  "Shroud of the Highborne": 32524,
-  "Sin'dorei Band of Salvation": 35283,
-  "Sin'dorei Pendant of Triumph": 35292,
-  "Softstep Boots of Tracking": 32510,
-  "Solarian's Sapphire": 30446,
-  "Soul-Eater's Handwraps": 28780,
-  "Staff of Infinite Mysteries": 28633,
-  "Stanchion of Primal Instinct": 34198,
-  "Star-Strider Boots": 29951,
-  "Stormrage Signet Ring": 32497,
-  "Sunfire Handwraps": 34366,
-  "Sunfury Bow of the Phoenix": 28772,
-  "Sunhawk Leggings": 29991,
-  "Syphon of the Nathrezim": 32262,
-  "Talon of Al'ar": 30448,
-  "Teeth of Gruul": 28822,
-  "Terestian's Stranglestaff": 28658,
-  "The Decapitator": 28767,
-  "The Maelstrom's Fury": 32237,
-  "The Nexus Key": 29988,
-  "The Seal of Danzalar": 33054,
-  "The Skull of Gul'dan": 32483,
-  "Thori'dal, the Stars' Fury": 34334,
-  "Tide-Stomper's Greaves": 32245,
-  "Totem of the Maelstrom": 30023,
-  "Tuskbreaker": 33491,
-  "Vest of Mounting Assault": 32334,
-  "Vestments of the Sea-Witch": 30107,
-  "Void Reaver Greaves": 29985,
-  "Wand of Prismatic Focus": 32343,
-  "Warboots of Obliteration": 30081,
-  "Wicked Witch's Hat": 28586,
-  "Worgen Claw Necklace": 28509,
-  "World Breaker": 30090,
-  "Worldfire Chestguard": 28391,
-  "Wraps of Precise Flight": 32251,
-  "Wub's Cursed Hexblade": 33354
+  "Adornment of Stolen Souls": {
+    "icon": "inv_jewelry_necklace_29naxxramas",
+    "id": 28762
+  },
+  "Aldori Legacy Defender": {
+    "icon": "inv_shield_30",
+    "id": 28825
+  },
+  "Amani Divining Staff": {
+    "icon": "inv_staff_08",
+    "id": 33494
+  },
+  "Amani Mask of Death": {
+    "icon": "inv_helmet_114",
+    "id": 33810
+  },
+  "Amani Punisher": {
+    "icon": "inv_mace_32",
+    "id": 33283
+  },
+  "Amice of Brilliant Light": {
+    "icon": "inv_shoulder_63",
+    "id": 32273
+  },
+  "Angelista's Sash": {
+    "icon": "inv_belt_08",
+    "id": 30895
+  },
+  "Apolyon, the Soul-Render": {
+    "icon": "inv_sword_116",
+    "id": 34247
+  },
+  "Apostle of Argus": {
+    "icon": "inv_staff_54",
+    "id": 30908
+  },
+  "Aran's Soothing Sapphire": {
+    "icon": "inv_misc_gem_sapphire_02",
+    "id": 28728
+  },
+  "Arcanite Steam-Pistol": {
+    "icon": "inv_weapon_rifle_18",
+    "id": 29949
+  },
+  "Axe of Frozen Death": {
+    "icon": "inv_axe_83",
+    "id": 38237
+  },
+  "Band of Al'ar": {
+    "icon": "inv_jewelry_ring_61",
+    "id": 29922
+  },
+  "Band of Devastation": {
+    "icon": "inv_jewelry_ring_35",
+    "id": 32526
+  },
+  "Band of the Swift Paw": {
+    "icon": "inv_bracer_12",
+    "id": 33580
+  },
+  "Bands of Indwelling": {
+    "icon": "inv_bracer_13",
+    "id": 28511
+  },
+  "Barbaric Legstraps": {
+    "icon": "inv_pants_leather_06",
+    "id": 27773
+  },
+  "Beastmaw Pauldrons": {
+    "icon": "inv_shoulder_36",
+    "id": 28589
+  },
+  "Belt of Divine Guidance": {
+    "icon": "inv_belt_07",
+    "id": 32519
+  },
+  "Belt of Natural Power": {
+    "icon": "inv_belt_25",
+    "id": 30042
+  },
+  "Belt of One-Hundred Deaths": {
+    "icon": "inv_belt_26",
+    "id": 30106
+  },
+  "Belt of Seething Fury": {
+    "icon": "inv_belt_27",
+    "id": 30915
+  },
+  "Belt of the Silent Path": {
+    "icon": "inv_belt_03",
+    "id": 34929
+  },
+  "Berserker's Call": {
+    "icon": "racial_troll_berserk",
+    "id": 33831
+  },
+  "Big Bad Wolf's Head": {
+    "icon": "inv_helmet_04",
+    "id": 28583
+  },
+  "Big Bad Wolf's Paw": {
+    "icon": "inv_misc_monsterclaw_04",
+    "id": 28584
+  },
+  "Black Bow of the Betrayer": {
+    "icon": "inv_weapon_bow_31",
+    "id": 32336
+  },
+  "Bladed Chaos Tunic": {
+    "icon": "inv_chest_leather_16",
+    "id": 34397
+  },
+  "Bladed Shoulderpads of the Merciless": {
+    "icon": "inv_shoulder_29",
+    "id": 28755
+  },
+  "Bladespire Warbands": {
+    "icon": "inv_bracer_15",
+    "id": 28795
+  },
+  "Blind-Seers Icon": {
+    "icon": "inv_misc_orb_05",
+    "id": 32361
+  },
+  "Bloodmaw Magus-Blade": {
+    "icon": "inv_sword_65",
+    "id": 28802
+  },
+  "Boneweave Girdle": {
+    "icon": "inv_belt_14",
+    "id": 32346
+  },
+  "Boots of Effortless Striking": {
+    "icon": "inv_boots_plate_06",
+    "id": 30060
+  },
+  "Boots of Oceanic Fury": {
+    "icon": "inv_boots_chain_12",
+    "id": 32242
+  },
+  "Boots of the Colossus": {
+    "icon": "inv_boots_chain_11",
+    "id": 27813
+  },
+  "Boots of the Divine Light": {
+    "icon": "inv_boots_cloth_08",
+    "id": 32609
+  },
+  "Boots of the Incorrupt": {
+    "icon": "inv_boots_fabric_01",
+    "id": 28663
+  },
+  "Boots of the Shifting Nightmare": {
+    "icon": "inv_boots_05",
+    "id": 30050
+  },
+  "Botanist's Gloves of Growth": {
+    "icon": "inv_gauntlets_24",
+    "id": 32328
+  },
+  "Bracers of Maliciousness": {
+    "icon": "inv_bracer_15",
+    "id": 28514
+  },
+  "Bracers of the White Stag": {
+    "icon": "inv_bracer_02",
+    "id": 28453
+  },
+  "Brighthelm of Justice": {
+    "icon": "inv_helmet_22",
+    "id": 30048
+  },
+  "Brute Cloak of the Ogre-Magi": {
+    "icon": "inv_misc_cape_16",
+    "id": 28797
+  },
+  "Chestguard of the Fallen Champion": {
+    "icon": "inv_chest_chain_03",
+    "id": 29754
+  },
+  "Chestguard of the Fallen Defender": {
+    "icon": "inv_chest_chain_03",
+    "id": 29753
+  },
+  "Chestguard of the Fallen Hero": {
+    "icon": "inv_chest_chain_03",
+    "id": 29755
+  },
+  "Chestguard of the Forgotten Conqueror": {
+    "icon": "inv_chest_chain_03",
+    "id": 31089
+  },
+  "Chestguard of the Forgotten Protector": {
+    "icon": "inv_chest_chain_03",
+    "id": 31091
+  },
+  "Chestguard of the Forgotten Vanquisher": {
+    "icon": "inv_chest_chain_03",
+    "id": 31090
+  },
+  "Chestguard of the Vanquished Champion": {
+    "icon": "inv_chest_chain_03",
+    "id": 30236
+  },
+  "Chestguard of the Vanquished Defender": {
+    "icon": "inv_chest_chain_03",
+    "id": 30237
+  },
+  "Chestguard of the Vanquished Hero": {
+    "icon": "inv_chest_chain_03",
+    "id": 30238
+  },
+  "Choker of Animalistic Fury": {
+    "icon": "inv_jewelry_necklace_ahnqiraj_03",
+    "id": 30059
+  },
+  "Choker of Endless Nightmares": {
+    "icon": "inv_jewelry_necklace_35",
+    "id": 32260
+  },
+  "Choker of Serrated Blades": {
+    "icon": "inv_jewelry_necklace_34",
+    "id": 32591
+  },
+  "Cincture of Will": {
+    "icon": "inv_belt_08",
+    "id": 28652
+  },
+  "Claw of Molten Fury": {
+    "icon": "inv_weapon_hand_14",
+    "id": 32946
+  },
+  "Claw of the Phoenix": {
+    "icon": "inv_weapon_hand_12",
+    "id": 29948
+  },
+  "Collar of Cho'gall": {
+    "icon": "inv_helmet_27",
+    "id": 28804
+  },
+  "Cord of Nature's Sustenance": {
+    "icon": "inv_belt_22",
+    "id": 28655
+  },
+  "Cord of Screaming Terrors": {
+    "icon": "inv_belt_03",
+    "id": 30064
+  },
+  "Cover of Ursoc the Mighty": {
+    "icon": "inv_helmet_126",
+    "id": 34403
+  },
+  "Cowl of Beastly Rage": {
+    "icon": "inv_helmet_38",
+    "id": 32088
+  },
+  "Cowl of Nature's Breath": {
+    "icon": "inv_helmet_15",
+    "id": 28803
+  },
+  "Cowl of the Grand Engineer": {
+    "icon": "inv_helmet_14",
+    "id": 29986
+  },
+  "Crimson Girdle of the Indomitable": {
+    "icon": "inv_belt_27",
+    "id": 28566
+  },
+  "Crown of Empowered Fate": {
+    "icon": "inv_helmet_96",
+    "id": 32354
+  },
+  "Crown of the Sun": {
+    "icon": "inv_helmet_32",
+    "id": 29990
+  },
+  "Crux of the Apocalypse": {
+    "icon": "inv_weapon_shortblade_75",
+    "id": 34329
+  },
+  "Crystal Spire of Karabor": {
+    "icon": "inv_mace_56",
+    "id": 32500
+  },
+  "Crystalforge Gauntlets": {
+    "icon": "inv_gauntlets_25",
+    "id": 30130
+  },
+  "Crystalforge War-Helm": {
+    "icon": "inv_helmet_15",
+    "id": 30131
+  },
+  "Crystalheart Pulse-Staff": {
+    "icon": "inv_staff_53",
+    "id": 28782
+  },
+  "Dagger of Bad Mojo": {
+    "icon": "inv_weapon_shortblade_60",
+    "id": 33389
+  },
+  "Dragonspine Trophy": {
+    "icon": "inv_misc_bone_03",
+    "id": 28830
+  },
+  "Earring of Soulful Meditation": {
+    "icon": "inv_jewelry_ring_07",
+    "id": 30665
+  },
+  "Earthsoul Britches": {
+    "icon": "inv_pants_14",
+    "id": 27800
+  },
+  "Emerald Ripper": {
+    "icon": "inv_weapon_shortblade_38",
+    "id": 28524
+  },
+  "Eye of Magtheridon": {
+    "icon": "inv_elemental_mote_life01",
+    "id": 28789
+  },
+  "Faceguard of the Endless Watch": {
+    "icon": "inv_helmet_58",
+    "id": 30731
+  },
+  "Fang of Kalecgos": {
+    "icon": "inv_weapon_shortblade_74",
+    "id": 34165
+  },
+  "Fang of Vashj": {
+    "icon": "inv_weapon_shortblade_39",
+    "id": 30103
+  },
+  "Fang of the Leviathan": {
+    "icon": "inv_sword_73",
+    "id": 30095
+  },
+  "Fathom-Helm of the Deeps": {
+    "icon": "inv_helmet_69",
+    "id": 30728
+  },
+  "Fathomstone": {
+    "icon": "inv_misc_gem_azuredraenite_02",
+    "id": 30049
+  },
+  "Fel Reaver's Piston": {
+    "icon": "inv_misc_enggizmos_14",
+    "id": 30619
+  },
+  "Fists of Mukoa": {
+    "icon": "inv_gauntlets_59",
+    "id": 32234
+  },
+  "Gauntlets of Enforcement": {
+    "icon": "inv_gauntlets_62",
+    "id": 32280
+  },
+  "Gauntlets of Martial Perfection": {
+    "icon": "inv_gauntlets_31",
+    "id": 28824
+  },
+  "Girdle of Ruination": {
+    "icon": "inv_belt_13",
+    "id": 24256
+  },
+  "Girdle of Stability": {
+    "icon": "inv_belt_33",
+    "id": 32333
+  },
+  "Girdle of Treachery": {
+    "icon": "inv_belt_26",
+    "id": 28750
+  },
+  "Girdle of Zaetar": {
+    "icon": "inv_belt_08",
+    "id": 29984
+  },
+  "Girdle of the Invulnerable": {
+    "icon": "inv_belt_27",
+    "id": 30096
+  },
+  "Girdle of the Lightbearer": {
+    "icon": "inv_belt_28",
+    "id": 32606
+  },
+  "Girdle of the Righteous Path": {
+    "icon": "inv_belt_22",
+    "id": 29965
+  },
+  "Glaive of the Pit": {
+    "icon": "inv_weapon_halberd16",
+    "id": 28774
+  },
+  "Glimmering Naaru Sliver": {
+    "icon": "inv_jewelry_talisman_17",
+    "id": 34430
+  },
+  "Glorious Gauntlets of Crestfall": {
+    "icon": "inv_gauntlets_20",
+    "id": 30112
+  },
+  "Gloves of Dexterous Manipulation": {
+    "icon": "inv_gauntlets_28",
+    "id": 28506
+  },
+  "Gloves of Saintly Blessings": {
+    "icon": "inv_gauntlets_17",
+    "id": 28508
+  },
+  "Gloves of the Fallen Champion": {
+    "icon": "inv_gauntlets_27",
+    "id": 29757
+  },
+  "Gloves of the Fallen Defender": {
+    "icon": "inv_gauntlets_27",
+    "id": 29758
+  },
+  "Gloves of the Fallen Hero": {
+    "icon": "inv_gauntlets_27",
+    "id": 29756
+  },
+  "Gloves of the Forgotten Conqueror": {
+    "icon": "inv_gauntlets_27",
+    "id": 31092
+  },
+  "Gloves of the Forgotten Protector": {
+    "icon": "inv_gauntlets_27",
+    "id": 31094
+  },
+  "Gloves of the Forgotten Vanquisher": {
+    "icon": "inv_gauntlets_27",
+    "id": 31093
+  },
+  "Gloves of the Vanquished Champion": {
+    "icon": "inv_gauntlets_27",
+    "id": 30239
+  },
+  "Gloves of the Vanquished Defender": {
+    "icon": "inv_gauntlets_27",
+    "id": 30240
+  },
+  "Gloves of the Vanquished Hero": {
+    "icon": "inv_gauntlets_27",
+    "id": 30241
+  },
+  "Glowing Breastplate of Truth": {
+    "icon": "inv_chest_plate05",
+    "id": 30065
+  },
+  "Gnarled Chestpiece of the Ancients": {
+    "icon": "inv_chest_leather_10",
+    "id": 30075
+  },
+  "Golden Staff of the Sin'dorei": {
+    "icon": "inv_staff_73",
+    "id": 34337
+  },
+  "Gorehowl": {
+    "icon": "inv_axe_60",
+    "id": 28773
+  },
+  "Grand Magister's Staff of Torrents": {
+    "icon": "inv_staff_74",
+    "id": 34182
+  },
+  "Grip of Mannoroth": {
+    "icon": "inv_weapon_hand_15",
+    "id": 34203
+  },
+  "Gronn-Stitched Girdle": {
+    "icon": "inv_belt_26",
+    "id": 28828
+  },
+  "Hammer of Sanctification": {
+    "icon": "inv_mace_72",
+    "id": 34335
+  },
+  "Hand of the Deceiver": {
+    "icon": "inv_weapon_hand_15",
+    "id": 34331
+  },
+  "Handguards of Defiled Worlds": {
+    "icon": "inv_gauntlets_15",
+    "id": 34344
+  },
+  "Helm of the Fallen Champion": {
+    "icon": "inv_helmet_24",
+    "id": 29760
+  },
+  "Helm of the Fallen Defender": {
+    "icon": "inv_helmet_24",
+    "id": 29761
+  },
+  "Helm of the Fallen Hero": {
+    "icon": "inv_helmet_24",
+    "id": 29759
+  },
+  "Helm of the Forgotten Conqueror": {
+    "icon": "inv_helmet_24",
+    "id": 31097
+  },
+  "Helm of the Forgotten Protector": {
+    "icon": "inv_helmet_24",
+    "id": 31095
+  },
+  "Helm of the Forgotten Vanquisher": {
+    "icon": "inv_helmet_24",
+    "id": 31096
+  },
+  "Helm of the Vanquished Champion": {
+    "icon": "inv_helmet_24",
+    "id": 30242
+  },
+  "Helm of the Vanquished Defender": {
+    "icon": "inv_helmet_24",
+    "id": 30243
+  },
+  "Helm of the Vanquished Hero": {
+    "icon": "inv_helmet_24",
+    "id": 30244
+  },
+  "Hex Shrunken Head": {
+    "icon": "inv_misc_head_troll_01",
+    "id": 33829
+  },
+  "Illidari Runeshield": {
+    "icon": "inv_shield_01",
+    "id": 34011
+  },
+  "Jade Ring of the Everliving": {
+    "icon": "inv_jewelry_ring_08",
+    "id": 28763
+  },
+  "Kaz'rogal's Hardened Heart": {
+    "icon": "inv_shield_39",
+    "id": 30889
+  },
+  "Leggings of Channeled Elements": {
+    "icon": "inv_pants_cloth_27",
+    "id": 30916
+  },
+  "Leggings of Divine Retribution": {
+    "icon": "inv_pants_plate_20",
+    "id": 32341
+  },
+  "Leggings of the Fallen Champion": {
+    "icon": "inv_pants_plate_17",
+    "id": 29766
+  },
+  "Leggings of the Fallen Defender": {
+    "icon": "inv_pants_plate_17",
+    "id": 29767
+  },
+  "Leggings of the Fallen Hero": {
+    "icon": "inv_pants_plate_17",
+    "id": 29765
+  },
+  "Leggings of the Forgotten Conqueror": {
+    "icon": "inv_pants_plate_17",
+    "id": 31098
+  },
+  "Leggings of the Forgotten Protector": {
+    "icon": "inv_pants_plate_17",
+    "id": 31100
+  },
+  "Leggings of the Forgotten Vanquisher": {
+    "icon": "inv_pants_plate_17",
+    "id": 31099
+  },
+  "Leggings of the Immortal Beast": {
+    "icon": "inv_pants_leather_23",
+    "id": 34385
+  },
+  "Leggings of the Immortal Night": {
+    "icon": "inv_pants_leather_27",
+    "id": 34188
+  },
+  "Leggings of the Pursuit": {
+    "icon": "inv_pants_mail_05",
+    "id": 34914
+  },
+  "Leggings of the Seventh Circle": {
+    "icon": "inv_pants_leather_11",
+    "id": 30734
+  },
+  "Leggings of the Vanquished Champion": {
+    "icon": "inv_pants_plate_17",
+    "id": 30245
+  },
+  "Leggings of the Vanquished Defender": {
+    "icon": "inv_pants_plate_17",
+    "id": 30246
+  },
+  "Leggings of the Vanquished Hero": {
+    "icon": "inv_pants_plate_17",
+    "id": 30247
+  },
+  "Luminescent Rod of the Naaru": {
+    "icon": "inv_wand_15",
+    "id": 30080
+  },
+  "Malchazeen": {
+    "icon": "inv_weapon_shortblade_40",
+    "id": 28768
+  },
+  "Malefic Girdle": {
+    "icon": "inv_belt_03",
+    "id": 28654
+  },
+  "Malefic Mask of the Shadows": {
+    "icon": "inv_helmet_58",
+    "id": 28796
+  },
+  "Mantle of Abrahmis": {
+    "icon": "inv_shoulder_29",
+    "id": 28743
+  },
+  "Memento of Tyrande": {
+    "icon": "inv_summerfest_fireflower",
+    "id": 32496
+  },
+  "Mender's Heart-Ring": {
+    "icon": "inv_jewelry_ring_36",
+    "id": 28661
+  },
+  "Mindstorm Wristbands": {
+    "icon": "inv_bracer_13",
+    "id": 29918
+  },
+  "Moroes' Lucky Pocket Watch": {
+    "icon": "inv_misc_pocketwatch_02",
+    "id": 28528
+  },
+  "Muramasa": {
+    "icon": "inv_sword_114",
+    "id": 34214
+  },
+  "Myrmidon's Treads": {
+    "icon": "inv_boots_plate_06",
+    "id": 32268
+  },
+  "Nathrezim Mindblade": {
+    "icon": "inv_weapon_shortblade_41",
+    "id": 28770
+  },
+  "Nether Shadow Tunic": {
+    "icon": "inv_chest_leather_03",
+    "id": 32252
+  },
+  "Netherbane": {
+    "icon": "inv_axe_62",
+    "id": 29924
+  },
+  "Pauldrons of Stone Resolve": {
+    "icon": "inv_shoulder_81",
+    "id": 33481
+  },
+  "Pauldrons of the Fallen Champion": {
+    "icon": "inv_shoulder_22",
+    "id": 29763
+  },
+  "Pauldrons of the Fallen Defender": {
+    "icon": "inv_shoulder_22",
+    "id": 29764
+  },
+  "Pauldrons of the Fallen Hero": {
+    "icon": "inv_shoulder_22",
+    "id": 29762
+  },
+  "Pauldrons of the Forgotten Conqueror": {
+    "icon": "inv_shoulder_22",
+    "id": 31101
+  },
+  "Pauldrons of the Forgotten Protector": {
+    "icon": "inv_shoulder_22",
+    "id": 31103
+  },
+  "Pauldrons of the Forgotten Vanquisher": {
+    "icon": "inv_shoulder_22",
+    "id": 31102
+  },
+  "Pauldrons of the Vanquished Champion": {
+    "icon": "inv_shoulder_22",
+    "id": 30248
+  },
+  "Pauldrons of the Vanquished Defender": {
+    "icon": "inv_shoulder_22",
+    "id": 30249
+  },
+  "Pauldrons of the Vanquished Hero": {
+    "icon": "inv_shoulder_22",
+    "id": 30250
+  },
+  "Pendant of the Perilous": {
+    "icon": "inv_jewelry_necklace_ahnqiraj_01",
+    "id": 30022
+  },
+  "Pendant of the Violet Eye": {
+    "icon": "inv_trinket_naxxramas02",
+    "id": 28727
+  },
+  "Phoenix-Ring of Rebirth": {
+    "icon": "inv_jewelry_ring_51naxxramas",
+    "id": 29920
+  },
+  "Pillar of Ferocity": {
+    "icon": "inv_staff_60",
+    "id": 30883
+  },
+  "Prism of Inner Calm": {
+    "icon": "inv_misc_gem_diamond_07",
+    "id": 30621
+  },
+  "Red Belt of Battle": {
+    "icon": "inv_belt_13",
+    "id": 30032
+  },
+  "Ribbon of Sacrifice": {
+    "icon": "inv_misc_bandage_16",
+    "id": 28590
+  },
+  "Rifle of the Stoic Guardian": {
+    "icon": "inv_weapon_rifle_21",
+    "id": 32325
+  },
+  "Ring of Calming Waves": {
+    "icon": "inv_jewelry_ring_57",
+    "id": 32238
+  },
+  "Ring of Captured Storms": {
+    "icon": "inv_jewelry_ring_60",
+    "id": 32247
+  },
+  "Ring of Lethality": {
+    "icon": "inv_jewelry_ring_51naxxramas",
+    "id": 30052
+  },
+  "Ring of Recurrence": {
+    "icon": "inv_jewelry_ring_15",
+    "id": 28753
+  },
+  "Ring of Unrelenting Storms": {
+    "icon": "inv_jewelry_ring_51naxxramas",
+    "id": 30667
+  },
+  "Rip-Flayer Leggings": {
+    "icon": "inv_pants_plate_02",
+    "id": 28740
+  },
+  "Robe of Hateful Echoes": {
+    "icon": "inv_chest_cloth_43",
+    "id": 30056
+  },
+  "Robes of Faltered Light": {
+    "icon": "inv_chest_cloth_32",
+    "id": 34233
+  },
+  "Romulo's Poison Vial": {
+    "icon": "inv_poison_mindnumbing",
+    "id": 28579
+  },
+  "Royal Cloak of the Sunstriders": {
+    "icon": "inv_misc_cape_10",
+    "id": 29992
+  },
+  "Ruby Drape of the Mysticant": {
+    "icon": "inv_misc_cape_18",
+    "id": 28766
+  },
+  "Runetotem's Mantle": {
+    "icon": "inv_shoulder_07",
+    "id": 30111
+  },
+  "Scaled Greaves of the Marksman": {
+    "icon": "inv_pants_mail_11",
+    "id": 30739
+  },
+  "Serpent Spine Longbow": {
+    "icon": "inv_weapon_bow_08",
+    "id": 30105
+  },
+  "Serpent-Coil Braid": {
+    "icon": "spell_nature_poisoncleansingtotem",
+    "id": 30720
+  },
+  "Shadow-Cloak of Dalaran": {
+    "icon": "inv_misc_cape_20",
+    "id": 28570
+  },
+  "Shadow-Walker's Cord": {
+    "icon": "inv_belt_26",
+    "id": 32265
+  },
+  "Shadowmoon Destroyer's Drape": {
+    "icon": "inv_misc_cape_naxxramas_02",
+    "id": 32323
+  },
+  "Shermanar Great-Ring": {
+    "icon": "inv_jewelry_ring_19",
+    "id": 28675
+  },
+  "Shivering Felspine": {
+    "icon": "inv_weapon_halberd_20",
+    "id": 34183
+  },
+  "Shoulderpads of Vehemence": {
+    "icon": "inv_shoulder_88",
+    "id": 34195
+  },
+  "Shoulderpads of the Stranger": {
+    "icon": "inv_shoulder_23",
+    "id": 30055
+  },
+  "Shroud of Forgiveness": {
+    "icon": "inv_misc_cape_13",
+    "id": 32337
+  },
+  "Shroud of Redeemed Souls": {
+    "icon": "inv_misc_cape_06",
+    "id": 34205
+  },
+  "Shroud of the Highborne": {
+    "icon": "inv_misc_cape_06",
+    "id": 32524
+  },
+  "Sin'dorei Band of Salvation": {
+    "icon": "inv_jewelry_ring_60",
+    "id": 35283
+  },
+  "Sin'dorei Pendant of Triumph": {
+    "icon": "inv_jewelry_necklace_36",
+    "id": 35292
+  },
+  "Softstep Boots of Tracking": {
+    "icon": "inv_boots_chain_01",
+    "id": 32510
+  },
+  "Solarian's Sapphire": {
+    "icon": "inv_misc_gem_sapphire_01",
+    "id": 30446
+  },
+  "Soul-Eater's Handwraps": {
+    "icon": "inv_gauntlets_15",
+    "id": 28780
+  },
+  "Staff of Infinite Mysteries": {
+    "icon": "inv_weapon_halberd17",
+    "id": 28633
+  },
+  "Stanchion of Primal Instinct": {
+    "icon": "inv_staff_12",
+    "id": 34198
+  },
+  "Star-Strider Boots": {
+    "icon": "inv_boots_chain_04",
+    "id": 29951
+  },
+  "Stormrage Signet Ring": {
+    "icon": "inv_jewelry_ring_67",
+    "id": 32497
+  },
+  "Sunfire Handwraps": {
+    "icon": "inv_gauntlets_49",
+    "id": 34366
+  },
+  "Sunfury Bow of the Phoenix": {
+    "icon": "inv_weapon_bow_18",
+    "id": 28772
+  },
+  "Sunhawk Leggings": {
+    "icon": "inv_pants_plate_07",
+    "id": 29991
+  },
+  "Syphon of the Nathrezim": {
+    "icon": "inv_mace_44",
+    "id": 32262
+  },
+  "Talon of Al'ar": {
+    "icon": "spell_fire_soulburn",
+    "id": 30448
+  },
+  "Teeth of Gruul": {
+    "icon": "inv_misc_bone_09",
+    "id": 28822
+  },
+  "Terestian's Stranglestaff": {
+    "icon": "inv_staff_55",
+    "id": 28658
+  },
+  "The Decapitator": {
+    "icon": "inv_axe_66",
+    "id": 28767
+  },
+  "The Maelstrom's Fury": {
+    "icon": "inv_weapon_shortblade_58",
+    "id": 32237
+  },
+  "The Nexus Key": {
+    "icon": "inv_staff_43",
+    "id": 29988
+  },
+  "The Seal of Danzalar": {
+    "icon": "inv_jewelry_ring_39",
+    "id": 33054
+  },
+  "The Skull of Gul'dan": {
+    "icon": "inv_misc_bone_elfskull_01",
+    "id": 32483
+  },
+  "Thori'dal, the Stars' Fury": {
+    "icon": "inv_weapon_bow_39",
+    "id": 34334
+  },
+  "Tide-Stomper's Greaves": {
+    "icon": "inv_boots_plate_04",
+    "id": 32245
+  },
+  "Totem of the Maelstrom": {
+    "icon": "spell_nature_earthbind",
+    "id": 30023
+  },
+  "Tuskbreaker": {
+    "icon": "inv_weapon_rifle_24",
+    "id": 33491
+  },
+  "Vest of Mounting Assault": {
+    "icon": "inv_chest_samurai",
+    "id": 32334
+  },
+  "Vestments of the Sea-Witch": {
+    "icon": "inv_chest_cloth_17",
+    "id": 30107
+  },
+  "Void Reaver Greaves": {
+    "icon": "inv_pants_mail_15",
+    "id": 29985
+  },
+  "Wand of Prismatic Focus": {
+    "icon": "inv_wand_16",
+    "id": 32343
+  },
+  "Warboots of Obliteration": {
+    "icon": "inv_boots_plate_04",
+    "id": 30081
+  },
+  "Wicked Witch's Hat": {
+    "icon": "inv_helmet_30",
+    "id": 28586
+  },
+  "Worgen Claw Necklace": {
+    "icon": "inv_jewelry_necklace_22",
+    "id": 28509
+  },
+  "World Breaker": {
+    "icon": "inv_mace_52",
+    "id": 30090
+  },
+  "Worldfire Chestguard": {
+    "icon": "inv_chest_wolf",
+    "id": 28391
+  },
+  "Wraps of Precise Flight": {
+    "icon": "inv_bracer_06",
+    "id": 32251
+  },
+  "Wub's Cursed Hexblade": {
+    "icon": "inv_weapon_shortblade_64",
+    "id": 33354
+  }
 }
