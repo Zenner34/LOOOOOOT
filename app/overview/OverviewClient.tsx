@@ -93,7 +93,7 @@ export default function OverviewClient({
   const [tab, setTab] = useState<Bucket>(BUCKETS.includes(initialBucket) ? initialBucket : "all");
   const [groupBy, setGroupBy] = useState<"player" | "character">("player");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const [sort, setSort] = useState<"lastLoot" | "count" | "name">("lastLoot");
+  const [sort, setSort] = useState<"lastLoot" | "count" | "nameAsc" | "nameDesc">("lastLoot");
 
   function setRoster(v: string) {
     const sp = new URLSearchParams(params);
@@ -200,8 +200,9 @@ export default function OverviewClient({
   const sortedRows = useMemo(() => {
     const r = [...rows];
     r.sort((a, b) => {
-      if (sort === "count") return b.count - a.count || a.displayName.localeCompare(b.displayName);
-      if (sort === "name")  return a.displayName.localeCompare(b.displayName);
+      if (sort === "count")    return b.count - a.count || a.displayName.localeCompare(b.displayName);
+      if (sort === "nameAsc")  return a.displayName.localeCompare(b.displayName);
+      if (sort === "nameDesc") return b.displayName.localeCompare(a.displayName);
       // lastLoot: most recently looted first; players with no loot pinned to bottom.
       const at = a.lastAwardAt?.getTime() ?? -Infinity;
       const bt = b.lastAwardAt?.getTime() ?? -Infinity;
@@ -259,7 +260,8 @@ export default function OverviewClient({
             options={[
               { value: "lastLoot", label: "Recently looted" },
               { value: "count",    label: "Items received" },
-              { value: "name",     label: "Name" },
+              { value: "nameAsc",  label: "Name (A → Z)" },
+              { value: "nameDesc", label: "Name (Z → A)" },
             ]}
           />
         </div>
@@ -371,7 +373,17 @@ export default function OverviewClient({
         <table className="table">
           <thead>
             <tr>
-              <th>{groupBy === "player" ? "Player" : "Character"}</th>
+              <th>
+                <button
+                  onClick={() => setSort(s => s === "nameAsc" ? "nameDesc" : "nameAsc")}
+                  className="hover:text-vermillion-200 transition inline-flex items-center gap-1"
+                  title="Sort by name"
+                >
+                  {groupBy === "player" ? "Player" : "Character"}
+                  {sort === "nameAsc" && <span aria-hidden="true">↑</span>}
+                  {sort === "nameDesc" && <span aria-hidden="true">↓</span>}
+                </button>
+              </th>
               <th>{groupBy === "player" ? "Characters" : "Spec"}</th>
               <th className="text-right">Items</th>
               <th>Last loot</th>
