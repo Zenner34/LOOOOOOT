@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CLASS_COLOR } from "@/lib/specs";
+import { ClassIcon } from "@/app/components/ClassIcon";
 import { weightFor } from "@/lib/scoring";
 import { WowheadLink } from "@/lib/wowhead";
 
@@ -194,6 +195,7 @@ export default function PlayerDetailClient({
                 <div key={c.id} className={`flex items-center justify-between rounded-md px-2 py-1.5 ${c.isMain ? "bg-gold-400/10 ring-1 ring-gold-400/25" : "bg-white/[0.03]"}`}>
                   <div className="flex items-center gap-2">
                     {c.isMain && <span className="text-gold-300 text-xs leading-none" title="main">★</span>}
+                    <ClassIcon cls={c.class} size={16} />
                     <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }} className="font-medium text-sm">{c.name}</span>
                     <span className="text-xs text-neutral-500">{c.spec}</span>
                   </div>
@@ -217,6 +219,7 @@ export default function PlayerDetailClient({
                       onClick={async () => { await bind(o.id, player.characters.length === 0); setAdding(false); }}
                       className="chip hover:bg-vermillion-500/10 hover:border-vermillion-500/40"
                     >
+                      <ClassIcon cls={o.class} size={14} />
                       <span style={{ color: CLASS_COLOR[o.class] ?? "#fff" }}>{o.name}</span>
                       <span className="text-neutral-500">· {o.spec}</span>
                     </button>
