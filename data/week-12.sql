@@ -29,8 +29,11 @@ SELECT (SELECT id FROM "Roster" WHERE name = 'Master Roster'), c.id, 'main'
    );
 
 -- 2. Add Pit Lord's Satchel under Magtheridon if missing.
-INSERT INTO "Item" (name, "bossId", slot, "itemLevel", "wowheadId", notes)
-SELECT 'Pit Lord''s Satchel', b.id, 'Bag', 70, 34845, '20-slot epic bag'
+--    wowheadId intentionally omitted — the public 34845 resolves to
+--    "Yarzill's Mutton" in the live TBC Classic tooltip DB and the
+--    tooltip script's renameLinks=true overwrites the visible name.
+INSERT INTO "Item" (name, "bossId", slot, "itemLevel", notes)
+SELECT 'Pit Lord''s Satchel', b.id, 'Bag', 70, '20-slot epic bag'
   FROM "Boss" b
  WHERE b.name = 'Magtheridon'
    AND NOT EXISTS (SELECT 1 FROM "Item" WHERE name = 'Pit Lord''s Satchel');
