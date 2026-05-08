@@ -17,8 +17,6 @@ export default async function OverviewPage({
   const selectedRosterId =
     searchParams.roster === "all" ? "all" : Number(searchParams.roster) || rosters[0]?.id || 0;
 
-  // If a specific roster is selected, gather that roster's members. For "all"
-  // mode we use every character that has awards or is on any roster.
   const characterIds = (() => {
     if (selectedRosterId === "all") return null;
     const r = rosters.find(x => x.id === selectedRosterId);
@@ -49,11 +47,30 @@ export default async function OverviewPage({
     ? await prisma.character.findMany({ orderBy: { name: "asc" } })
     : (rosters.find(r => r.id === selectedRosterId)?.members.map(m => m.character) ?? []);
 
+  // Pull players. Each player has many characters; we render player rows by
+  // joining the character list to player ownership via Character.playerId.
+  const players = await prisma.player.findMany({
+    where: { active: true },
+    orderBy: { displayName: "asc" },
+  });
+
   return (
     <OverviewClient
       rosters={rosters.map(r => ({ id: r.id, name: r.name }))}
       selectedRosterId={selectedRosterId}
-      characters={characters}
+      characters={characters.map(c => ({
+        id: c.id,
+        name: c.name,
+        class: c.class,
+        spec: c.spec,
+        role: c.role,
+        playerId: c.playerId,
+        isMain: c.isMain,
+      }))}
+      players={players.map(p => ({
+        id: p.id,
+        displayName: p.displayName,
+      }))}
       awards={awards as any}
     />
   );

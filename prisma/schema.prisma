@@ -69,17 +69,36 @@ model ItemWeight {
   @@index([itemId])
 }
 
+model Player {
+  id            Int         @id @default(autoincrement())
+  displayName   String      @unique
+  discordHandle String?
+  notes         String?
+  active        Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  characters    Character[]
+}
+
 model Character {
-  id        Int            @id @default(autoincrement())
-  name      String         @unique
-  class     String
-  spec      String
-  role      String // 'tank' | 'heal' | 'dps'
-  active    Boolean        @default(true)
-  createdAt DateTime       @default(now())
+  id          Int            @id @default(autoincrement())
+  name        String         @unique
+  class       String
+  spec        String
+  role        String // 'tank' | 'heal' | 'dps'
+  active      Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  // Optional Player ownership: a Player can have many Characters (main + alts).
+  // Orphan characters (playerId = null) still work everywhere; UI offers to
+  // bind them to a Player via /players. SetNull preserves loot history if
+  // a Player is deleted.
+  playerId    Int?
+  isMain      Boolean        @default(false)
+  player      Player?        @relation(fields: [playerId], references: [id], onDelete: SetNull)
   memberships RosterMember[]
-  attendance Attendance[]
-  awards     LootAward[]
+  attendance  Attendance[]
+  awards      LootAward[]
+
+  @@index([playerId])
 }
 
 model Roster {

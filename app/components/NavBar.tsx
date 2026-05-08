@@ -9,6 +9,7 @@ const NAV = [
   { href: "/loot",        label: "Loot"       },
   { href: "/loot/assign", label: "Assign"     },
   { href: "/rosters",     label: "Roster"     },
+  { href: "/players",     label: "Players"    },
   { href: "/characters",  label: "Characters" },
   { href: "/attendance",  label: "Attendance" },
 ];

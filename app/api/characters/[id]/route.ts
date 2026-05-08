@@ -16,6 +16,10 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
   if (typeof body.role === "string" && ROLES.includes(body.role)) patch.role = body.role;
   if (typeof body.active === "boolean") patch.active = body.active;
+  if (typeof body.isMain === "boolean") patch.isMain = body.isMain;
+  if ("playerId" in body) {
+    patch.playerId = body.playerId === null ? null : Number(body.playerId);
+  }
   const updated = await prisma.character.update({ where: { id }, data: patch });
   return NextResponse.json(updated);
 }
