@@ -94,15 +94,16 @@ export default function AssignClient({ phases, rosters, recent, admin }: {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end gap-3">
-        <div className="min-w-[180px]">
-          <label className="label">Roster</label>
-          <select className="input" value={rosterId} onChange={e => setRosterId(Number(e.target.value) || "")}>
-            <option value="">Select…</option>
-            {rosters.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-          </select>
-        </div>
+        {rosters.length > 1 && (
+          <div className="min-w-[180px]">
+            <label className="label">Roster</label>
+            <select className="input" value={rosterId} onChange={e => setRosterId(Number(e.target.value) || "")}>
+              {rosters.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+            </select>
+          </div>
+        )}
         <div className="min-w-[200px]">
-          <label className="label">Raid night (optional)</label>
+          <label className="label">Raid night</label>
           <select className="input" value={raidNightId} onChange={e => setRaidNightId(Number(e.target.value) || "")}>
             <option value="">— none —</option>
             {activeRoster?.raidNights.map(n => (
@@ -110,9 +111,12 @@ export default function AssignClient({ phases, rosters, recent, admin }: {
             ))}
           </select>
         </div>
+        {!activeRoster?.raidNights.length && (
+          <Link href="/attendance" className="btn-ghost btn-xs text-vermillion-300">+ Create a raid night</Link>
+        )}
         {flash && <span className="text-sm text-emerald-400">{flash}</span>}
         <span className="ml-auto text-xs text-neutral-500">
-          Hotkey: <kbd className="bg-neutral-800 border border-neutral-700 rounded px-1">u</kbd> to undo last award
+          Hotkey: <kbd className="bg-white/10 border border-white/15 rounded px-1">u</kbd> to undo last award
         </span>
       </div>
 

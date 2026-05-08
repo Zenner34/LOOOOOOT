@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CLASS_COLOR, BUCKETS, BUCKET_LABEL, bucketForSpec, type Bucket } from "@/lib/specs";
 import { weightedScore, itemCount, weightFor, type ScoringAward } from "@/lib/scoring";
@@ -38,11 +39,37 @@ const EMPTY_LABEL: Record<Bucket, string> = {
 type Row = {
   key: string;
   kind: "player" | "orphan";
+  id: number; // player.id, or character.id for orphans
   displayName: string;
   characters: Character[];
   count: number;
   score: number;
   awards: Award[];
+  lastAwardAt: Date | null;
+};
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+function daysAgo(d: Date | string | null | undefined): number | null {
+  if (!d) return null;
+  const t = new Date(d).getTime();
+  if (Number.isNaN(t)) return null;
+  return Math.floor((Date.now() - t) / DAY_MS);
+}
+function lastLootBadge(days: number | null): { text: string; tone: "fresh" | "warm" | "cold" | "icy" | "none" } {
+  if (days == null) return { text: "no loot yet", tone: "none" };
+  if (days === 0) return { text: "today", tone: "fresh" };
+  if (days === 1) return { text: "1 day ago", tone: "fresh" };
+  if (days < 7) return { text: `${days} days ago`, tone: "fresh" };
+  if (days < 14) return { text: `${days} days ago`, tone: "warm" };
+  if (days < 30) return { text: `${days} days ago`, tone: "cold" };
+  return { text: `${days} days ago`, tone: "icy" };
+}
+const TONE_CLASS: Record<"fresh" | "warm" | "cold" | "icy" | "none", string> = {
+  fresh: "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/25",
+  warm:  "bg-gold-400/10 text-gold-200 ring-1 ring-gold-400/25",
+  cold:  "bg-vermillion-500/10 text-vermillion-200 ring-1 ring-vermillion-500/30",
+  icy:   "bg-vermillion-700/15 text-vermillion-300 ring-1 ring-vermillion-700/40",
+  none:  "bg-white/5 text-neutral-500",
 };
 
 export default function OverviewClient({
@@ -65,7 +92,7 @@ export default function OverviewClient({
   const [tab, setTab] = useState<Bucket>(BUCKETS.includes(initialBucket) ? initialBucket : "all");
   const [groupBy, setGroupBy] = useState<"player" | "character">("player");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const [sort, setSort] = useState<"score" | "count" | "name">("score");
+  const [sort, setSort] = useState<"score" | "count" | "name" | "lastLoot">("lastLoot");
 
   function setRoster(v: string) {
     const sp = new URLSearchParams(params);
@@ -105,11 +132,13 @@ export default function OverviewClient({
         return {
           key: `c${c.id}`,
           kind: "orphan" as const,
+          id: c.id,
           displayName: c.name,
           characters: [c],
           count: itemCount(mine),
           score: weightedScore(c.spec, mine),
           awards: mine,
+          lastAwardAt: mine[0] ? new Date(mine[0].awardedAt) : null,
         };
       });
     }
@@ -139,14 +168,18 @@ export default function OverviewClient({
         score += weightedScore(c.spec, mine);
         for (const a of mine) allAwards.push(a);
       }
+      // sort each player's awards descending by date so [0] is most recent
+      allAwards.sort((a, b) => new Date(b.awardedAt).getTime() - new Date(a.awardedAt).getTime());
       playerRows.push({
         key: `p${p.id}`,
         kind: "player",
+        id: p.id,
         displayName: p.displayName,
         characters: chars.sort((a, b) => Number(b.isMain) - Number(a.isMain) || a.name.localeCompare(b.name)),
         count,
         score,
         awards: allAwards,
+        lastAwardAt: allAwards[0] ? new Date(allAwards[0].awardedAt) : null,
       });
     }
 
@@ -155,11 +188,13 @@ export default function OverviewClient({
       return {
         key: `o${c.id}`,
         kind: "orphan",
+        id: c.id,
         displayName: c.name,
         characters: [c],
         count: itemCount(mine),
         score: weightedScore(c.spec, mine),
         awards: mine,
+        lastAwardAt: mine[0] ? new Date(mine[0].awardedAt) : null,
       };
     });
 
@@ -169,8 +204,16 @@ export default function OverviewClient({
   const sortedRows = useMemo(() => {
     const r = [...rows];
     r.sort((a, b) => {
-      if (sort === "count") return b.count - a.count || a.displayName.localeCompare(b.displayName);
-      if (sort === "name")  return a.displayName.localeCompare(b.displayName);
+      if (sort === "count")    return b.count - a.count || a.displayName.localeCompare(b.displayName);
+      if (sort === "name")     return a.displayName.localeCompare(b.displayName);
+      if (sort === "lastLoot") {
+        // Most-time-since-last-loot first (oldest at top — these are next-up).
+        // Players with no loot pinned to bottom.
+        const at = a.lastAwardAt?.getTime() ?? Number.POSITIVE_INFINITY;
+        const bt = b.lastAwardAt?.getTime() ?? Number.POSITIVE_INFINITY;
+        if (at !== bt) return at - bt;
+        return a.displayName.localeCompare(b.displayName);
+      }
       return b.score - a.score || b.count - a.count || a.displayName.localeCompare(b.displayName);
     });
     return r;
@@ -219,6 +262,7 @@ export default function OverviewClient({
         <div>
           <label className="label">Sort</label>
           <select className="input" value={sort} onChange={e => setSort(e.target.value as any)}>
+            <option value="lastLoot">Last loot (oldest first)</option>
             <option value="score">Weighted score</option>
             <option value="count">Items received</option>
             <option value="name">Name</option>
@@ -251,6 +295,7 @@ export default function OverviewClient({
               <th>{groupBy === "player" ? "Characters" : "Spec"}</th>
               <th className="text-right">Items</th>
               <th className="text-right">Weighted score</th>
+              <th>Last loot</th>
               <th>Last item</th>
               <th></th>
             </tr>
@@ -268,7 +313,12 @@ export default function OverviewClient({
                           {r.displayName}
                         </span>
                       ) : (
-                        <span className="text-white">{r.displayName}</span>
+                        <Link
+                          href={`/players/${r.id}`}
+                          className="text-white hover:text-vermillion-200 transition"
+                        >
+                          {r.displayName}
+                        </Link>
                       )}
                     </td>
                     <td>
@@ -288,6 +338,17 @@ export default function OverviewClient({
                     </td>
                     <td className="text-right tabular-nums">{r.count}</td>
                     <td className="text-right tabular-nums text-gold-200 font-semibold">{r.score.toFixed(2)}</td>
+                    <td>
+                      {(() => {
+                        const days = daysAgo(r.lastAwardAt);
+                        const b = lastLootBadge(days);
+                        return (
+                          <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium tabular-nums ${TONE_CLASS[b.tone]}`}>
+                            {b.text}
+                          </span>
+                        );
+                      })()}
+                    </td>
                     <td className="text-neutral-400 text-xs">
                       {last ? (
                         <>
@@ -307,7 +368,7 @@ export default function OverviewClient({
                   </tr>
                   {isOpen && r.awards.length > 0 && (
                     <tr>
-                      <td colSpan={6} className="bg-black/30">
+                      <td colSpan={7} className="bg-black/30">
                         <table className="table">
                           <thead>
                             <tr>
@@ -341,7 +402,7 @@ export default function OverviewClient({
               );
             })}
             {sortedRows.length === 0 && (
-              <tr><td colSpan={6} className="py-10 text-center text-neutral-500">No {EMPTY_LABEL[tab]} in this roster yet.</td></tr>
+              <tr><td colSpan={7} className="py-10 text-center text-neutral-500">No {EMPTY_LABEL[tab]} in this roster yet.</td></tr>
             )}
           </tbody>
         </table>

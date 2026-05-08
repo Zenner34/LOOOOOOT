@@ -11,6 +11,17 @@ const prisma = new PrismaClient();
 const VERIFIED: Record<string, { id: number; icon?: string }> = VERIFIED_IDS as any;
 
 async function main() {
+  // Singleton "Master Roster" — the guild's one and only roster. Phase 4
+  // simplification: there are no team layers; everyone lives here.
+  await prisma.roster.upsert({
+    where: { name: "Master Roster" },
+    update: {},
+    create: {
+      name: "Master Roster",
+      description: "The guild roster — every active raider's character lives here.",
+    },
+  });
+
   for (const [phaseIdx, phase] of TBC_DATA.entries()) {
     const dbPhase = await prisma.phase.upsert({
       where: { order: phaseIdx + 1 },

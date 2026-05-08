@@ -49,20 +49,22 @@ export default function AttendanceIndexClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Attendance</h1>
-        <p className="text-sm text-neutral-400">One raid night per entry; mark present / late / absent.</p>
+      <div>
+        <span className="heading-eyebrow">Roster</span>
+        <h1 className="text-2xl font-bold tracking-tight">Raid nights</h1>
+        <p className="text-sm text-neutral-400 mt-1">Each raid night is one row. Mark attendance and award loot from the night.</p>
       </div>
 
       {admin && (
         <form onSubmit={createNight} className="panel p-4 flex flex-wrap items-end gap-3">
-          <div className="min-w-[180px]">
-            <label className="label">Roster</label>
-            <select className="input" value={rosterId} onChange={e => setRosterId(Number(e.target.value) || "")}>
-              <option value="">Select…</option>
-              {rosters.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-            </select>
-          </div>
+          {rosters.length > 1 && (
+            <div className="min-w-[180px]">
+              <label className="label">Roster</label>
+              <select className="input" value={rosterId} onChange={e => setRosterId(Number(e.target.value) || "")}>
+                {rosters.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+              </select>
+            </div>
+          )}
           <div className="min-w-[160px]">
             <label className="label">Date</label>
             <input className="input" type="date" value={date} onChange={e => setDate(e.target.value)} />

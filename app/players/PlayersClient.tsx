@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CLASS_COLOR } from "@/lib/specs";
 
@@ -226,7 +227,9 @@ function PlayerCard({
     <div className="panel p-4">
       <div className="flex items-baseline justify-between flex-wrap gap-2">
         <div className="flex items-baseline gap-3">
-          <h3 className="text-lg font-semibold text-vermillion-200">{player.displayName}</h3>
+          <Link href={`/players/${player.id}`} className="text-lg font-semibold text-vermillion-200 hover:text-vermillion-100 transition">
+            {player.displayName}
+          </Link>
           {player.discordHandle && <span className="text-xs text-neutral-500">{player.discordHandle}</span>}
         </div>
         {admin && (
