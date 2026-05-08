@@ -94,9 +94,6 @@ const karazhan: RaidDef = {
     { name: "Attumen the Huntsman", items: [
       { name: "Worgen Claw Necklace", wowheadId: 28509, slot: "Neck", itemLevel: 115, archetype: "jewel-melee" },
       { name: "Barbaric Legstraps", wowheadId: 28504, slot: "Legs", itemLevel: 115, archetype: "melee-leather" },
-      { name: "Helm of the Fallen Champion", wowheadId: 29760, slot: "Token (Head)", itemLevel: 120, archetype: "token-conqueror" },
-      { name: "Helm of the Fallen Defender", wowheadId: 29761, slot: "Token (Head)", itemLevel: 120, archetype: "token-protector" },
-      { name: "Helm of the Fallen Hero", wowheadId: 29759, slot: "Token (Head)", itemLevel: 120, archetype: "token-vanquisher" },
       { name: "Whirlwind Axe", wowheadId: 28438, slot: "Two-Hand Axe", itemLevel: 115, archetype: "weapon-2h-str" },
       { name: "Bladed Shoulderpads of the Merciless", wowheadId: 28506, slot: "Shoulders", itemLevel: 115, archetype: "melee-plate" },
       { name: "Gloves of Saintly Blessings", wowheadId: 28507, slot: "Hands", itemLevel: 115, archetype: "heal-cloth" },
@@ -111,9 +108,6 @@ const karazhan: RaidDef = {
       { name: "Shermanar Great-Ring", wowheadId: 28530, slot: "Finger", itemLevel: 115, archetype: "jewel-tank" },
     ]},
     { name: "Maiden of Virtue", items: [
-      { name: "Gloves of the Fallen Champion", wowheadId: 29757, slot: "Token (Hands)", itemLevel: 120, archetype: "token-conqueror" },
-      { name: "Gloves of the Fallen Defender", wowheadId: 29758, slot: "Token (Hands)", itemLevel: 120, archetype: "token-protector" },
-      { name: "Gloves of the Fallen Hero", wowheadId: 29756, slot: "Token (Hands)", itemLevel: 120, archetype: "token-vanquisher" },
       { name: "Bracers of Maliciousness", wowheadId: 28540, slot: "Wrist", itemLevel: 115, archetype: "melee-leather" },
       { name: "Mender's Heart-Ring", wowheadId: 28544, slot: "Finger", itemLevel: 115, archetype: "jewel-heal" },
       { name: "Gloves of the Virtuous", wowheadId: 28542, slot: "Hands", itemLevel: 115, archetype: "heal-cloth" },
@@ -146,18 +140,12 @@ const karazhan: RaidDef = {
       { name: "Malefic Girdle", wowheadId: 28780, slot: "Waist", itemLevel: 115, archetype: "caster-cloth" },
     ]},
     { name: "Shade of Aran", items: [
-      { name: "Leggings of the Fallen Champion", wowheadId: 29762, slot: "Token (Legs)", itemLevel: 120, archetype: "token-conqueror" },
-      { name: "Leggings of the Fallen Defender", wowheadId: 29763, slot: "Token (Legs)", itemLevel: 120, archetype: "token-protector" },
-      { name: "Leggings of the Fallen Hero", wowheadId: 29764, slot: "Token (Legs)", itemLevel: 120, archetype: "token-vanquisher" },
       { name: "Mindstorm Wristbands", wowheadId: 28799, slot: "Wrist", itemLevel: 115, archetype: "caster-cloth" },
       { name: "Iceshear Mantle", wowheadId: 28795, slot: "Shoulders", itemLevel: 115, archetype: "melee-plate" },
       { name: "Royal Cloak of the Sunstriders", wowheadId: 28797, slot: "Back", itemLevel: 115, archetype: "cloak-heal" },
       { name: "Pendant of the Violet Eye", wowheadId: 28793, slot: "Neck", itemLevel: 115, archetype: "jewel-caster" },
     ]},
     { name: "Netherspite", items: [
-      t4Legs("Leggings of the Fallen Champion", "conqueror", 29762),
-      t4Legs("Leggings of the Fallen Defender", "protector", 29763),
-      t4Legs("Leggings of the Fallen Hero", "vanquisher", 29764),
       { name: "Boots of the Incorrupt", wowheadId: 28828, slot: "Feet", itemLevel: 115, archetype: "heal-plate" },
       { name: "Shermanar Great-Ring", wowheadId: 28834, slot: "Finger", itemLevel: 115, archetype: "jewel-tank" },
     ]},
