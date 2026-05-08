@@ -237,7 +237,6 @@ const magtheridonsLair: RaidDef = {
       { name: "Aegis of the Vindicator", wowheadId: 29458, slot: "Shield", itemLevel: 128, archetype: "weapon-shield-tank" },
       { name: "Liar's Tongue Gloves", wowheadId: 28776, slot: "Hands", itemLevel: 128, archetype: "melee-leather" },
       { name: "Cloak of the Pit Stalker", wowheadId: 28777, slot: "Back", itemLevel: 128, archetype: "cloak-melee" },
-      { name: "Pit Lord's Satchel", slot: "Bag", itemLevel: 70, notes: "20-slot epic bag — wowheadId omitted; the public 34845 maps to Yarzill's Mutton in the TBC Classic tooltip DB" },
     ]},
   ],
 };
@@ -443,7 +442,6 @@ const hyjal: RaidDef = {
       { name: "Aran's Soothing Sapphire", wowheadId: 32377, slot: "Neck", itemLevel: 146, archetype: "jewel-caster" },
       { name: "Blood-Cursed Shroud", wowheadId: 32584, slot: "Back", itemLevel: 146, archetype: "cloak-caster" },
       { name: "Leggings of the Immortal Night", wowheadId: 32585, slot: "Legs", itemLevel: 146, archetype: "melee-leather" },
-      { name: "Pit Lord's Satchel", wowheadId: 32503, slot: "Trinket", itemLevel: 146, archetype: "trinket-tank" },
     ]},
   ],
 };
