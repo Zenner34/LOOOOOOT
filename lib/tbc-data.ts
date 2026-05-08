@@ -237,6 +237,7 @@ const magtheridonsLair: RaidDef = {
       { name: "Aegis of the Vindicator", wowheadId: 29458, slot: "Shield", itemLevel: 128, archetype: "weapon-shield-tank" },
       { name: "Liar's Tongue Gloves", wowheadId: 28776, slot: "Hands", itemLevel: 128, archetype: "melee-leather" },
       { name: "Cloak of the Pit Stalker", wowheadId: 28777, slot: "Back", itemLevel: 128, archetype: "cloak-melee" },
+      { name: "Pit Lord's Satchel", wowheadId: 34845, slot: "Bag", itemLevel: 70, notes: "20-slot epic bag" },
     ]},
   ],
 };
