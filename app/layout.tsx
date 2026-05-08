@@ -14,8 +14,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "meilootlol — TBC Raid Loot Tracker",
-  description: "WoW Burning Crusade guild loot tracker with rosters, splits, and BiS-weighted scoring.",
+  title: "Rising Sun Loot Log - and he say me i noob LOL",
+  description: "Rising Sun guild loot tracker for the 'and he say me i noob LOL' guild — Burning Crusade Classic raid rosters, attendance, and BiS-weighted loot scoring.",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export const viewport: Viewport = {

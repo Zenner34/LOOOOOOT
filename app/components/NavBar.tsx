@@ -50,14 +50,15 @@ export default function NavBar({ admin }: { admin: boolean }) {
       <header className="sticky top-0 z-40 backdrop-blur-md bg-[var(--bg)]/75 border-b border-white/[0.06]">
         <div className="mx-auto max-w-7xl px-4 h-14 flex items-center gap-4 md:gap-6">
           <Link href="/overview" className="flex items-center gap-2.5 group">
-            <span
-              className="grid place-items-center w-7 h-7 rounded-md bg-vermillion-600 text-gold-300 text-[12px] font-black ring-1 ring-gold-400/60 shadow-glow tracking-tighter group-hover:ring-gold-300 transition"
-              aria-hidden
-            >
-              m
-            </span>
-            <span className="font-bold text-vermillion-200 tracking-wide group-hover:text-vermillion-100 transition">
-              meilootlol
+            <img
+              src="/logo.png"
+              alt="Rising Sun"
+              width={32}
+              height={32}
+              className="w-8 h-8 rounded-md ring-1 ring-gold-400/40 shadow-glow group-hover:ring-gold-300/70 transition"
+            />
+            <span className="font-bold text-vermillion-200 tracking-wide group-hover:text-vermillion-100 transition text-base">
+              Rising Sun
             </span>
             <span className="ml-1 hidden sm:inline rounded-md bg-white/5 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">
               TBC
