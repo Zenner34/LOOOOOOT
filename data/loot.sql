@@ -10,28 +10,28 @@ INSERT INTO "Item" (name, "bossId", slot, "itemLevel")
 SELECT 'Maulgar''s Warhelm', b.id, 'Head', 128 FROM "Boss" b WHERE b.name = 'High King Maulgar'
   AND NOT EXISTS (SELECT 1 FROM "Item" WHERE name = 'Maulgar''s Warhelm');
 INSERT INTO "Item" (name, "bossId", slot, "itemLevel")
-SELECT 'Aegis of the Vindicator', b.id, 'Shield', 128 FROM "Boss" b WHERE b.name = 'High King Maulgar'
-  AND NOT EXISTS (SELECT 1 FROM "Item" WHERE name = 'Aegis of the Vindicator');
-INSERT INTO "Item" (name, "bossId", slot, "itemLevel")
-SELECT 'Liar''s Tongue Gloves', b.id, 'Hands', 128 FROM "Boss" b WHERE b.name = 'High King Maulgar'
-  AND NOT EXISTS (SELECT 1 FROM "Item" WHERE name = 'Liar''s Tongue Gloves');
-INSERT INTO "Item" (name, "bossId", slot, "itemLevel")
-SELECT 'Hammer of the Naaru', b.id, 'One-Hand Mace', 128 FROM "Boss" b WHERE b.name = 'High King Maulgar'
+SELECT 'Hammer of the Naaru', b.id, 'Two-Hand Mace', 128 FROM "Boss" b WHERE b.name = 'High King Maulgar'
   AND NOT EXISTS (SELECT 1 FROM "Item" WHERE name = 'Hammer of the Naaru');
 INSERT INTO "Item" (name, "bossId", slot, "itemLevel")
-SELECT 'Windshear Boots', b.id, 'Feet', 128 FROM "Boss" b WHERE b.name = 'High King Maulgar'
-  AND NOT EXISTS (SELECT 1 FROM "Item" WHERE name = 'Windshear Boots');
+SELECT 'Belt of Divine Inspiration', b.id, 'Waist', 128 FROM "Boss" b WHERE b.name = 'High King Maulgar'
+  AND NOT EXISTS (SELECT 1 FROM "Item" WHERE name = 'Belt of Divine Inspiration');
 INSERT INTO "Item" (name, "bossId", slot, "itemLevel")
 SELECT 'Eye of Gruul', b.id, 'Trinket', 128 FROM "Boss" b WHERE b.name = 'Gruul the Dragonkiller'
   AND NOT EXISTS (SELECT 1 FROM "Item" WHERE name = 'Eye of Gruul');
 INSERT INTO "Item" (name, "bossId", slot, "itemLevel")
-SELECT 'Magtheridon''s Head', b.id, 'Head', 128 FROM "Boss" b WHERE b.name = 'Magtheridon'
+SELECT 'Windshear Boots', b.id, 'Feet', 128 FROM "Boss" b WHERE b.name = 'Gruul the Dragonkiller'
+  AND NOT EXISTS (SELECT 1 FROM "Item" WHERE name = 'Windshear Boots');
+INSERT INTO "Item" (name, "bossId", slot, "itemLevel")
+SELECT 'Gauntlets of the Dragonslayer', b.id, 'Hands', 128 FROM "Boss" b WHERE b.name = 'Gruul the Dragonkiller'
+  AND NOT EXISTS (SELECT 1 FROM "Item" WHERE name = 'Gauntlets of the Dragonslayer');
+INSERT INTO "Item" (name, "bossId", slot, "itemLevel")
+SELECT 'Magtheridon''s Head', b.id, 'Quest', 128 FROM "Boss" b WHERE b.name = 'Magtheridon'
   AND NOT EXISTS (SELECT 1 FROM "Item" WHERE name = 'Magtheridon''s Head');
 INSERT INTO "Item" (name, "bossId", slot, "itemLevel")
 SELECT 'Eredar Wand of Obliteration', b.id, 'Wand', 128 FROM "Boss" b WHERE b.name = 'Magtheridon'
   AND NOT EXISTS (SELECT 1 FROM "Item" WHERE name = 'Eredar Wand of Obliteration');
 INSERT INTO "Item" (name, "bossId", slot, "itemLevel")
-SELECT 'Karaborian Talisman', b.id, 'Neck', 128 FROM "Boss" b WHERE b.name = 'Magtheridon'
+SELECT 'Karaborian Talisman', b.id, 'Held In Off-hand', 128 FROM "Boss" b WHERE b.name = 'Magtheridon'
   AND NOT EXISTS (SELECT 1 FROM "Item" WHERE name = 'Karaborian Talisman');
 INSERT INTO "Item" (name, "bossId", slot, "itemLevel")
 SELECT 'Terror Pit Girdle', b.id, 'Waist', 128 FROM "Boss" b WHERE b.name = 'Magtheridon'
@@ -40,11 +40,11 @@ INSERT INTO "Item" (name, "bossId", slot, "itemLevel")
 SELECT 'Girdle of the Endless Pit', b.id, 'Waist', 128 FROM "Boss" b WHERE b.name = 'Magtheridon'
   AND NOT EXISTS (SELECT 1 FROM "Item" WHERE name = 'Girdle of the Endless Pit');
 INSERT INTO "Item" (name, "bossId", slot, "itemLevel")
-SELECT 'Belt of Divine Inspiration', b.id, 'Waist', 115 FROM "Boss" b WHERE b.name = 'The Curator'
-  AND NOT EXISTS (SELECT 1 FROM "Item" WHERE name = 'Belt of Divine Inspiration');
+SELECT 'Aegis of the Vindicator', b.id, 'Shield', 128 FROM "Boss" b WHERE b.name = 'Magtheridon'
+  AND NOT EXISTS (SELECT 1 FROM "Item" WHERE name = 'Aegis of the Vindicator');
 INSERT INTO "Item" (name, "bossId", slot, "itemLevel")
-SELECT 'Gauntlets of the Dragonslayer', b.id, 'Hands', 115 FROM "Boss" b WHERE b.name = 'Nightbane'
-  AND NOT EXISTS (SELECT 1 FROM "Item" WHERE name = 'Gauntlets of the Dragonslayer');
+SELECT 'Liar''s Tongue Gloves', b.id, 'Hands', 128 FROM "Boss" b WHERE b.name = 'Magtheridon'
+  AND NOT EXISTS (SELECT 1 FROM "Item" WHERE name = 'Liar''s Tongue Gloves');
 
 -- 1. Wipe existing loot history so re-runs are idempotent.
 DELETE FROM "LootAward";

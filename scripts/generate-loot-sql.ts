@@ -42,22 +42,21 @@ const SPEC_ALIAS: Record<string, string> = {
 interface MissingItem { name: string; boss: string; slot?: string; itemLevel?: number }
 const MISSING_ITEMS: MissingItem[] = [
   // High King Maulgar
-  { name: "Maulgar's Warhelm",         boss: "High King Maulgar",      slot: "Head",     itemLevel: 128 },
-  { name: "Aegis of the Vindicator",   boss: "High King Maulgar",      slot: "Shield",   itemLevel: 128 },
-  { name: "Liar's Tongue Gloves",      boss: "High King Maulgar",      slot: "Hands",    itemLevel: 128 },
-  { name: "Hammer of the Naaru",       boss: "High King Maulgar",      slot: "One-Hand Mace", itemLevel: 128 },
-  { name: "Windshear Boots",           boss: "High King Maulgar",      slot: "Feet",     itemLevel: 128 },
+  { name: "Maulgar's Warhelm",         boss: "High King Maulgar",      slot: "Head",          itemLevel: 128 },
+  { name: "Hammer of the Naaru",       boss: "High King Maulgar",      slot: "Two-Hand Mace", itemLevel: 128 },
+  { name: "Belt of Divine Inspiration", boss: "High King Maulgar",     slot: "Waist",         itemLevel: 128 },
   // Gruul the Dragonkiller
-  { name: "Eye of Gruul",              boss: "Gruul the Dragonkiller", slot: "Trinket",  itemLevel: 128 },
+  { name: "Eye of Gruul",              boss: "Gruul the Dragonkiller", slot: "Trinket",       itemLevel: 128 },
+  { name: "Windshear Boots",           boss: "Gruul the Dragonkiller", slot: "Feet",          itemLevel: 128 },
+  { name: "Gauntlets of the Dragonslayer", boss: "Gruul the Dragonkiller", slot: "Hands",     itemLevel: 128 },
   // Magtheridon
-  { name: "Magtheridon's Head",        boss: "Magtheridon",            slot: "Head",     itemLevel: 128 },
-  { name: "Eredar Wand of Obliteration", boss: "Magtheridon",          slot: "Wand",     itemLevel: 128 },
-  { name: "Karaborian Talisman",       boss: "Magtheridon",            slot: "Neck",     itemLevel: 128 },
-  { name: "Terror Pit Girdle",         boss: "Magtheridon",            slot: "Waist",    itemLevel: 128 },
-  { name: "Girdle of the Endless Pit", boss: "Magtheridon",            slot: "Waist",    itemLevel: 128 },
-  // Karazhan
-  { name: "Belt of Divine Inspiration", boss: "The Curator",           slot: "Waist",    itemLevel: 115 },
-  { name: "Gauntlets of the Dragonslayer", boss: "Nightbane",          slot: "Hands",    itemLevel: 115 },
+  { name: "Magtheridon's Head",        boss: "Magtheridon",            slot: "Quest",         itemLevel: 128 },
+  { name: "Eredar Wand of Obliteration", boss: "Magtheridon",          slot: "Wand",          itemLevel: 128 },
+  { name: "Karaborian Talisman",       boss: "Magtheridon",            slot: "Held In Off-hand", itemLevel: 128 },
+  { name: "Terror Pit Girdle",         boss: "Magtheridon",            slot: "Waist",         itemLevel: 128 },
+  { name: "Girdle of the Endless Pit", boss: "Magtheridon",            slot: "Waist",         itemLevel: 128 },
+  { name: "Aegis of the Vindicator",   boss: "Magtheridon",            slot: "Shield",        itemLevel: 128 },
+  { name: "Liar's Tongue Gloves",      boss: "Magtheridon",            slot: "Hands",         itemLevel: 128 },
 ];
 
 const MONTHS: Record<string, string> = {

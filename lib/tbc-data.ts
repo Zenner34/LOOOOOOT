@@ -204,6 +204,9 @@ const gruulsLair: RaidDef = {
       { name: "Belt of Divine Guidance", wowheadId: 28660, slot: "Waist", itemLevel: 128, archetype: "heal-plate" },
       { name: "Brute Cloak of the Ogre-Magi", wowheadId: 28661, slot: "Back", itemLevel: 128, archetype: "cloak-caster" },
       { name: "Aldori Legacy Defender", wowheadId: 28658, slot: "Shield", itemLevel: 128, archetype: "weapon-shield-tank" },
+      { name: "Maulgar's Warhelm", wowheadId: 28801, slot: "Head", itemLevel: 128, archetype: "melee-mail" },
+      { name: "Hammer of the Naaru", wowheadId: 28800, slot: "Two-Hand Mace", itemLevel: 128, archetype: "weapon-2h-str" },
+      { name: "Belt of Divine Inspiration", slot: "Waist", itemLevel: 128, archetype: "caster-cloth" },
     ]},
     { name: "Gruul the Dragonkiller", items: [
       t4Legs("Leggings of the Fallen Champion", "conqueror", 29762),
@@ -216,6 +219,9 @@ const gruulsLair: RaidDef = {
       { name: "Maladath, Runed Blade of the Black Flight", wowheadId: 28749, slot: "One-Hand Sword", itemLevel: 128, archetype: "weapon-1h-melee" },
       { name: "Bloodmaw Magus-Blade", wowheadId: 28731, slot: "One-Hand Sword", itemLevel: 128, archetype: "weapon-1h-caster" },
       { name: "Gronn-Stitched Girdle", wowheadId: 28741, slot: "Waist", itemLevel: 128, archetype: "melee-leather" },
+      { name: "Eye of Gruul", wowheadId: 28823, slot: "Trinket", itemLevel: 128, archetype: "trinket-heal" },
+      { name: "Windshear Boots", wowheadId: 28810, slot: "Feet", itemLevel: 128, archetype: "melee-mail" },
+      { name: "Gauntlets of the Dragonslayer", wowheadId: 28827, slot: "Hands", itemLevel: 128, archetype: "melee-plate" },
     ]},
   ],
 };
@@ -235,6 +241,13 @@ const magtheridonsLair: RaidDef = {
       { name: "Crystalheart Pulse-Staff", wowheadId: 28770, slot: "Staff", itemLevel: 128, archetype: "weapon-staff-heal" },
       { name: "Helm of the Forgotten Conqueror", wowheadId: 28770, slot: "Token (Head)", itemLevel: 128, archetype: "token-conqueror", notes: "T4 alt token — listed separately on some sources" },
       { name: "Cowl of Beastly Rage", wowheadId: 28771, slot: "Head", itemLevel: 128, archetype: "ranged-hunter" },
+      { name: "Magtheridon's Head", wowheadId: 32385, slot: "Quest", itemLevel: 128, notes: "Quest token from The Fall of Magtheridon — not equippable" },
+      { name: "Eredar Wand of Obliteration", wowheadId: 28783, slot: "Wand", itemLevel: 128, archetype: "weapon-wand" },
+      { name: "Karaborian Talisman", wowheadId: 28781, slot: "Held In Off-hand", itemLevel: 128, archetype: "weapon-offhand-caster" },
+      { name: "Terror Pit Girdle", wowheadId: 28778, slot: "Waist", itemLevel: 128, archetype: "caster-mail" },
+      { name: "Girdle of the Endless Pit", wowheadId: 28779, slot: "Waist", itemLevel: 128, archetype: "melee-plate" },
+      { name: "Aegis of the Vindicator", wowheadId: 29458, slot: "Shield", itemLevel: 128, archetype: "weapon-shield-tank" },
+      { name: "Liar's Tongue Gloves", wowheadId: 28776, slot: "Hands", itemLevel: 128, archetype: "melee-leather" },
     ]},
   ],
 };
