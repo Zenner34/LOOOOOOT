@@ -2,10 +2,8 @@ Player	Class	Spec	Role	Main / Alt
 Bored	Druid	Feral (Bear)	Tank	Main
 Bungle	Druid	Restoration	Healer	Main
 Capriciousxo	Druid	Balance	Caster DPS	Main
-Creeq	Druid	Restoration	Healer	Main
 Dommymommy	Druid	Restoration	Healer	Main
 Doomqt	Druid	Balance	Caster DPS	Main
-Fishynethers	Druid	Restoration	Healer	Main
 Girthstorm	Druid	Feral (Bear)	Tank	Main
 Lebearjames	Druid	Feral (Bear)	Tank	Main
 Viffer	Druid	Restoration	Healer	Main
@@ -16,7 +14,7 @@ Throbby	Hunter	Beast Mastery	Physical DPS	Main
 Veile	Hunter	Beast Mastery	Physical DPS	Main
 Whappintime	Hunter	Beast Mastery	Physical DPS	Main
 Blargn	Mage	Frost	Caster DPS	Main
-Boredmage	Mage	Frost	Caster DPS	Main
+Creek	Mage	Arcane	Caster DPS	Main
 Hazi	Mage	Frost	Caster DPS	Main
 Koco	Mage	Frost	Caster DPS	Main
 Lilark	Mage	Frost	Caster DPS	Main
@@ -43,7 +41,6 @@ Atraeha	Shaman	Restoration	Healer	Main
 Barbatos	Shaman	Restoration	Healer	Main
 Bonclay	Shaman	Restoration	Healer	Main
 Case	Shaman	Enhancement	Physical DPS	Main
-Creek	Shaman	Restoration	Healer	Main
 Dody	Shaman	Enhancement	Physical DPS	Main
 Elektro	Shaman	Elemental	Caster DPS	Alt
 Haanii	Shaman	Elemental	Caster DPS	Main
@@ -68,12 +65,14 @@ Mhm	Warrior	Fury	Physical DPS	Main
 Pizookies	Warrior	Fury	Physical DPS	Main
 Rfx	Warrior	Fury	Physical DPS	Main
 Vspades	Warrior	Fury	Physical DPS	Main
-Bored	Druid	Balance	Caster DPS	Alt
 Bugatti	Druid	Feral (Bear)	Tank	Alt
 Massesto	Druid	Feral (Bear)	Tank	Alt
 Shawtydgaf	Druid	Feral (Bear)	Tank	Alt
 Skryt	Druid	Balance	Caster DPS	Alt
 Zephleo	Druid	Balance	Caster DPS	Alt
+Creek	Druid	Restoration	Healer	Alt
+Kalihiwai	Druid	Restoration	Healer	Alt
+Bored	Mage	Frost	Caster DPS	Alt
 Cash	Hunter	Beast Mastery	Physical DPS	Alt
 Doge	Hunter	Beast Mastery	Physical DPS	Alt
 Whappintime	Hunter	Beast Mastery	Physical DPS	Alt
