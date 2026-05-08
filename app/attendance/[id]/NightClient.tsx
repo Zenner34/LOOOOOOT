@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
 
 type Character = { id: number; name: string; class: string; spec: string; role: string };
@@ -23,16 +24,13 @@ export default function NightClient({ night, admin }: {
   for (const a of night.attendance) initial[a.characterId] = a.status;
   const [statuses, setStatuses] = useState<Record<number, string>>(initial);
   const [busy, setBusy] = useState(false);
-  const [saved, setSaved] = useState(false);
 
   const update = (id: number, status: string) => {
     setStatuses(s => ({ ...s, [id]: status }));
-    setSaved(false);
   };
 
   async function save() {
     setBusy(true);
-    setSaved(false);
     try {
       const records = Object.entries(statuses).map(([characterId, status]) => ({
         characterId: Number(characterId),
@@ -43,7 +41,8 @@ export default function NightClient({ night, admin }: {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ records }),
       });
-      if (r.ok) setSaved(true);
+      if (r.ok) toast.success("Attendance saved.");
+      else toast.error("Save failed.");
     } finally {
       setBusy(false);
     }
@@ -104,7 +103,6 @@ export default function NightClient({ night, admin }: {
       {admin && (
         <div className="flex items-center gap-3">
           <button className="btn-primary" disabled={busy} onClick={save}>Save attendance</button>
-          {saved && <span className="text-emerald-400 text-sm">Saved.</span>}
         </div>
       )}
     </div>

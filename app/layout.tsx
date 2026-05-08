@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 import { isAdmin } from "@/lib/auth";
 import NavBar from "./components/NavBar";
@@ -28,6 +29,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="font-sans">
         <NavBar admin={admin} />
         <main className="mx-auto max-w-7xl px-4 py-8">{children}</main>
+        <Toaster
+          theme="dark"
+          position="top-right"
+          richColors
+          closeButton
+          toastOptions={{
+            classNames: {
+              toast: "!bg-[var(--surface-2)] !border-white/10 !text-neutral-100",
+            },
+          }}
+        />
       </body>
     </html>
   );

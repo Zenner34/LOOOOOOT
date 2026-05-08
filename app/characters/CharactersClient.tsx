@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { CLASS_COLOR, SPECS } from "@/lib/specs";
 
 type Character = {
@@ -19,7 +20,6 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
   const [name, setName] = useState("");
   const [spec, setSpec] = useState(SPECS[0].key);
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
 
   const sorted = useMemo(
     () => [...chars].sort((a, b) => a.role.localeCompare(b.role) || a.name.localeCompare(b.name)),
@@ -28,7 +28,6 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
-    setErr(null);
     setBusy(true);
     try {
       const r = await fetch("/api/characters", {
@@ -43,8 +42,9 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
       const created = await r.json();
       setChars([...chars, created]);
       setName("");
+      toast.success(`Added ${created.name}.`);
     } catch (e: any) {
-      setErr(e.message);
+      toast.error(e.message);
     } finally {
       setBusy(false);
     }
@@ -56,7 +56,10 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
     });
-    if (!r.ok) return;
+    if (!r.ok) {
+      toast.error("Update failed.");
+      return;
+    }
     const updated = await r.json();
     setChars(chars.map(c => (c.id === id ? updated : c)));
   }
@@ -64,7 +67,13 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
   async function remove(id: number) {
     if (!confirm("Delete this character? Their loot history stays but is detached.")) return;
     const r = await fetch(`/api/characters/${id}`, { method: "DELETE" });
-    if (r.ok) setChars(chars.filter(c => c.id !== id));
+    if (r.ok) {
+      const removed = chars.find(c => c.id === id);
+      setChars(chars.filter(c => c.id !== id));
+      if (removed) toast.success(`Deleted ${removed.name}.`);
+    } else {
+      toast.error("Delete failed.");
+    }
   }
 
   return (
@@ -89,7 +98,6 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
             </select>
           </div>
           <button className="btn-primary" disabled={busy}>Add</button>
-          {err && <p className="text-sm text-red-400">{err}</p>}
         </form>
       )}
 

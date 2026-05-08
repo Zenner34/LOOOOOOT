@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import LogoutButton from "./LogoutButton";
 
 const NAV = [
@@ -16,53 +17,136 @@ const NAV = [
 
 export default function NavBar({ admin }: { admin: boolean }) {
   const pathname = usePathname();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   const isActive = (href: string) =>
     href === "/overview" ? pathname === href : pathname.startsWith(href);
 
+  // Close drawer on route change.
+  useEffect(() => { setDrawerOpen(false); }, [pathname]);
+
+  // Close on Escape.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setDrawerOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Lock body scroll while drawer is open.
+  useEffect(() => {
+    if (drawerOpen) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = prev; };
+    }
+  }, [drawerOpen]);
+
   return (
-    <header className="sticky top-0 z-40 backdrop-blur-md bg-[var(--bg)]/75 border-b border-white/[0.06]">
-      <div className="mx-auto max-w-7xl px-4 h-14 flex items-center gap-6">
-        <Link href="/overview" className="flex items-center gap-2.5 group">
-          <span
-            className="grid place-items-center w-7 h-7 rounded-md bg-vermillion-600 text-gold-300 text-[12px] font-black ring-1 ring-gold-400/60 shadow-glow tracking-tighter group-hover:ring-gold-300 transition"
-            aria-hidden
-          >
-            m
-          </span>
-          <span className="font-bold text-vermillion-200 tracking-wide group-hover:text-vermillion-100 transition">
-            meilootlol
-          </span>
-          <span className="ml-1 hidden sm:inline rounded-md bg-white/5 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">
-            TBC
-          </span>
-        </Link>
-
-        <nav className="flex gap-0.5 flex-1 overflow-x-auto">
-          {NAV.map(item => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={isActive(item.href) ? "nav-link-active" : "nav-link"}
+    <>
+      <header className="sticky top-0 z-40 backdrop-blur-md bg-[var(--bg)]/75 border-b border-white/[0.06]">
+        <div className="mx-auto max-w-7xl px-4 h-14 flex items-center gap-4 md:gap-6">
+          <Link href="/overview" className="flex items-center gap-2.5 group">
+            <span
+              className="grid place-items-center w-7 h-7 rounded-md bg-vermillion-600 text-gold-300 text-[12px] font-black ring-1 ring-gold-400/60 shadow-glow tracking-tighter group-hover:ring-gold-300 transition"
+              aria-hidden
             >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+              m
+            </span>
+            <span className="font-bold text-vermillion-200 tracking-wide group-hover:text-vermillion-100 transition">
+              meilootlol
+            </span>
+            <span className="ml-1 hidden sm:inline rounded-md bg-white/5 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">
+              TBC
+            </span>
+          </Link>
 
-        <div className="text-sm">
-          {admin ? (
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
-                admin
-              </span>
-              <LogoutButton />
-            </div>
-          ) : (
-            <Link href="/login" className="btn">Log in</Link>
-          )}
+          {/* Desktop nav */}
+          <nav className="hidden md:flex gap-0.5 flex-1 overflow-x-auto">
+            {NAV.map(item => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={isActive(item.href) ? "nav-link-active" : "nav-link"}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* spacer for mobile so the right-side controls hug the right edge */}
+          <div className="flex-1 md:hidden" />
+
+          <div className="text-sm flex items-center gap-2">
+            {admin ? (
+              <div className="flex items-center gap-2">
+                <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+                  admin
+                </span>
+                <LogoutButton />
+              </div>
+            ) : (
+              <Link href="/login" className="btn">Log in</Link>
+            )}
+
+            {/* Mobile hamburger */}
+            <button
+              type="button"
+              onClick={() => setDrawerOpen(true)}
+              aria-label="Open menu"
+              className="md:hidden btn !p-2"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Mobile drawer */}
+      {drawerOpen && (
+        <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true">
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in"
+            onClick={() => setDrawerOpen(false)}
+          />
+          <aside className="absolute right-0 top-0 h-full w-[80vw] max-w-xs bg-[var(--surface)] border-l border-white/10 shadow-2xl animate-fade-in">
+            <div className="px-4 h-14 flex items-center justify-between border-b border-white/5">
+              <span className="font-bold text-vermillion-200">Menu</span>
+              <button
+                onClick={() => setDrawerOpen(false)}
+                className="btn-ghost btn-xs"
+                aria-label="Close menu"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <nav className="px-2 py-3 flex flex-col gap-1">
+              {NAV.map(item => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`px-3 py-3 rounded-lg text-base font-medium transition ${
+                    isActive(item.href)
+                      ? "bg-vermillion-500/10 text-vermillion-200"
+                      : "text-neutral-200 hover:bg-white/5"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

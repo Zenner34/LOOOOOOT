@@ -3,6 +3,7 @@
 import { Fragment, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
 
 type Char = {
@@ -37,7 +38,6 @@ export default function PlayersClient({
   const [name, setName] = useState("");
   const [discord, setDiscord] = useState("");
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
 
   const filteredOrphans = useMemo(() => orphans, [orphans]);
 
@@ -45,7 +45,6 @@ export default function PlayersClient({
     e.preventDefault();
     if (!name.trim()) return;
     setBusy(true);
-    setErr(null);
     try {
       const r = await fetch("/api/players", {
         method: "POST",
@@ -60,8 +59,9 @@ export default function PlayersClient({
       setPlayers([...players, { ...created, characters: created.characters ?? [] }]);
       setName("");
       setDiscord("");
+      toast.success(`Added ${created.displayName}.`);
     } catch (e: any) {
-      setErr(e.message);
+      toast.error(e.message);
     } finally {
       setBusy(false);
     }
@@ -113,11 +113,17 @@ export default function PlayersClient({
   async function removePlayer(id: number) {
     if (!confirm("Remove this player? Their characters become unbound (loot history preserved).")) return;
     const r = await fetch(`/api/players/${id}`, { method: "DELETE" });
-    if (!r.ok) return;
+    if (!r.ok) {
+      toast.error("Delete failed.");
+      return;
+    }
     const removed = players.find(p => p.id === id);
     setPlayers(players.filter(p => p.id !== id));
-    if (removed) setOrphans([...orphans, ...removed.characters.map(c => ({ ...c, isMain: false }))]
-      .sort((a, b) => a.name.localeCompare(b.name)));
+    if (removed) {
+      setOrphans([...orphans, ...removed.characters.map(c => ({ ...c, isMain: false }))]
+        .sort((a, b) => a.name.localeCompare(b.name)));
+      toast.success(`Removed ${removed.displayName}.`);
+    }
   }
 
   return (
@@ -158,7 +164,6 @@ export default function PlayersClient({
             />
           </div>
           <button className="btn-primary" disabled={busy || !name.trim()}>Add player</button>
-          {err && <p className="text-sm text-red-400 w-full">{err}</p>}
         </form>
       )}
 

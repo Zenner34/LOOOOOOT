@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
 import { WowheadLink } from "@/lib/wowhead";
 
@@ -33,7 +34,6 @@ export default function AssignClient({ phases, rosters, recent, admin }: {
   const [expandedRaids, setExpandedRaids] = useState<Record<number, boolean>>({});
   const [selectedBossId, setSelectedBossId] = useState<number | null>(null);
   const [awards, setAwards] = useState<Award[]>(recent);
-  const [flash, setFlash] = useState<string | null>(null);
 
   useEffect(() => {
     const r = rosters.find(x => x.id === rosterId);
@@ -56,19 +56,22 @@ export default function AssignClient({ phases, rosters, recent, admin }: {
       body: JSON.stringify({ itemId, characterId, rosterId, raidNightId: raidNightId || null }),
     });
     if (!r.ok) {
-      setFlash("Failed to assign.");
+      toast.error("Failed to assign.");
       return;
     }
     const created: Award = await r.json();
     setAwards([created, ...awards].slice(0, 20));
-    setFlash(`Assigned ${created.item.name} → ${created.character.name}.`);
+    toast.success(`Awarded ${created.item.name} → ${created.character.name}`);
   }
 
   async function undo(id: number) {
+    const target = awards.find(a => a.id === id);
     const r = await fetch(`/api/loot/${id}`, { method: "DELETE" });
     if (r.ok) {
       setAwards(awards.filter(a => a.id !== id));
-      setFlash("Undid last award.");
+      toast.success(target ? `Undid ${target.item.name}.` : "Undid last award.");
+    } else {
+      toast.error("Undo failed.");
     }
   }
 
@@ -114,7 +117,6 @@ export default function AssignClient({ phases, rosters, recent, admin }: {
         {!activeRoster?.raidNights.length && (
           <Link href="/attendance" className="btn-ghost btn-xs text-vermillion-300">+ Create a raid night</Link>
         )}
-        {flash && <span className="text-sm text-emerald-400">{flash}</span>}
         <span className="ml-auto text-xs text-neutral-500">
           Hotkey: <kbd className="bg-white/10 border border-white/15 rounded px-1">u</kbd> to undo last award
         </span>
