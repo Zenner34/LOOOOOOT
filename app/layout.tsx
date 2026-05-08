@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import "./globals.css";
 import { isAdmin } from "@/lib/auth";
 import NavBar from "./components/NavBar";
+import CommandPalette from "./components/CommandPalette";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,6 +30,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="font-sans">
         <NavBar admin={admin} />
         <main className="mx-auto max-w-7xl px-4 py-8">{children}</main>
+        <CommandPalette />
         <Toaster
           theme="dark"
           position="top-right"
