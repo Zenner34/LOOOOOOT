@@ -7,6 +7,7 @@ import { CLASS_COLOR, BUCKETS, BUCKET_LABEL, bucketForSpec, type Bucket } from "
 import { weightedScore, itemCount, weightFor, type ScoringAward } from "@/lib/scoring";
 import { WowheadLink } from "@/lib/wowhead";
 import { ClassIcon } from "@/app/components/ClassIcon";
+import { Select } from "@/app/components/Select";
 
 type Character = {
   id: number;
@@ -237,37 +238,41 @@ export default function OverviewClient({
       </div>
 
       <div className="flex flex-wrap items-end gap-3">
-        <div>
+        <div className="min-w-[200px]">
           <label className="label">Roster</label>
-          <select
-            className="input"
+          <Select
             value={String(selectedRosterId)}
-            onChange={e => setRoster(e.target.value)}
-          >
-            {rosters.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-            <option value="all">All rosters (merged)</option>
-          </select>
+            onValueChange={setRoster}
+            options={[
+              ...rosters.map(r => ({ value: String(r.id), label: r.name })),
+              { value: "all", label: "All rosters (merged)" },
+            ]}
+          />
         </div>
-        <div>
+        <div className="min-w-[220px]">
           <label className="label">Group by</label>
-          <select
-            className="input"
+          <Select
             value={groupBy}
-            onChange={e => setGroupBy(e.target.value as any)}
-          >
-            <option value="player">Player (mains + alts)</option>
-            <option value="character">Character (one row each)</option>
-          </select>
+            onValueChange={v => setGroupBy(v as any)}
+            options={[
+              { value: "player", label: "Player (mains + alts)" },
+              { value: "character", label: "Character (one row each)" },
+            ]}
+          />
         </div>
         <div className="flex-1" />
-        <div>
+        <div className="min-w-[200px]">
           <label className="label">Sort</label>
-          <select className="input" value={sort} onChange={e => setSort(e.target.value as any)}>
-            <option value="lastLoot">Last loot (oldest first)</option>
-            <option value="score">Weighted score</option>
-            <option value="count">Items received</option>
-            <option value="name">Name</option>
-          </select>
+          <Select
+            value={sort}
+            onValueChange={v => setSort(v as any)}
+            options={[
+              { value: "lastLoot", label: "Last loot (oldest first)" },
+              { value: "score",    label: "Weighted score" },
+              { value: "count",    label: "Items received" },
+              { value: "name",     label: "Name" },
+            ]}
+          />
         </div>
       </div>
 

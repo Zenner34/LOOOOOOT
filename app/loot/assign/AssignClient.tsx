@@ -5,6 +5,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
 import { WowheadLink } from "@/lib/wowhead";
+import { Select } from "@/app/components/Select";
 
 type Weight = { spec: string; weight: number };
 type Item = { id: number; name: string; slot: string | null; itemLevel: number | null; wowheadId: number | null; weights: Weight[] };
@@ -100,19 +101,27 @@ export default function AssignClient({ phases, rosters, recent, admin }: {
         {rosters.length > 1 && (
           <div className="min-w-[180px]">
             <label className="label">Roster</label>
-            <select className="input" value={rosterId} onChange={e => setRosterId(Number(e.target.value) || "")}>
-              {rosters.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-            </select>
+            <Select
+              value={String(rosterId)}
+              onValueChange={v => setRosterId(Number(v) || "")}
+              options={rosters.map(r => ({ value: String(r.id), label: r.name }))}
+            />
           </div>
         )}
         <div className="min-w-[200px]">
           <label className="label">Raid night</label>
-          <select className="input" value={raidNightId} onChange={e => setRaidNightId(Number(e.target.value) || "")}>
-            <option value="">— none —</option>
-            {activeRoster?.raidNights.map(n => (
-              <option key={n.id} value={n.id}>{new Date(n.date).toISOString().slice(0, 10)}</option>
-            ))}
-          </select>
+          <Select
+            value={String(raidNightId || "")}
+            onValueChange={v => setRaidNightId(Number(v) || "")}
+            placeholder="— none —"
+            options={[
+              { value: "", label: "— none —" },
+              ...(activeRoster?.raidNights ?? []).map(n => ({
+                value: String(n.id),
+                label: new Date(n.date).toISOString().slice(0, 10),
+              })),
+            ]}
+          />
         </div>
         {!activeRoster?.raidNights.length && (
           <Link href="/attendance" className="btn-ghost btn-xs text-vermillion-300">+ Create a raid night</Link>
@@ -222,15 +231,31 @@ function ItemRow({ item, roster, onAssign }: { item: Item; roster?: Roster; onAs
       <td><WowheadLink name={item.name} wowheadId={item.wowheadId} /></td>
       <td className="text-neutral-400 text-xs">{item.slot ?? ""}</td>
       <td>
-        <div className="flex gap-1">
-          <select className="input !py-0.5" value={sel} onChange={e => setSel(Number(e.target.value) || "")}>
-            <option value="">Pick recipient…</option>
-            {ranked.map(({ m, w }) => (
-              <option key={m.characterId} value={m.characterId}>
-                {m.character.name} ({m.character.spec}){w > 0 ? ` · ${w.toFixed(2)}` : ""}
-              </option>
-            ))}
-          </select>
+        <div className="flex gap-1.5 items-center">
+          <Select
+            size="sm"
+            value={String(sel || "")}
+            onValueChange={v => setSel(Number(v) || "")}
+            placeholder="Pick recipient…"
+            triggerClassName="min-w-[260px]"
+            options={[
+              { value: "", label: <span className="text-neutral-500">Pick recipient…</span> },
+              ...ranked.map(({ m, w }) => ({
+                value: String(m.characterId),
+                label: (
+                  <span className="inline-flex items-center gap-2">
+                    <span style={{ color: CLASS_COLOR[m.character.class] ?? "#fff" }} className="font-medium">
+                      {m.character.name}
+                    </span>
+                    <span className="text-neutral-500 text-xs">{m.character.spec}</span>
+                    {w > 0 && (
+                      <span className="ml-auto text-gold-200 tabular-nums text-xs">{w.toFixed(2)}</span>
+                    )}
+                  </span>
+                ),
+              })),
+            ]}
+          />
           <button
             className="btn-primary !py-0.5"
             disabled={!sel}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Select } from "@/app/components/Select";
 
 type Roster = { id: number; name: string };
 type Night = {
@@ -60,9 +61,11 @@ export default function AttendanceIndexClient({
           {rosters.length > 1 && (
             <div className="min-w-[180px]">
               <label className="label">Roster</label>
-              <select className="input" value={rosterId} onChange={e => setRosterId(Number(e.target.value) || "")}>
-                {rosters.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-              </select>
+              <Select
+                value={String(rosterId)}
+                onValueChange={v => setRosterId(Number(v) || "")}
+                options={rosters.map(r => ({ value: String(r.id), label: r.name }))}
+              />
             </div>
           )}
           <div className="min-w-[160px]">

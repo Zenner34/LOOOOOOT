@@ -67,13 +67,8 @@ body {
     @apply rounded-md px-2 py-1 text-xs;
   }
 
-  .input, select.input, textarea.input {
+  .input, textarea.input {
     @apply w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-neutral-100 outline-none transition placeholder:text-neutral-500 focus:border-vermillion-400/60 focus:ring-2 focus:ring-vermillion-500/20;
-  }
-  select.input {
-    @apply appearance-none bg-no-repeat pr-9;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
-    background-position: right 0.75rem center;
   }
 
   .label {

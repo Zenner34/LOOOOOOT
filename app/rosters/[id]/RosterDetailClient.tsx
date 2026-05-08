@@ -3,7 +3,9 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
+import { Select } from "@/app/components/Select";
 
 type Roster = { id: number; name: string; description: string | null };
 type Character = { id: number; name: string; class: string; spec: string; role: string; active: boolean };
@@ -19,7 +21,6 @@ export default function RosterDetailClient(props: {
   const [members, setMembers] = useState(props.initialMembers);
   const [pickId, setPickId] = useState<number | "">("");
   const [pickRole, setPickRole] = useState("main");
-  const [err, setErr] = useState<string | null>(null);
 
   const inRoster = useMemo(() => new Set(members.map(m => m.characterId)), [members]);
   const available = props.allCharacters.filter(c => !inRoster.has(c.id));
@@ -32,7 +33,6 @@ export default function RosterDetailClient(props: {
 
   async function addMember(e: React.FormEvent) {
     e.preventDefault();
-    setErr(null);
     if (!pickId) return;
     const r = await fetch(`/api/rosters/${props.roster.id}/members`, {
       method: "POST",
@@ -41,12 +41,13 @@ export default function RosterDetailClient(props: {
     });
     if (!r.ok) {
       const j = await r.json().catch(() => ({}));
-      setErr(j.error ?? "failed");
+      toast.error(j.error ?? "Failed to add member.");
       return;
     }
     const created = await r.json();
     setMembers([...members, created]);
     setPickId("");
+    toast.success(`Added ${created.character?.name ?? "character"}.`);
   }
 
   async function changeRole(characterId: number, memberRole: string) {
@@ -91,23 +92,34 @@ export default function RosterDetailClient(props: {
         <form onSubmit={addMember} className="panel p-4 flex flex-wrap items-end gap-3">
           <div className="min-w-[220px] flex-1">
             <label className="label">Add character</label>
-            <select className="input" value={pickId} onChange={e => setPickId(Number(e.target.value) || "")}>
-              <option value="">Select a character…</option>
-              {available.map(c => (
-                <option key={c.id} value={c.id}>{c.name} ({c.spec})</option>
-              ))}
-            </select>
+            <Select
+              value={String(pickId || "")}
+              onValueChange={v => setPickId(Number(v) || "")}
+              placeholder="Select a character…"
+              options={available.map(c => ({
+                value: String(c.id),
+                label: (
+                  <span className="inline-flex items-center gap-2">
+                    <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</span>
+                    <span className="text-neutral-500 text-xs">{c.spec}</span>
+                  </span>
+                ),
+              }))}
+            />
           </div>
-          <div className="min-w-[120px]">
+          <div className="min-w-[140px]">
             <label className="label">Slot</label>
-            <select className="input" value={pickRole} onChange={e => setPickRole(e.target.value)}>
-              <option value="main">main</option>
-              <option value="bench">bench</option>
-              <option value="trial">trial</option>
-            </select>
+            <Select
+              value={pickRole}
+              onValueChange={setPickRole}
+              options={[
+                { value: "main",  label: "main" },
+                { value: "bench", label: "bench" },
+                { value: "trial", label: "trial" },
+              ]}
+            />
           </div>
           <button className="btn-primary" disabled={!pickId}>Add</button>
-          {err && <p className="text-sm text-red-400">{err}</p>}
         </form>
       )}
 
@@ -127,15 +139,17 @@ export default function RosterDetailClient(props: {
                   <span className="text-xs text-neutral-500 truncate">{m.character.spec}</span>
                   {props.admin ? (
                     <>
-                      <select
-                        className="input !w-20 !py-0.5"
+                      <Select
+                        size="sm"
                         value={m.memberRole}
-                        onChange={e => changeRole(m.characterId, e.target.value)}
-                      >
-                        <option value="main">main</option>
-                        <option value="bench">bench</option>
-                        <option value="trial">trial</option>
-                      </select>
+                        onValueChange={v => changeRole(m.characterId, v)}
+                        triggerClassName="!w-24"
+                        options={[
+                          { value: "main",  label: "main" },
+                          { value: "bench", label: "bench" },
+                          { value: "trial", label: "trial" },
+                        ]}
+                      />
                       <button className="text-xs text-red-400 hover:text-red-300" onClick={() => removeMember(m.characterId)}>×</button>
                     </>
                   ) : <span className="text-xs text-neutral-500">{m.memberRole}</span>}

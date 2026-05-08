@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { WowheadItemCell } from "@/lib/wowhead";
 import { iconFor } from "@/lib/wowhead-lookup";
+import { Select } from "@/app/components/Select";
 
 type Boss = { id: number; name: string };
 type Raid = { id: number; name: string; shortName: string; bosses: Boss[] };
@@ -83,19 +84,14 @@ export default function LootBrowser({
         <aside className="col-span-12 lg:col-span-4 panel p-3 max-h-[80vh] overflow-auto space-y-3">
           <div>
             <label className="label">Phase filter</label>
-            <select
-              className="input"
+            <Select
               value={String(selectedPhaseFilter)}
-              onChange={e => {
-                const v = e.target.value;
-                go({ phaseFilter: v === "all" ? "all" : Number(v) });
-              }}
-            >
-              <option value="all">All Phases</option>
-              {phases.map(p => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
+              onValueChange={v => go({ phaseFilter: v === "all" ? "all" : Number(v) })}
+              options={[
+                { value: "all", label: "All Phases" },
+                ...phases.map(p => ({ value: String(p.id), label: p.name })),
+              ]}
+            />
           </div>
 
           <div className="-mx-1 pt-1">

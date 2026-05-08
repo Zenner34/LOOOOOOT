@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CLASS_COLOR, SPECS } from "@/lib/specs";
 import { ClassIcon } from "@/app/components/ClassIcon";
+import { Select } from "@/app/components/Select";
 
 type Character = {
   id: number;
@@ -17,6 +18,21 @@ type Character = {
 
 type SortKey = "name" | "class" | "role" | "active";
 type SortDir = "asc" | "desc";
+
+// SPECS grouped by class for the spec dropdown — far easier to scan
+// than a flat 28-row list.
+const specGroups = (() => {
+  const byClass = new Map<string, typeof SPECS>();
+  for (const s of SPECS) {
+    const arr = byClass.get(s.class) ?? [];
+    arr.push(s);
+    byClass.set(s.class, arr);
+  }
+  return Array.from(byClass.entries()).map(([cls, specs]) => ({
+    label: cls,
+    options: specs.map(s => ({ value: s.key, label: s.key.replace(`${cls} `, "").replace(` ${cls}`, "") })),
+  }));
+})();
 
 export default function CharactersClient({ initial, admin }: { initial: Character[]; admin: boolean }) {
   const router = useRouter();
@@ -119,13 +135,13 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
             <label className="label">Name</label>
             <input className="input" value={name} onChange={e => setName(e.target.value)} required />
           </div>
-          <div className="min-w-[220px]">
+          <div className="min-w-[260px]">
             <label className="label">Spec</label>
-            <select className="input" value={spec} onChange={e => setSpec(e.target.value)}>
-              {SPECS.map(s => (
-                <option key={s.key} value={s.key}>{s.key}</option>
-              ))}
-            </select>
+            <Select
+              value={spec}
+              onValueChange={setSpec}
+              groups={specGroups}
+            />
           </div>
           <button className="btn-primary" disabled={busy || !name.trim()}>Add</button>
         </form>
@@ -179,15 +195,17 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
                 <td className="text-neutral-300 text-sm">{c.spec}</td>
                 <td>
                   {admin ? (
-                    <select
-                      className="input w-28"
+                    <Select
+                      size="sm"
                       value={c.role}
-                      onChange={e => patch(c.id, { role: e.target.value })}
-                    >
-                      <option value="tank">tank</option>
-                      <option value="heal">heal</option>
-                      <option value="dps">dps</option>
-                    </select>
+                      onValueChange={v => patch(c.id, { role: v })}
+                      triggerClassName="!w-24"
+                      options={[
+                        { value: "tank", label: "tank" },
+                        { value: "heal", label: "heal" },
+                        { value: "dps",  label: "dps" },
+                      ]}
+                    />
                   ) : <span className="uppercase text-xs text-neutral-400">{c.role}</span>}
                 </td>
                 <td>
