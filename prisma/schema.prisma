@@ -81,7 +81,7 @@ model Player {
 
 model Character {
   id          Int            @id @default(autoincrement())
-  name        String         @unique
+  name        String
   class       String
   spec        String
   role        String // 'tank' | 'heal' | 'dps'
