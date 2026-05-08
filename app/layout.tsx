@@ -5,7 +5,7 @@ import { isAdmin } from "@/lib/auth";
 import LogoutButton from "./components/LogoutButton";
 
 export const metadata: Metadata = {
-  title: "LOOOOOOT — TBC Raid Loot Tracker",
+  title: "meilootlol — TBC Raid Loot Tracker",
   description: "WoW Burning Crusade guild loot tracker with rosters, splits, and BiS-weighted scoring.",
 };
 
@@ -32,7 +32,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <header className="border-b border-neutral-800 bg-neutral-950">
           <div className="mx-auto max-w-7xl px-4 py-3 flex items-center gap-6">
             <Link href="/overview" className="font-bold text-amber-400 text-lg tracking-wider">
-              LOOOOOOT
+              meilootlol
             </Link>
             <nav className="flex gap-1 flex-1">
               {NAV.map(item => (
