@@ -39,7 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         `}} />
         <script src="https://wow.zamimg.com/js/tooltips.js" defer></script>
       </head>
-      <body className="font-sans pb-[calc(64px+env(safe-area-inset-bottom,0px))] md:pb-0">
+      <body className="font-sans">
         <NavBar admin={admin} />
         <main className="mx-auto max-w-7xl px-4 py-6 md:py-8">{children}</main>
         <MobileTabBar admin={admin} />

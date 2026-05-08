@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Reserve space at the bottom of the page on mobile so the fixed
+   MobileTabBar (56px tall + iOS safe-area inset) never overlaps the
+   last row of content. The desktop nav is sticky, so we drop the pad
+   at md+. The 24px of slack above the bar accounts for shadow + breathing. */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 24px);
+  }
+}
+
 :root {
   color-scheme: dark;
   --bg: #08090b;
