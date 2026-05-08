@@ -49,7 +49,7 @@ export default function NavBar({ admin }: { admin: boolean }) {
     <>
       <header className="sticky top-0 z-40 backdrop-blur-md bg-[var(--bg)]/75 border-b border-white/[0.06]">
         <div className="mx-auto max-w-7xl px-4 h-14 flex items-center gap-4 md:gap-6">
-          <Link href="/overview" className="flex items-center gap-2.5 group">
+          <Link href="/" className="flex items-center gap-2.5 group">
             <img
               src="/logo.png"
               alt="Rising Sun"
