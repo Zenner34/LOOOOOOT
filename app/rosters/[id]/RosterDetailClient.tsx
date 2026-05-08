@@ -9,7 +9,7 @@ import { Select } from "@/app/components/Select";
 import { ClassIcon } from "@/app/components/ClassIcon";
 
 type Roster = { id: number; name: string; description: string | null };
-type Character = { id: number; name: string; class: string; spec: string; role: string; active: boolean };
+type Character = { id: number; name: string; class: string; spec: string; role: string; active: boolean; isMain: boolean };
 type Member = { id: number; rosterId: number; characterId: number; memberRole: string; character: Character };
 
 export default function RosterDetailClient(props: {
@@ -21,7 +21,6 @@ export default function RosterDetailClient(props: {
   const router = useRouter();
   const [members, setMembers] = useState(props.initialMembers);
   const [pickId, setPickId] = useState<number | "">("");
-  const [pickRole, setPickRole] = useState("main");
 
   const inRoster = useMemo(() => new Set(members.map(m => m.characterId)), [members]);
   const available = props.allCharacters.filter(c => !inRoster.has(c.id));
@@ -29,6 +28,12 @@ export default function RosterDetailClient(props: {
   const grouped = useMemo(() => {
     const by: Record<string, Member[]> = { tank: [], heal: [], dps: [] };
     for (const m of members) (by[m.character.role] ??= []).push(m);
+    for (const role of Object.keys(by)) {
+      by[role].sort((a, b) =>
+        (Number(b.character.isMain) - Number(a.character.isMain)) ||
+        a.character.name.localeCompare(b.character.name),
+      );
+    }
     return by;
   }, [members]);
 
@@ -38,7 +43,7 @@ export default function RosterDetailClient(props: {
     const r = await fetch(`/api/rosters/${props.roster.id}/members`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ characterId: pickId, memberRole: pickRole }),
+      body: JSON.stringify({ characterId: pickId }),
     });
     if (!r.ok) {
       const j = await r.json().catch(() => ({}));
@@ -51,15 +56,18 @@ export default function RosterDetailClient(props: {
     toast.success(`Added ${created.character?.name ?? "character"}.`);
   }
 
-  async function changeRole(characterId: number, memberRole: string) {
-    const r = await fetch(`/api/rosters/${props.roster.id}/members`, {
+  async function setMainAlt(characterId: number, isMain: boolean) {
+    const r = await fetch(`/api/characters/${characterId}`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ characterId, memberRole }),
+      body: JSON.stringify({ isMain }),
     });
     if (!r.ok) return;
-    const updated = await r.json();
-    setMembers(members.map(m => (m.characterId === characterId ? updated : m)));
+    setMembers(members.map(m =>
+      m.characterId === characterId
+        ? { ...m, character: { ...m.character, isMain } }
+        : m,
+    ));
   }
 
   async function removeMember(characterId: number) {
@@ -93,7 +101,7 @@ export default function RosterDetailClient(props: {
       </div>
 
       {props.admin && (
-        <form onSubmit={addMember} className="panel p-4 grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] items-end gap-3">
+        <form onSubmit={addMember} className="panel p-4 grid grid-cols-1 sm:grid-cols-[1fr_auto] items-end gap-3">
           <div className="min-w-0">
             <label className="label">Add character</label>
             <Select
@@ -110,18 +118,6 @@ export default function RosterDetailClient(props: {
                   </span>
                 ),
               }))}
-            />
-          </div>
-          <div className="sm:min-w-[140px]">
-            <label className="label">Slot</label>
-            <Select
-              value={pickRole}
-              onValueChange={setPickRole}
-              options={[
-                { value: "main",  label: "main" },
-                { value: "bench", label: "bench" },
-                { value: "trial", label: "trial" },
-              ]}
             />
           </div>
           <button className="btn-primary" disabled={!pickId}>Add</button>
@@ -147,13 +143,12 @@ export default function RosterDetailClient(props: {
                     <>
                       <Select
                         size="sm"
-                        value={m.memberRole}
-                        onValueChange={v => changeRole(m.characterId, v)}
-                        triggerClassName="!w-[68px]"
+                        value={m.character.isMain ? "main" : "alt"}
+                        onValueChange={v => setMainAlt(m.characterId, v === "main")}
+                        triggerClassName="!w-[60px]"
                         options={[
-                          { value: "main",  label: "main" },
-                          { value: "bench", label: "bench" },
-                          { value: "trial", label: "trial" },
+                          { value: "main", label: "main" },
+                          { value: "alt",  label: "alt" },
                         ]}
                       />
                       <button
@@ -162,7 +157,13 @@ export default function RosterDetailClient(props: {
                         aria-label={`Remove ${m.character.name}`}
                       >×</button>
                     </>
-                  ) : <span className="text-xs text-neutral-500">{m.memberRole}</span>}
+                  ) : (
+                    m.character.isMain ? (
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-gold-200">★ main</span>
+                    ) : (
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500">alt</span>
+                    )
+                  )}
                 </li>
               ))}
               {(grouped[role]?.length ?? 0) === 0 && <li className="text-xs text-neutral-600 italic px-1">none</li>}

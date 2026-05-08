@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     return NextResponse.json(created, { status: 201 });
   } catch (e: any) {
     if (e?.code === "P2002") {
-      return NextResponse.json({ error: "name already exists" }, { status: 409 });
+      return NextResponse.json({ error: "duplicate" }, { status: 409 });
     }
     throw e;
   }

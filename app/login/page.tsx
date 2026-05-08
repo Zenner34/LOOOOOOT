@@ -39,7 +39,7 @@ export default function LoginPage() {
     <div className="max-w-sm mx-auto mt-10 sm:mt-16 animate-fade-in">
       <div className="flex flex-col items-center gap-3 mb-6">
         <img
-          src="/logo.PNG"
+          src="/logo.png"
           alt="Rising Sun"
           width={64}
           height={64}

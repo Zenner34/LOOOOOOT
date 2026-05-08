@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
+import { ClassIcon } from "@/app/components/ClassIcon";
 
 type Char = {
   id: number;
@@ -200,6 +201,7 @@ export default function PlayersClient({
                   key={c.id}
                   className="inline-flex items-center gap-1.5 rounded-md bg-white/5 px-2 py-1 text-xs"
                 >
+                  <ClassIcon cls={c.class} size={14} />
                   <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</span>
                   <span className="text-neutral-500">· {c.spec}</span>
                 </span>
@@ -227,11 +229,13 @@ function PlayerCard({
   onRemove: (id: number) => Promise<void>;
 }) {
   const [adding, setAdding] = useState(false);
+  const mainChar = player.characters.find(c => c.isMain) ?? player.characters[0];
 
   return (
     <div className="panel p-4">
       <div className="flex items-baseline justify-between flex-wrap gap-2">
-        <div className="flex items-baseline gap-3">
+        <div className="flex items-center gap-3">
+          {mainChar && <ClassIcon cls={mainChar.class} size={20} />}
           <Link href={`/players/${player.id}`} className="text-lg font-semibold text-vermillion-200 hover:text-vermillion-100 transition">
             {player.displayName}
           </Link>
@@ -277,6 +281,7 @@ function PlayerCard({
               onClick={async () => { await onBind(player.id, o.id, player.characters.length === 0); setAdding(false); }}
               className="chip hover:bg-vermillion-500/10 hover:border-vermillion-500/40"
             >
+              <ClassIcon cls={o.class} size={14} />
               <span style={{ color: CLASS_COLOR[o.class] ?? "#fff" }}>{o.name}</span>
               <span className="text-neutral-500">· {o.spec}</span>
             </button>
@@ -303,6 +308,7 @@ function CharacterChip({
       }`}
     >
       {c.isMain && <span title="main" className="text-gold-300 text-[10px] leading-none">★</span>}
+      <ClassIcon cls={c.class} size={14} />
       <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }} className="font-medium">{c.name}</span>
       <span className="text-neutral-500">· {c.spec}</span>
       {admin && (

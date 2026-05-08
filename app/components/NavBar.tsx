@@ -51,7 +51,7 @@ export default function NavBar({ admin }: { admin: boolean }) {
         <div className="mx-auto max-w-7xl px-4 h-14 flex items-center gap-4 md:gap-6">
           <Link href="/overview" className="flex items-center gap-2.5 group">
             <img
-              src="/logo.PNG"
+              src="/logo.png"
               alt="Rising Sun"
               width={32}
               height={32}

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CLASS_COLOR } from "@/lib/specs";
+import { ClassIcon } from "@/app/components/ClassIcon";
 import { weightFor } from "@/lib/scoring";
 import { WowheadLink } from "@/lib/wowhead";
 
@@ -67,6 +68,7 @@ export default function PlayerDetailClient({
 
   const lastAt = awards[0]?.awardedAt ?? null;
   const daysAgo = daysSince(lastAt);
+  const mainChar = player.characters.find(c => c.isMain) ?? player.characters[0];
 
   // Group awards by raid night (or "Off-night" bucket if no raidNight).
   const grouped = useMemo(() => {
@@ -160,7 +162,10 @@ export default function PlayerDetailClient({
         <Link href="/players" className="text-xs text-neutral-500 hover:text-vermillion-200">← Players</Link>
         <div className="mt-2">
           <span className="heading-eyebrow">Player</span>
-          <h1 className="text-2xl font-bold tracking-tight">{player.displayName}</h1>
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2.5">
+            {mainChar && <ClassIcon cls={mainChar.class} size={28} />}
+            {player.displayName}
+          </h1>
         </div>
         <div className="mt-3 grid grid-cols-3 sm:flex gap-2 sm:gap-3 text-sm">
           <Stat label="Items" value={String(totalCount)} />
@@ -194,6 +199,7 @@ export default function PlayerDetailClient({
                 <div key={c.id} className={`flex items-center justify-between rounded-md px-2 py-1.5 ${c.isMain ? "bg-gold-400/10 ring-1 ring-gold-400/25" : "bg-white/[0.03]"}`}>
                   <div className="flex items-center gap-2">
                     {c.isMain && <span className="text-gold-300 text-xs leading-none" title="main">★</span>}
+                    <ClassIcon cls={c.class} size={16} />
                     <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }} className="font-medium text-sm">{c.name}</span>
                     <span className="text-xs text-neutral-500">{c.spec}</span>
                   </div>
@@ -217,6 +223,7 @@ export default function PlayerDetailClient({
                       onClick={async () => { await bind(o.id, player.characters.length === 0); setAdding(false); }}
                       className="chip hover:bg-vermillion-500/10 hover:border-vermillion-500/40"
                     >
+                      <ClassIcon cls={o.class} size={14} />
                       <span style={{ color: CLASS_COLOR[o.class] ?? "#fff" }}>{o.name}</span>
                       <span className="text-neutral-500">· {o.spec}</span>
                     </button>
