@@ -101,14 +101,14 @@ export default function LootBrowser({
           <div className="-mx-1 pt-1">
             {visiblePhases.map(phase => (
               <div key={phase.id} className="mb-3 px-1">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-400/80 mb-1">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-1">
                   {phase.name}
                 </div>
                 {phase.raids.map(raid => {
                   const isRaidActive = raid.id === selectedRaidId;
                   return (
                     <div key={raid.id} className="mb-2">
-                      <div className={`text-sm font-semibold ${isRaidActive ? "text-amber-300" : "text-neutral-200"}`}>
+                      <div className={`text-sm font-semibold ${isRaidActive ? "text-vermillion-200" : "text-neutral-200"}`}>
                         {raid.name}
                       </div>
                       <ul className="ml-2 mt-0.5 border-l border-white/5">
@@ -120,8 +120,8 @@ export default function LootBrowser({
                                 onClick={() => go({ phaseFilter: selectedPhaseFilter, raid: raid.id, boss: b.id })}
                                 className={`block w-full text-left pl-3 pr-2 py-1 -ml-px border-l-2 text-sm transition ${
                                   isActive
-                                    ? "border-amber-400 text-amber-300 font-semibold bg-amber-400/[0.04]"
-                                    : "border-transparent text-neutral-300 hover:text-amber-200 hover:bg-white/[0.02]"
+                                    ? "border-vermillion-500 text-vermillion-200 font-semibold bg-vermillion-500/[0.06]"
+                                    : "border-transparent text-neutral-300 hover:text-vermillion-200 hover:bg-white/[0.02]"
                                 }`}
                               >
                                 {b.name}

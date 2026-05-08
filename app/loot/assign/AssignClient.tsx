@@ -121,13 +121,13 @@ export default function AssignClient({ phases, rosters, recent, admin }: {
           <h2 className="text-sm uppercase text-neutral-400 mb-2">Pick a boss</h2>
           {phases.map(phase => (
             <div key={phase.id} className="mb-2">
-              <div className="text-xs uppercase text-amber-400">{phase.name}</div>
+              <div className="text-xs uppercase text-vermillion-300/90 font-semibold tracking-wider">{phase.name}</div>
               {phase.raids.map(raid => {
                 const expanded = expandedRaids[raid.id] ?? false;
                 return (
                   <div key={raid.id} className="mt-1">
                     <button
-                      className="text-sm font-semibold text-neutral-200 hover:text-amber-300"
+                      className="text-sm font-semibold text-neutral-200 hover:text-vermillion-200"
                       onClick={() => setExpandedRaids(s => ({ ...s, [raid.id]: !expanded }))}
                     >
                       {expanded ? "▾" : "▸"} {raid.name}
@@ -138,8 +138,8 @@ export default function AssignClient({ phases, rosters, recent, admin }: {
                           <li key={b.id}>
                             <button
                               onClick={() => setSelectedBossId(b.id)}
-                              className={`block py-0.5 hover:text-amber-300 text-left w-full ${
-                                b.id === selectedBossId ? "text-amber-400 font-semibold" : "text-neutral-300"
+                              className={`block py-0.5 hover:text-vermillion-200 text-left w-full ${
+                                b.id === selectedBossId ? "text-vermillion-200 font-semibold" : "text-neutral-300"
                               }`}
                             >{b.name}</button>
                           </li>

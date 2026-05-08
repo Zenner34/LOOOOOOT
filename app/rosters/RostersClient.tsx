@@ -66,9 +66,9 @@ export default function RostersClient({ initial, admin }: { initial: RosterRow[]
 
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {rosters.map(r => (
-          <Link key={r.id} href={`/rosters/${r.id}`} className="panel p-4 hover:border-amber-500 transition-colors">
+          <Link key={r.id} href={`/rosters/${r.id}`} className="panel p-4 hover:border-vermillion-500/60 transition-colors">
             <div className="flex items-baseline justify-between">
-              <h2 className="text-lg font-semibold text-amber-300">{r.name}</h2>
+              <h2 className="text-lg font-semibold text-vermillion-200">{r.name}</h2>
               <span className="text-xs text-neutral-500">#{r.id}</span>
             </div>
             {r.description && <p className="text-sm text-neutral-400 mt-1">{r.description}</p>}

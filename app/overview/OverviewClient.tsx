@@ -111,7 +111,7 @@ export default function OverviewClient({
             key={t.k}
             onClick={() => setTabAndUrl(t.k as any)}
             className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px ${
-              tab === t.k ? "border-amber-400 text-amber-300" : "border-transparent text-neutral-400 hover:text-white"
+              tab === t.k ? "border-vermillion-500 text-vermillion-200" : "border-transparent text-neutral-400 hover:text-white"
             }`}
           >{t.label}</button>
         ))}
@@ -140,7 +140,7 @@ export default function OverviewClient({
                     </td>
                     <td className="text-neutral-300">{r.character.spec}</td>
                     <td className="text-right tabular-nums">{r.count}</td>
-                    <td className="text-right tabular-nums text-amber-300">{r.score.toFixed(2)}</td>
+                    <td className="text-right tabular-nums text-gold-200 font-semibold">{r.score.toFixed(2)}</td>
                     <td className="text-neutral-400 text-xs">
                       {r.last ? (
                         <>
@@ -171,7 +171,7 @@ export default function OverviewClient({
                                 <td><WowheadLink name={a.item.name} wowheadId={a.item.wowheadId} /></td>
                                 <td className="text-neutral-400">{a.item.boss.name}</td>
                                 <td className="text-neutral-500">{a.item.boss.raid.shortName}</td>
-                                <td className="text-right tabular-nums text-amber-300">{weightFor(a, r.character.spec).toFixed(2)}</td>
+                                <td className="text-right tabular-nums text-gold-200">{weightFor(a, r.character.spec).toFixed(2)}</td>
                                 <td className="text-neutral-500 text-xs">{new Date(a.awardedAt).toISOString().slice(0, 10)}</td>
                               </tr>
                             ))}

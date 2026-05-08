@@ -59,11 +59,11 @@ export function WowheadItemCell({
         width={size}
         height={size}
         loading="lazy"
-        className="rounded-md ring-1 ring-white/10 group-hover:ring-amber-300/50 transition"
+        className="rounded-md ring-1 ring-white/10 group-hover:ring-gold-300/60 transition"
         style={{ width: size, height: size }}
         onError={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_ICON; }}
       />
-      <span className="font-medium text-amber-200 group-hover:text-amber-100 transition">{name}</span>
+      <span className="font-medium text-gold-200 group-hover:text-gold-100 transition">{name}</span>
     </a>
   );
 }

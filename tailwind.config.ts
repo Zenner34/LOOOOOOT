@@ -12,6 +12,32 @@ const config: Config = {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
       },
       colors: {
+        // Chinese vermillion — primary brand accent
+        vermillion: {
+          50:  "#FDE7E9",
+          100: "#FBC9CD",
+          200: "#F58A93",
+          300: "#ED5560",
+          400: "#DD2C3D",
+          500: "#C8102E",
+          600: "#A50D26",
+          700: "#82091E",
+          800: "#5F0617",
+          900: "#3D040E",
+        },
+        // Imperial gold — secondary highlight (BiS scores, marks)
+        gold: {
+          50:  "#FFFBE6",
+          100: "#FFF3B0",
+          200: "#FFE665",
+          300: "#FFD93B",
+          400: "#FFD700",
+          500: "#E5C100",
+          600: "#B89800",
+          700: "#8A7100",
+          800: "#5C4B00",
+          900: "#2E2500",
+        },
         wow: {
           warrior: "#C79C6E",
           paladin: "#F58CBA",
@@ -34,7 +60,9 @@ const config: Config = {
         },
       },
       boxShadow: {
-        glow: "0 0 0 1px rgba(251,191,36,0.25), 0 8px 24px -8px rgba(251,191,36,0.15)",
+        // vermillion glow (focus / hover halos)
+        glow: "0 0 0 1px rgba(200,16,46,0.30), 0 8px 24px -8px rgba(200,16,46,0.25)",
+        "glow-gold": "0 0 0 1px rgba(255,215,0,0.30), 0 8px 24px -8px rgba(255,215,0,0.20)",
         card: "0 1px 0 0 rgba(255,255,255,0.03) inset, 0 8px 24px -12px rgba(0,0,0,0.6)",
       },
       keyframes: {
