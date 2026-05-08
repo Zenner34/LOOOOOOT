@@ -14,9 +14,10 @@ type Character = {
   spec: string;
   role: string;
   active: boolean;
+  isMain: boolean;
 };
 
-type SortKey = "name" | "class" | "role" | "active";
+type SortKey = "name" | "class" | "role" | "active" | "main";
 type SortDir = "asc" | "desc";
 
 // SPECS grouped by class for the spec dropdown — far easier to scan
@@ -61,6 +62,7 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
         case "class":  return (a.class.localeCompare(b.class) || a.spec.localeCompare(b.spec)) * dir;
         case "role":   return (a.role.localeCompare(b.role) || a.name.localeCompare(b.name)) * dir;
         case "active": return ((Number(b.active) - Number(a.active)) || a.name.localeCompare(b.name)) * dir;
+        case "main":   return ((Number(b.isMain) - Number(a.isMain)) || a.name.localeCompare(b.name)) * dir;
       }
     });
     return rows;
@@ -168,12 +170,23 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
                   <div className="text-xs text-neutral-400 truncate">{c.spec}</div>
                 </span>
               </span>
+              <MainAltBadge isMain={c.isMain} />
               <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/5 text-neutral-300">
                 {c.role}
               </span>
             </div>
             {admin && (
               <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Select
+                  size="sm"
+                  value={c.isMain ? "main" : "alt"}
+                  onValueChange={v => patch(c.id, { isMain: v === "main" })}
+                  triggerClassName="!w-20"
+                  options={[
+                    { value: "main", label: "main" },
+                    { value: "alt",  label: "alt" },
+                  ]}
+                />
                 <Select
                   size="sm"
                   value={c.role}
@@ -222,6 +235,11 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
                 </button>
               </th>
               <th>
+                <button onClick={() => toggleSort("main")} className="hover:text-vermillion-200 transition">
+                  Main / Alt {sortIndicator("main")}
+                </button>
+              </th>
+              <th>
                 <button onClick={() => toggleSort("role")} className="hover:text-vermillion-200 transition">
                   Role {sortIndicator("role")}
                 </button>
@@ -244,6 +262,20 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
                   </span>
                 </td>
                 <td className="text-neutral-300 text-sm">{c.spec}</td>
+                <td>
+                  {admin ? (
+                    <Select
+                      size="sm"
+                      value={c.isMain ? "main" : "alt"}
+                      onValueChange={v => patch(c.id, { isMain: v === "main" })}
+                      triggerClassName="!w-20"
+                      options={[
+                        { value: "main", label: "main" },
+                        { value: "alt",  label: "alt" },
+                      ]}
+                    />
+                  ) : <MainAltBadge isMain={c.isMain} />}
+                </td>
                 <td>
                   {admin ? (
                     <Select
@@ -278,7 +310,7 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
             ))}
             {visible.length === 0 && (
               <tr>
-                <td colSpan={admin ? 5 : 4} className="py-10 text-center text-neutral-500">
+                <td colSpan={admin ? 6 : 5} className="py-10 text-center text-neutral-500">
                   {search ? `No characters match "${search}".` : "No characters yet."}
                 </td>
               </tr>
@@ -287,5 +319,17 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
         </table>
       </div>
     </div>
+  );
+}
+
+function MainAltBadge({ isMain }: { isMain: boolean }) {
+  return isMain ? (
+    <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-gold-400/15 text-gold-200 ring-1 ring-gold-400/30">
+      <span aria-hidden="true">★</span>main
+    </span>
+  ) : (
+    <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/5 text-neutral-400">
+      alt
+    </span>
   );
 }
