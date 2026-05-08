@@ -4,7 +4,7 @@ import { Fragment, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CLASS_COLOR, BUCKETS, BUCKET_LABEL, bucketForSpec, type Bucket } from "@/lib/specs";
-import { weightedScore, itemCount, weightFor, type ScoringAward } from "@/lib/scoring";
+import { itemCount, type ScoringAward } from "@/lib/scoring";
 import { WowheadLink } from "@/lib/wowhead";
 import { ClassIcon } from "@/app/components/ClassIcon";
 import { Select } from "@/app/components/Select";
@@ -45,7 +45,6 @@ type Row = {
   displayName: string;
   characters: Character[];
   count: number;
-  score: number;
   awards: Award[];
   lastAwardAt: Date | null;
 };
@@ -94,7 +93,7 @@ export default function OverviewClient({
   const [tab, setTab] = useState<Bucket>(BUCKETS.includes(initialBucket) ? initialBucket : "all");
   const [groupBy, setGroupBy] = useState<"player" | "character">("player");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const [sort, setSort] = useState<"score" | "count" | "name" | "lastLoot">("lastLoot");
+  const [sort, setSort] = useState<"lastLoot" | "count" | "name">("lastLoot");
 
   function setRoster(v: string) {
     const sp = new URLSearchParams(params);
@@ -138,7 +137,6 @@ export default function OverviewClient({
           displayName: c.name,
           characters: [c],
           count: itemCount(mine),
-          score: weightedScore(c.spec, mine),
           awards: mine,
           lastAwardAt: mine[0] ? new Date(mine[0].awardedAt) : null,
         };
@@ -162,12 +160,10 @@ export default function OverviewClient({
       const chars = byPlayer.get(p.id);
       if (!chars || chars.length === 0) continue;
       let count = 0;
-      let score = 0;
       const allAwards: Award[] = [];
       for (const c of chars) {
         const mine = awardsByChar.get(c.id) ?? [];
         count += itemCount(mine);
-        score += weightedScore(c.spec, mine);
         for (const a of mine) allAwards.push(a);
       }
       // sort each player's awards descending by date so [0] is most recent
@@ -179,7 +175,6 @@ export default function OverviewClient({
         displayName: p.displayName,
         characters: chars.sort((a, b) => Number(b.isMain) - Number(a.isMain) || a.name.localeCompare(b.name)),
         count,
-        score,
         awards: allAwards,
         lastAwardAt: allAwards[0] ? new Date(allAwards[0].awardedAt) : null,
       });
@@ -194,7 +189,6 @@ export default function OverviewClient({
         displayName: c.name,
         characters: [c],
         count: itemCount(mine),
-        score: weightedScore(c.spec, mine),
         awards: mine,
         lastAwardAt: mine[0] ? new Date(mine[0].awardedAt) : null,
       };
@@ -206,17 +200,13 @@ export default function OverviewClient({
   const sortedRows = useMemo(() => {
     const r = [...rows];
     r.sort((a, b) => {
-      if (sort === "count")    return b.count - a.count || a.displayName.localeCompare(b.displayName);
-      if (sort === "name")     return a.displayName.localeCompare(b.displayName);
-      if (sort === "lastLoot") {
-        // Most-time-since-last-loot first (oldest at top — these are next-up).
-        // Players with no loot pinned to bottom.
-        const at = a.lastAwardAt?.getTime() ?? Number.POSITIVE_INFINITY;
-        const bt = b.lastAwardAt?.getTime() ?? Number.POSITIVE_INFINITY;
-        if (at !== bt) return at - bt;
-        return a.displayName.localeCompare(b.displayName);
-      }
-      return b.score - a.score || b.count - a.count || a.displayName.localeCompare(b.displayName);
+      if (sort === "count") return b.count - a.count || a.displayName.localeCompare(b.displayName);
+      if (sort === "name")  return a.displayName.localeCompare(b.displayName);
+      // lastLoot: most recently looted first; players with no loot pinned to bottom.
+      const at = a.lastAwardAt?.getTime() ?? -Infinity;
+      const bt = b.lastAwardAt?.getTime() ?? -Infinity;
+      if (at !== bt) return bt - at;
+      return a.displayName.localeCompare(b.displayName);
     });
     return r;
   }, [rows, sort]);
@@ -267,8 +257,7 @@ export default function OverviewClient({
             value={sort}
             onValueChange={v => setSort(v as any)}
             options={[
-              { value: "lastLoot", label: "Last loot (oldest first)" },
-              { value: "score",    label: "Weighted score" },
+              { value: "lastLoot", label: "Recently looted" },
               { value: "count",    label: "Items received" },
               { value: "name",     label: "Name" },
             ]}
@@ -335,10 +324,6 @@ export default function OverviewClient({
                   <span className="text-neutral-500">items</span>
                   <span className="tabular-nums text-neutral-200 font-semibold">{r.count}</span>
                 </span>
-                <span className="inline-flex items-center gap-1 text-neutral-400">
-                  <span className="text-neutral-500">score</span>
-                  <span className="tabular-nums text-gold-200 font-semibold">{r.score.toFixed(2)}</span>
-                </span>
                 {r.awards.length > 0 && (
                   <button
                     className="ml-auto text-xs text-vermillion-300 active:text-vermillion-200 min-h-[32px] px-2 -mr-2"
@@ -365,7 +350,6 @@ export default function OverviewClient({
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <div className="tabular-nums text-gold-200">{weightFor(a, a.character.spec).toFixed(2)}</div>
                         <div className="text-[10px] text-neutral-600 tabular-nums">{new Date(a.awardedAt).toISOString().slice(0,10)}</div>
                       </div>
                     </li>
@@ -390,7 +374,6 @@ export default function OverviewClient({
               <th>{groupBy === "player" ? "Player" : "Character"}</th>
               <th>{groupBy === "player" ? "Characters" : "Spec"}</th>
               <th className="text-right">Items</th>
-              <th className="text-right">Weighted score</th>
               <th>Last loot</th>
               <th>Last item</th>
               <th></th>
@@ -434,7 +417,6 @@ export default function OverviewClient({
                       </div>
                     </td>
                     <td className="text-right tabular-nums">{r.count}</td>
-                    <td className="text-right tabular-nums text-gold-200 font-semibold">{r.score.toFixed(2)}</td>
                     <td>
                       {(() => {
                         const days = daysAgo(r.lastAwardAt);
@@ -465,7 +447,7 @@ export default function OverviewClient({
                   </tr>
                   {isOpen && r.awards.length > 0 && (
                     <tr>
-                      <td colSpan={7} className="bg-black/30">
+                      <td colSpan={6} className="bg-black/30">
                         <table className="table">
                           <thead>
                             <tr>
@@ -473,7 +455,6 @@ export default function OverviewClient({
                               <th>Awarded to</th>
                               <th>Boss</th>
                               <th>Raid</th>
-                              <th className="text-right">Weight</th>
                               <th>Date</th>
                             </tr>
                           </thead>
@@ -486,7 +467,6 @@ export default function OverviewClient({
                                 </td>
                                 <td className="text-neutral-400">{a.item.boss.name}</td>
                                 <td className="text-neutral-500">{a.item.boss.raid.shortName}</td>
-                                <td className="text-right tabular-nums text-gold-200">{weightFor(a, a.character.spec).toFixed(2)}</td>
                                 <td className="text-neutral-500 text-xs">{new Date(a.awardedAt).toISOString().slice(0, 10)}</td>
                               </tr>
                             ))}
@@ -499,7 +479,7 @@ export default function OverviewClient({
               );
             })}
             {sortedRows.length === 0 && (
-              <tr><td colSpan={7} className="py-10 text-center text-neutral-500">No {EMPTY_LABEL[tab]} in this roster yet.</td></tr>
+              <tr><td colSpan={6} className="py-10 text-center text-neutral-500">No {EMPTY_LABEL[tab]} in this roster yet.</td></tr>
             )}
           </tbody>
         </table>

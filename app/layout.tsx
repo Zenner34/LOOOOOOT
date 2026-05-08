@@ -15,7 +15,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Rising Sun Loot Log - and he say me i noob LOL",
-  description: "Rising Sun guild loot tracker for the 'and he say me i noob LOL' guild — Burning Crusade Classic raid rosters, attendance, and BiS-weighted loot scoring.",
+  description: "Rising Sun guild loot tracker for the 'and he say me i noob LOL' guild — Burning Crusade Classic raid rosters, attendance, and loot history.",
   icons: {
     icon: "/logo.png",
     apple: "/logo.png",

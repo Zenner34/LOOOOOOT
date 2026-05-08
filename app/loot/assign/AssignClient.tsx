@@ -353,7 +353,7 @@ function ItemCard({ item, roster, onAssign }: { item: Item; roster?: Roster; onA
           triggerClassName="w-full sm:min-w-[260px] sm:flex-1"
           options={[
             { value: "", label: <span className="text-neutral-500">Pick recipient…</span> },
-            ...ranked.map(({ m, w }) => ({
+            ...ranked.map(({ m }) => ({
               value: String(m.characterId),
               label: (
                 <span className="inline-flex items-center gap-2 w-full">
@@ -361,9 +361,6 @@ function ItemCard({ item, roster, onAssign }: { item: Item; roster?: Roster; onA
                     {m.character.name}
                   </span>
                   <span className="text-neutral-500 text-xs">{m.character.spec}</span>
-                  {w > 0 && (
-                    <span className="ml-auto text-gold-200 tabular-nums text-xs">{w.toFixed(2)}</span>
-                  )}
                 </span>
               ),
             })),

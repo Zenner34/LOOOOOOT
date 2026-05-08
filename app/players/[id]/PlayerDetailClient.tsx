@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CLASS_COLOR } from "@/lib/specs";
 import { ClassIcon } from "@/app/components/ClassIcon";
-import { weightFor } from "@/lib/scoring";
 import { WowheadLink } from "@/lib/wowhead";
 
 type Char = {
@@ -93,10 +92,6 @@ export default function PlayerDetailClient({
   }, [awards]);
 
   const totalCount = awards.length;
-  const totalScore = useMemo(
-    () => awards.reduce((sum, a) => sum + weightFor(a as any, a.character.spec), 0),
-    [awards],
-  );
 
   async function bind(characterId: number, isMain: boolean) {
     const r = await fetch(`/api/players/${player.id}/characters`, {
@@ -167,9 +162,8 @@ export default function PlayerDetailClient({
             {player.displayName}
           </h1>
         </div>
-        <div className="mt-3 grid grid-cols-3 sm:flex gap-2 sm:gap-3 text-sm">
+        <div className="mt-3 grid grid-cols-2 sm:flex gap-2 sm:gap-3 text-sm">
           <Stat label="Items" value={String(totalCount)} />
-          <Stat label="Score" value={totalScore.toFixed(2)} tone="gold" />
           <Stat
             label="Last loot"
             value={daysAgo == null ? "—" : daysAgo === 0 ? "today" : `${daysAgo}d ago`}
@@ -293,14 +287,11 @@ export default function PlayerDetailClient({
                   {/* Mobile: stacked rows */}
                   <ul className="md:hidden space-y-1.5">
                     {g.awards.map(a => (
-                      <li key={a.id} className="flex items-baseline gap-3 text-xs">
-                        <div className="flex-1 min-w-0">
-                          <WowheadLink name={a.item.name} wowheadId={a.item.wowheadId} />
-                          <div className="text-[11px] text-neutral-500 truncate">
-                            {a.item.boss.name} · <span style={{ color: CLASS_COLOR[a.character.class] ?? "#fff" }}>{a.character.name}</span>
-                          </div>
+                      <li key={a.id} className="text-xs">
+                        <WowheadLink name={a.item.name} wowheadId={a.item.wowheadId} />
+                        <div className="text-[11px] text-neutral-500 truncate">
+                          {a.item.boss.name} · <span style={{ color: CLASS_COLOR[a.character.class] ?? "#fff" }}>{a.character.name}</span>
                         </div>
-                        <span className="tabular-nums text-gold-200 flex-shrink-0">{weightFor(a as any, a.character.spec).toFixed(2)}</span>
                       </li>
                     ))}
                   </ul>
@@ -315,7 +306,6 @@ export default function PlayerDetailClient({
                             <span style={{ color: CLASS_COLOR[a.character.class] ?? "#fff" }}>{a.character.name}</span>
                             <span className="text-neutral-500"> · {a.character.spec}</span>
                           </td>
-                          <td className="text-right tabular-nums text-gold-200 text-xs">{weightFor(a as any, a.character.spec).toFixed(2)}</td>
                         </tr>
                       ))}
                     </tbody>
