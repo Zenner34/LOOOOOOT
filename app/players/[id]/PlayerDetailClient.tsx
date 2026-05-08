@@ -158,25 +158,23 @@ export default function PlayerDetailClient({
     <div className="space-y-6 animate-fade-in">
       <div>
         <Link href="/players" className="text-xs text-neutral-500 hover:text-vermillion-200">← Players</Link>
-        <div className="mt-2 flex items-baseline justify-between flex-wrap gap-3">
-          <div>
-            <span className="heading-eyebrow">Player</span>
-            <h1 className="text-2xl font-bold tracking-tight">{player.displayName}</h1>
-          </div>
-          <div className="flex items-center gap-3 text-sm">
-            <Stat label="Items" value={String(totalCount)} />
-            <Stat label="Score" value={totalScore.toFixed(2)} tone="gold" />
-            <Stat
-              label="Last loot"
-              value={daysAgo == null ? "—" : daysAgo === 0 ? "today" : `${daysAgo}d ago`}
-              tone={
-                daysAgo == null ? "muted" :
-                daysAgo < 7  ? "fresh" :
-                daysAgo < 14 ? "warm"  :
-                daysAgo < 30 ? "cold"  : "icy"
-              }
-            />
-          </div>
+        <div className="mt-2">
+          <span className="heading-eyebrow">Player</span>
+          <h1 className="text-2xl font-bold tracking-tight">{player.displayName}</h1>
+        </div>
+        <div className="mt-3 grid grid-cols-3 sm:flex gap-2 sm:gap-3 text-sm">
+          <Stat label="Items" value={String(totalCount)} />
+          <Stat label="Score" value={totalScore.toFixed(2)} tone="gold" />
+          <Stat
+            label="Last loot"
+            value={daysAgo == null ? "—" : daysAgo === 0 ? "today" : `${daysAgo}d ago`}
+            tone={
+              daysAgo == null ? "muted" :
+              daysAgo < 7  ? "fresh" :
+              daysAgo < 14 ? "warm"  :
+              daysAgo < 30 ? "cold"  : "icy"
+            }
+          />
         </div>
       </div>
 
@@ -280,12 +278,27 @@ export default function PlayerDetailClient({
           ) : (
             <div className="divide-y divide-white/5">
               {grouped.map(g => (
-                <div key={g.label} className="px-4 py-3">
-                  <div className="flex items-baseline justify-between mb-2">
-                    <h3 className="text-sm font-semibold text-neutral-200">{g.label}</h3>
-                    <span className="text-xs text-neutral-500">{g.awards.length} item{g.awards.length !== 1 ? "s" : ""}</span>
+                <div key={g.label} className="px-3 sm:px-4 py-3">
+                  <div className="flex items-baseline justify-between mb-2 gap-2">
+                    <h3 className="text-sm font-semibold text-neutral-200 truncate">{g.label}</h3>
+                    <span className="text-xs text-neutral-500 flex-shrink-0">{g.awards.length} item{g.awards.length !== 1 ? "s" : ""}</span>
                   </div>
-                  <table className="table">
+                  {/* Mobile: stacked rows */}
+                  <ul className="md:hidden space-y-1.5">
+                    {g.awards.map(a => (
+                      <li key={a.id} className="flex items-baseline gap-3 text-xs">
+                        <div className="flex-1 min-w-0">
+                          <WowheadLink name={a.item.name} wowheadId={a.item.wowheadId} />
+                          <div className="text-[11px] text-neutral-500 truncate">
+                            {a.item.boss.name} · <span style={{ color: CLASS_COLOR[a.character.class] ?? "#fff" }}>{a.character.name}</span>
+                          </div>
+                        </div>
+                        <span className="tabular-nums text-gold-200 flex-shrink-0">{weightFor(a as any, a.character.spec).toFixed(2)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {/* Desktop: table */}
+                  <table className="hidden md:table table">
                     <tbody>
                       {g.awards.map(a => (
                         <tr key={a.id}>
@@ -327,9 +340,9 @@ function Stat({
     muted:   "text-neutral-500",
   };
   return (
-    <div className="panel-elev px-3 py-2">
-      <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500">{label}</div>
-      <div className={`text-base font-bold tabular-nums ${TONE[tone]}`}>{value}</div>
+    <div className="panel-elev px-3 py-2 min-w-0">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500 truncate">{label}</div>
+      <div className={`text-base font-bold tabular-nums truncate ${TONE[tone]}`}>{value}</div>
     </div>
   );
 }

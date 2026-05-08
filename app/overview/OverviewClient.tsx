@@ -237,8 +237,8 @@ export default function OverviewClient({
         <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
       </div>
 
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="min-w-[200px]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_1fr_minmax(200px,auto)] gap-3 items-end">
+        <div>
           <label className="label">Roster</label>
           <Select
             value={String(selectedRosterId)}
@@ -249,7 +249,7 @@ export default function OverviewClient({
             ]}
           />
         </div>
-        <div className="min-w-[220px]">
+        <div>
           <label className="label">Group by</label>
           <Select
             value={groupBy}
@@ -260,8 +260,8 @@ export default function OverviewClient({
             ]}
           />
         </div>
-        <div className="flex-1" />
-        <div className="min-w-[200px]">
+        <div className="hidden lg:block" />
+        <div>
           <label className="label">Sort</label>
           <Select
             value={sort}
@@ -293,7 +293,97 @@ export default function OverviewClient({
         ))}
       </div>
 
-      <div className="panel overflow-hidden">
+      {/* Mobile: card list. Below md, the desktop table is hidden. */}
+      <div className="md:hidden space-y-2">
+        {sortedRows.map(r => {
+          const isOpen = expanded[r.key] ?? false;
+          const last = r.awards[0];
+          const days = daysAgo(r.lastAwardAt);
+          const badge = lastLootBadge(days);
+          return (
+            <div key={r.key} className="panel p-3 active:bg-white/[0.03] transition">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold truncate">
+                    {r.kind === "orphan" ? (
+                      <span style={{ color: CLASS_COLOR[r.characters[0].class] ?? "#fff" }}>
+                        {r.displayName}
+                      </span>
+                    ) : (
+                      <Link href={`/players/${r.id}`} className="text-white">{r.displayName}</Link>
+                    )}
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-1 text-[11px]">
+                    {r.characters.map(c => (
+                      <span
+                        key={c.id}
+                        className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 ${c.isMain ? "bg-gold-400/10 ring-1 ring-gold-400/25" : "bg-white/5"}`}
+                      >
+                        {c.isMain && <span className="text-gold-300 text-[9px]">★</span>}
+                        <ClassIcon cls={c.class} size={12} />
+                        <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-medium tabular-nums whitespace-nowrap flex-shrink-0 ${TONE_CLASS[badge.tone]}`}>
+                  {badge.text}
+                </span>
+              </div>
+              <div className="mt-2 flex items-center gap-3 text-xs">
+                <span className="inline-flex items-center gap-1 text-neutral-400">
+                  <span className="text-neutral-500">items</span>
+                  <span className="tabular-nums text-neutral-200 font-semibold">{r.count}</span>
+                </span>
+                <span className="inline-flex items-center gap-1 text-neutral-400">
+                  <span className="text-neutral-500">score</span>
+                  <span className="tabular-nums text-gold-200 font-semibold">{r.score.toFixed(2)}</span>
+                </span>
+                {r.awards.length > 0 && (
+                  <button
+                    className="ml-auto text-xs text-vermillion-300 active:text-vermillion-200 min-h-[32px] px-2 -mr-2"
+                    onClick={() => setExpanded(s => ({ ...s, [r.key]: !isOpen }))}
+                  >
+                    {isOpen ? "hide" : "view"} loot
+                  </button>
+                )}
+              </div>
+              {last && (
+                <div className="mt-1.5 text-[11px] text-neutral-400 truncate">
+                  last: <WowheadLink name={last.item.name} wowheadId={last.item.wowheadId} />
+                  <span className="text-neutral-600"> · {last.item.boss.raid.shortName}</span>
+                </div>
+              )}
+              {isOpen && r.awards.length > 0 && (
+                <ul className="mt-3 space-y-1.5 border-t border-white/5 pt-3">
+                  {r.awards.map(a => (
+                    <li key={a.id} className="text-xs flex items-baseline justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <WowheadLink name={a.item.name} wowheadId={a.item.wowheadId} />
+                        <div className="text-[10px] text-neutral-500 truncate">
+                          {a.item.boss.name} · <span style={{ color: CLASS_COLOR[a.character.class] ?? "#fff" }}>{a.character.name}</span>
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <div className="tabular-nums text-gold-200">{weightFor(a, a.character.spec).toFixed(2)}</div>
+                        <div className="text-[10px] text-neutral-600 tabular-nums">{new Date(a.awardedAt).toISOString().slice(0,10)}</div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+        {sortedRows.length === 0 && (
+          <div className="panel px-4 py-12 text-center text-neutral-500 text-sm">
+            No {EMPTY_LABEL[tab]} in this roster yet.
+          </div>
+        )}
+      </div>
+
+      {/* Desktop: full table */}
+      <div className="hidden md:block panel overflow-hidden">
         <table className="table">
           <thead>
             <tr>

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
 import { Select } from "@/app/components/Select";
+import { ClassIcon } from "@/app/components/ClassIcon";
 
 type Roster = { id: number; name: string; description: string | null };
 type Character = { id: number; name: string; class: string; spec: string; role: string; active: boolean };
@@ -78,19 +79,22 @@ export default function RosterDetailClient(props: {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <Link href="/rosters" className="text-sm text-neutral-400 hover:text-white">← Rosters</Link>
-          <h1 className="text-xl font-semibold mt-1">{props.roster.name}</h1>
-          {props.roster.description && <p className="text-neutral-400 text-sm">{props.roster.description}</p>}
+    <div className="space-y-6 animate-fade-in">
+      <div>
+        <Link href="/rosters" className="text-xs text-neutral-500 hover:text-vermillion-200">← Rosters</Link>
+        <div className="mt-2 flex items-start justify-between flex-wrap gap-3">
+          <div className="min-w-0">
+            <span className="heading-eyebrow">Roster</span>
+            <h1 className="text-2xl font-bold tracking-tight">{props.roster.name}</h1>
+            {props.roster.description && <p className="text-neutral-400 text-sm mt-1">{props.roster.description}</p>}
+          </div>
+          {props.admin && <button className="btn-danger btn-xs" onClick={deleteRoster}>Delete roster</button>}
         </div>
-        {props.admin && <button className="btn-danger" onClick={deleteRoster}>Delete roster</button>}
       </div>
 
       {props.admin && (
-        <form onSubmit={addMember} className="panel p-4 flex flex-wrap items-end gap-3">
-          <div className="min-w-[220px] flex-1">
+        <form onSubmit={addMember} className="panel p-4 grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] items-end gap-3">
+          <div className="min-w-0">
             <label className="label">Add character</label>
             <Select
               value={String(pickId || "")}
@@ -100,6 +104,7 @@ export default function RosterDetailClient(props: {
                 value: String(c.id),
                 label: (
                   <span className="inline-flex items-center gap-2">
+                    <ClassIcon cls={c.class} size={14} />
                     <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</span>
                     <span className="text-neutral-500 text-xs">{c.spec}</span>
                   </span>
@@ -107,7 +112,7 @@ export default function RosterDetailClient(props: {
               }))}
             />
           </div>
-          <div className="min-w-[140px]">
+          <div className="sm:min-w-[140px]">
             <label className="label">Slot</label>
             <Select
               value={pickRole}
@@ -123,39 +128,44 @@ export default function RosterDetailClient(props: {
         </form>
       )}
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-3">
         {(["tank", "heal", "dps"] as const).map(role => (
           <div key={role} className="panel p-3">
-            <h2 className="text-sm uppercase tracking-wide text-neutral-400 mb-2">
-              {role === "tank" ? "Tanks" : role === "heal" ? "Healers" : "DPS"}
-              <span className="ml-2 text-neutral-600">({grouped[role]?.length ?? 0})</span>
+            <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-2 flex items-center justify-between">
+              <span>{role === "tank" ? "Tanks" : role === "heal" ? "Healers" : "DPS"}</span>
+              <span className="pill">{grouped[role]?.length ?? 0}</span>
             </h2>
             <ul className="space-y-1">
               {(grouped[role] ?? []).map(m => (
-                <li key={m.id} className="flex items-center gap-2 text-sm">
-                  <span className="flex-1 truncate" style={{ color: CLASS_COLOR[m.character.class] ?? "#fff" }}>
+                <li key={m.id} className="flex items-center gap-2 text-sm rounded-md hover:bg-white/[0.02] transition py-1 -mx-1 px-1">
+                  <ClassIcon cls={m.character.class} size={16} />
+                  <span className="flex-1 min-w-0 truncate font-medium" style={{ color: CLASS_COLOR[m.character.class] ?? "#fff" }}>
                     {m.character.name}
                   </span>
-                  <span className="text-xs text-neutral-500 truncate">{m.character.spec}</span>
+                  <span className="text-[11px] text-neutral-500 truncate hidden sm:inline">{m.character.spec}</span>
                   {props.admin ? (
                     <>
                       <Select
                         size="sm"
                         value={m.memberRole}
                         onValueChange={v => changeRole(m.characterId, v)}
-                        triggerClassName="!w-24"
+                        triggerClassName="!w-[68px]"
                         options={[
                           { value: "main",  label: "main" },
                           { value: "bench", label: "bench" },
                           { value: "trial", label: "trial" },
                         ]}
                       />
-                      <button className="text-xs text-red-400 hover:text-red-300" onClick={() => removeMember(m.characterId)}>×</button>
+                      <button
+                        className="text-neutral-500 hover:text-red-400 active:text-red-300 min-w-[28px] min-h-[28px] flex items-center justify-center"
+                        onClick={() => removeMember(m.characterId)}
+                        aria-label={`Remove ${m.character.name}`}
+                      >×</button>
                     </>
                   ) : <span className="text-xs text-neutral-500">{m.memberRole}</span>}
                 </li>
               ))}
-              {(grouped[role]?.length ?? 0) === 0 && <li className="text-xs text-neutral-600">none</li>}
+              {(grouped[role]?.length ?? 0) === 0 && <li className="text-xs text-neutral-600 italic px-1">none</li>}
             </ul>
           </div>
         ))}

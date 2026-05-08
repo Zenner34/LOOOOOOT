@@ -80,7 +80,35 @@ export default function AttendanceIndexClient({
         </form>
       )}
 
-      <div className="panel overflow-hidden">
+      {/* Mobile: card list */}
+      <div className="md:hidden space-y-2">
+        {nights.map(n => (
+          <Link key={n.id} href={`/attendance/${n.id}`} className="panel p-3 block active:bg-white/[0.03] transition">
+            <div className="flex items-center justify-between gap-2">
+              <div className="font-semibold tabular-nums">{new Date(n.date).toISOString().slice(0, 10)}</div>
+              <div className="text-xs text-neutral-500 truncate">{n.roster.name}</div>
+            </div>
+            {n.notes && <div className="text-xs text-neutral-400 mt-1 truncate">{n.notes}</div>}
+            <div className="mt-2 flex items-center gap-3 text-xs">
+              <span className="text-neutral-400">
+                <span className="text-neutral-500">attendance</span>{" "}
+                <span className="tabular-nums text-neutral-200 font-semibold">{n._count.attendance}</span>
+              </span>
+              <span className="text-neutral-400">
+                <span className="text-neutral-500">awards</span>{" "}
+                <span className="tabular-nums text-gold-200 font-semibold">{n._count.awards}</span>
+              </span>
+              <span className="ml-auto text-vermillion-300">Open ›</span>
+            </div>
+          </Link>
+        ))}
+        {nights.length === 0 && (
+          <div className="panel p-12 text-center text-neutral-500 text-sm">No raid nights yet.</div>
+        )}
+      </div>
+
+      {/* Desktop: table */}
+      <div className="hidden md:block panel overflow-hidden">
         <table className="table">
           <thead>
             <tr><th>Date</th><th>Roster</th><th>Notes</th><th>Attendance</th><th>Awards</th><th></th></tr>
@@ -88,12 +116,12 @@ export default function AttendanceIndexClient({
           <tbody>
             {nights.map(n => (
               <tr key={n.id}>
-                <td>{new Date(n.date).toISOString().slice(0, 10)}</td>
+                <td className="tabular-nums">{new Date(n.date).toISOString().slice(0, 10)}</td>
                 <td>{n.roster.name}</td>
                 <td className="text-neutral-400">{n.notes ?? ""}</td>
-                <td>{n._count.attendance}</td>
-                <td>{n._count.awards}</td>
-                <td className="text-right"><Link className="btn" href={`/attendance/${n.id}`}>Open</Link></td>
+                <td className="tabular-nums">{n._count.attendance}</td>
+                <td className="tabular-nums">{n._count.awards}</td>
+                <td className="text-right"><Link className="btn btn-xs" href={`/attendance/${n.id}`}>Open</Link></td>
               </tr>
             ))}
             {nights.length === 0 && <tr><td colSpan={6} className="text-center py-6 text-neutral-500">No raid nights yet.</td></tr>}

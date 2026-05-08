@@ -156,7 +156,58 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
         />
       </div>
 
-      <div className="panel overflow-hidden">
+      {/* Mobile: card list */}
+      <div className="md:hidden space-y-2">
+        {visible.map(c => (
+          <div key={c.id} className={`panel p-3 ${c.active ? "" : "opacity-50"}`}>
+            <div className="flex items-center justify-between gap-2">
+              <span className="inline-flex items-center gap-2 min-w-0 flex-1">
+                <ClassIcon cls={c.class} size={22} />
+                <span className="min-w-0">
+                  <div className="font-semibold truncate" style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</div>
+                  <div className="text-xs text-neutral-400 truncate">{c.spec}</div>
+                </span>
+              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/5 text-neutral-300">
+                {c.role}
+              </span>
+            </div>
+            {admin && (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Select
+                  size="sm"
+                  value={c.role}
+                  onValueChange={v => patch(c.id, { role: v })}
+                  triggerClassName="!w-24"
+                  options={[
+                    { value: "tank", label: "tank" },
+                    { value: "heal", label: "heal" },
+                    { value: "dps",  label: "dps" },
+                  ]}
+                />
+                <label className="inline-flex items-center gap-1.5 text-xs text-neutral-400 min-h-[28px]">
+                  <input
+                    type="checkbox"
+                    checked={c.active}
+                    onChange={e => patch(c.id, { active: e.target.checked })}
+                    className="accent-vermillion-500 w-4 h-4"
+                  />
+                  active
+                </label>
+                <button className="btn-danger btn-xs ml-auto" onClick={() => remove(c.id)}>Delete</button>
+              </div>
+            )}
+          </div>
+        ))}
+        {visible.length === 0 && (
+          <div className="panel px-4 py-12 text-center text-neutral-500 text-sm">
+            {search ? `No characters match "${search}".` : "No characters yet."}
+          </div>
+        )}
+      </div>
+
+      {/* Desktop: full table */}
+      <div className="hidden md:block panel overflow-hidden">
         <table className="table">
           <thead>
             <tr>
