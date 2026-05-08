@@ -17,8 +17,8 @@ export const metadata: Metadata = {
   title: "Rising Sun Loot Log - and he say me i noob LOL",
   description: "Rising Sun guild loot tracker for the 'and he say me i noob LOL' guild — Burning Crusade Classic raid rosters, attendance, and BiS-weighted loot scoring.",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: "/logo.PNG",
+    apple: "/logo.PNG",
   },
 };
 
