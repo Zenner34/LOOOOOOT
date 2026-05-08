@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CLASS_COLOR, SPECS } from "@/lib/specs";
+import { ClassIcon } from "@/app/components/ClassIcon";
 
 type Character = {
   id: number;
@@ -14,17 +15,40 @@ type Character = {
   active: boolean;
 };
 
+type SortKey = "name" | "class" | "role" | "active";
+type SortDir = "asc" | "desc";
+
 export default function CharactersClient({ initial, admin }: { initial: Character[]; admin: boolean }) {
   const router = useRouter();
   const [chars, setChars] = useState(initial);
   const [name, setName] = useState("");
   const [spec, setSpec] = useState(SPECS[0].key);
   const [busy, setBusy] = useState(false);
+  const [search, setSearch] = useState("");
+  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
-  const sorted = useMemo(
-    () => [...chars].sort((a, b) => a.role.localeCompare(b.role) || a.name.localeCompare(b.name)),
-    [chars],
-  );
+  function toggleSort(k: SortKey) {
+    if (k === sortKey) setSortDir(d => d === "asc" ? "desc" : "asc");
+    else { setSortKey(k); setSortDir("asc"); }
+  }
+
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    let rows = q
+      ? chars.filter(c => c.name.toLowerCase().includes(q) || c.class.toLowerCase().includes(q) || c.spec.toLowerCase().includes(q))
+      : chars;
+    rows = [...rows].sort((a, b) => {
+      const dir = sortDir === "asc" ? 1 : -1;
+      switch (sortKey) {
+        case "name":   return a.name.localeCompare(b.name) * dir;
+        case "class":  return (a.class.localeCompare(b.class) || a.spec.localeCompare(b.spec)) * dir;
+        case "role":   return (a.role.localeCompare(b.role) || a.name.localeCompare(b.name)) * dir;
+        case "active": return ((Number(b.active) - Number(a.active)) || a.name.localeCompare(b.name)) * dir;
+      }
+    });
+    return rows;
+  }, [chars, search, sortKey, sortDir]);
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
@@ -76,11 +100,17 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
     }
   }
 
+  const sortIndicator = (k: SortKey) =>
+    k === sortKey ? (sortDir === "asc" ? "↑" : "↓") : "";
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Characters</h1>
-        <span className="text-sm text-neutral-400">{chars.length} total</span>
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex items-end justify-between flex-wrap gap-3">
+        <div>
+          <span className="heading-eyebrow">Roster</span>
+          <h1 className="text-2xl font-bold tracking-tight">Characters</h1>
+        </div>
+        <span className="text-sm text-neutral-400">{chars.length} total{search && ` · ${visible.length} match search`}</span>
       </div>
 
       {admin && (
@@ -97,26 +127,56 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
               ))}
             </select>
           </div>
-          <button className="btn-primary" disabled={busy}>Add</button>
+          <button className="btn-primary" disabled={busy || !name.trim()}>Add</button>
         </form>
       )}
+
+      <div className="flex flex-wrap items-center gap-3">
+        <input
+          className="input max-w-sm"
+          placeholder="Search by name, class, or spec…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+      </div>
 
       <div className="panel overflow-hidden">
         <table className="table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Class / Spec</th>
-              <th>Role</th>
-              <th>Active</th>
+              <th>
+                <button onClick={() => toggleSort("name")} className="hover:text-vermillion-200 transition">
+                  Name {sortIndicator("name")}
+                </button>
+              </th>
+              <th>
+                <button onClick={() => toggleSort("class")} className="hover:text-vermillion-200 transition">
+                  Class / Spec {sortIndicator("class")}
+                </button>
+              </th>
+              <th>
+                <button onClick={() => toggleSort("role")} className="hover:text-vermillion-200 transition">
+                  Role {sortIndicator("role")}
+                </button>
+              </th>
+              <th>
+                <button onClick={() => toggleSort("active")} className="hover:text-vermillion-200 transition">
+                  Active {sortIndicator("active")}
+                </button>
+              </th>
               {admin && <th></th>}
             </tr>
           </thead>
           <tbody>
-            {sorted.map(c => (
-              <tr key={c.id}>
-                <td className="font-medium" style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</td>
-                <td className="text-neutral-300">{c.spec}</td>
+            {visible.map(c => (
+              <tr key={c.id} className={c.active ? "" : "opacity-50"}>
+                <td className="font-medium">
+                  <span className="inline-flex items-center gap-2">
+                    <ClassIcon cls={c.class} size={20} />
+                    <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</span>
+                  </span>
+                </td>
+                <td className="text-neutral-300 text-sm">{c.spec}</td>
                 <td>
                   {admin ? (
                     <select
@@ -136,18 +196,23 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
                       type="checkbox"
                       checked={c.active}
                       onChange={e => patch(c.id, { active: e.target.checked })}
+                      className="accent-vermillion-500"
                     />
                   ) : (c.active ? "yes" : "no")}
                 </td>
                 {admin && (
                   <td className="text-right">
-                    <button className="btn-danger" onClick={() => remove(c.id)}>Delete</button>
+                    <button className="btn-danger btn-xs" onClick={() => remove(c.id)}>Delete</button>
                   </td>
                 )}
               </tr>
             ))}
-            {sorted.length === 0 && (
-              <tr><td colSpan={admin ? 5 : 4} className="py-6 text-center text-neutral-500">No characters yet.</td></tr>
+            {visible.length === 0 && (
+              <tr>
+                <td colSpan={admin ? 5 : 4} className="py-10 text-center text-neutral-500">
+                  {search ? `No characters match "${search}".` : "No characters yet."}
+                </td>
+              </tr>
             )}
           </tbody>
         </table>

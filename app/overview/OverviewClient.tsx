@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { CLASS_COLOR, BUCKETS, BUCKET_LABEL, bucketForSpec, type Bucket } from "@/lib/specs";
 import { weightedScore, itemCount, weightFor, type ScoringAward } from "@/lib/scoring";
 import { WowheadLink } from "@/lib/wowhead";
+import { ClassIcon } from "@/app/components/ClassIcon";
 
 type Character = {
   id: number;
@@ -326,10 +327,11 @@ export default function OverviewClient({
                         {r.characters.map(c => (
                           <span
                             key={c.id}
-                            className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 ${c.isMain ? "bg-gold-400/10 ring-1 ring-gold-400/25" : "bg-white/5"}`}
+                            className={`inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 ${c.isMain ? "bg-gold-400/10 ring-1 ring-gold-400/25" : "bg-white/5"}`}
                             title={`${c.spec} · ${c.role}`}
                           >
                             {c.isMain && <span className="text-gold-300 text-[9px] leading-none">★</span>}
+                            <ClassIcon cls={c.class} size={14} />
                             <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</span>
                             <span className="text-neutral-500">· {c.spec}</span>
                           </span>
