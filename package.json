@@ -13,6 +13,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset --force",
     "import:roster": "tsx scripts/import-roster.ts",
+    "gen:roster-sql": "tsx scripts/generate-roster-sql.ts",
+    "gen:loot-sql": "tsx scripts/generate-loot-sql.ts",
     "vercel-build": "prisma generate && prisma migrate deploy && tsx prisma/seed.ts && next build"
   },
   "prisma": {
