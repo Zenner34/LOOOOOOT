@@ -6,6 +6,7 @@ import { Command } from "cmdk";
 import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
 import { WowheadLink } from "@/lib/wowhead";
+import { iconFor } from "@/lib/wowhead-lookup";
 import { Select } from "@/app/components/Select";
 
 type Weight = { spec: string; weight: number };
@@ -337,9 +338,28 @@ function ItemCard({ item, roster, onAssign }: { item: Item; roster?: Roster; onA
 
   return (
     <li className="rounded-lg bg-white/[0.02] ring-1 ring-white/5 p-3 hover:ring-white/10 transition">
-      <div className="flex items-baseline justify-between gap-2 mb-2">
-        <div className="min-w-0">
-          <WowheadLink name={item.name} wowheadId={item.wowheadId} />
+      <div className="flex items-center gap-2.5 mb-3 min-w-0">
+        <ItemIcon name={item.name} size={32} />
+        <div className="min-w-0 flex-1">
+          {item.wowheadId ? (
+            <a
+              href={`https://www.wowhead.com/tbc/item=${item.wowheadId}`}
+              data-wowhead={`item=${item.wowheadId}&domain=tbc-classic`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold leading-tight truncate block hover:underline"
+              style={{ color: "#a335ee" }}
+            >
+              {item.name}
+            </a>
+          ) : (
+            <span
+              className="font-semibold leading-tight truncate block"
+              style={{ color: "#a335ee" }}
+            >
+              {item.name}
+            </span>
+          )}
           <div className="text-[11px] text-neutral-500 mt-0.5">
             {item.slot ?? ""}{item.itemLevel != null ? ` · iLvl ${item.itemLevel}` : ""}
           </div>
@@ -371,6 +391,30 @@ function ItemCard({ item, roster, onAssign }: { item: Item; roster?: Roster; onA
         >Assign</button>
       </div>
     </li>
+  );
+}
+
+// Wowhead item icon. Looks up the icon name from the bundled
+// wowhead-ids.json; falls back to the question-mark placeholder if the
+// item isn't in the verified list. Renders an explicit <img> instead of
+// relying on Wowhead's iconizeLinks JS so the icon shows up consistently
+// even before/without the tooltip script attaching.
+const ICON_BASE = "https://wow.zamimg.com/images/wow/icons/medium/";
+const FALLBACK_ICON = `${ICON_BASE}inv_misc_questionmark.jpg`;
+function ItemIcon({ name, size = 28 }: { name: string; size?: number }) {
+  const iconName = iconFor(name);
+  const src = iconName ? `${ICON_BASE}${iconName.toLowerCase()}.jpg` : FALLBACK_ICON;
+  return (
+    <img
+      src={src}
+      alt=""
+      width={size}
+      height={size}
+      loading="lazy"
+      className="rounded-md ring-1 ring-purple-500/40 flex-shrink-0"
+      style={{ width: size, height: size }}
+      onError={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK_ICON; }}
+    />
   );
 }
 
