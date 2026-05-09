@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef, type ReactNode } from "react";
 import Link from "next/link";
+import { Command } from "cmdk";
 import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
 import { WowheadLink } from "@/lib/wowhead";
@@ -345,14 +346,14 @@ function ItemCard({ item, roster, onAssign }: { item: Item; roster?: Roster; onA
         </div>
       </div>
       <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-        <Select
-          size="sm"
+        <RecipientCombobox
           value={sel ? String(sel) : ""}
           onValueChange={v => setSel(Number(v) || "")}
           placeholder="Pick recipient…"
           triggerClassName="w-full sm:min-w-[260px] sm:flex-1"
           options={ranked.map(({ m }) => ({
             value: String(m.characterId),
+            searchKey: `${m.character.name} ${m.character.spec} ${m.character.class}`,
             label: (
               <span className="inline-flex items-center gap-2 w-full">
                 <span style={{ color: CLASS_COLOR[m.character.class] ?? "#fff" }} className="font-medium">
@@ -370,5 +371,97 @@ function ItemCard({ item, roster, onAssign }: { item: Item; roster?: Roster; onA
         >Assign</button>
       </div>
     </li>
+  );
+}
+
+// Searchable single-select combobox. Built on cmdk so typing fuzzy-filters
+// the options. Click outside / Escape closes it. Ranked-order from the
+// caller is preserved when the search box is empty.
+function RecipientCombobox({
+  value, onValueChange, options, placeholder, triggerClassName,
+}: {
+  value: string;
+  onValueChange: (v: string) => void;
+  options: Array<{ value: string; searchKey: string; label: ReactNode }>;
+  placeholder: string;
+  triggerClassName?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDoc(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setSearch("");
+      }
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setOpen(false);
+        setSearch("");
+      }
+    }
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const selected = options.find(o => o.value === value);
+
+  return (
+    <div ref={wrapRef} className={`relative ${triggerClassName ?? ""}`}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className="group inline-flex items-center justify-between gap-2 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-sm text-neutral-100 outline-none transition hover:border-white/20 focus:border-vermillion-400/60 focus:ring-2 focus:ring-vermillion-500/20"
+      >
+        <span className="truncate flex-1 text-left">
+          {selected ? selected.label : <span className="text-neutral-500">{placeholder}</span>}
+        </span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-400 transition group-hover:text-neutral-200 flex-shrink-0">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute z-40 mt-1 w-full min-w-[260px] rounded-lg border border-white/10 bg-[var(--surface)] shadow-2xl overflow-hidden">
+          <Command shouldFilter={true} loop>
+            <Command.Input
+              autoFocus
+              value={search}
+              onValueChange={setSearch}
+              placeholder="Search by name, class, or spec…"
+              className="w-full bg-transparent border-b border-white/10 px-3 py-2 text-sm placeholder:text-neutral-500 outline-none"
+            />
+            <Command.List className="max-h-60 overflow-y-auto p-1">
+              <Command.Empty className="px-3 py-4 text-center text-xs text-neutral-500">
+                No matches.
+              </Command.Empty>
+              {options.map(opt => (
+                <Command.Item
+                  key={opt.value}
+                  value={opt.searchKey}
+                  onSelect={() => {
+                    onValueChange(opt.value);
+                    setOpen(false);
+                    setSearch("");
+                  }}
+                  className="px-2 py-1.5 rounded-md cursor-pointer text-sm aria-selected:bg-vermillion-500/15 aria-selected:text-vermillion-100 data-[selected=true]:bg-vermillion-500/15 data-[selected=true]:text-vermillion-100"
+                >
+                  {opt.label}
+                </Command.Item>
+              ))}
+            </Command.List>
+          </Command>
+        </div>
+      )}
+    </div>
   );
 }
