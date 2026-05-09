@@ -19,18 +19,33 @@ export default function Footer() {
             · and he say me i noob LOL
           </span>
         </Link>
-        <a
-          href="https://fresh.warcraftlogs.com/guild/id/775140"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-sm text-neutral-400 hover:text-gold-200 transition"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M3 12 12 3l9 9M5 10v10h14V10" />
-          </svg>
-          Warcraft Logs
-          <span aria-hidden="true">↗</span>
-        </a>
+        <div className="flex items-center gap-4 flex-wrap">
+          <a
+            href="https://fresh.warcraftlogs.com/guild/id/775140"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm text-neutral-400 hover:text-gold-200 transition"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M3 3v18h18" />
+              <path d="M7 14l3-3 3 3 5-5" />
+            </svg>
+            Warcraft Logs
+            <span aria-hidden="true" className="text-neutral-600">↗</span>
+          </a>
+          <a
+            href="https://discord.gg/rcPbtZNNbT"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm text-neutral-400 hover:text-vermillion-200 transition"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            Guild Discord
+            <span aria-hidden="true" className="text-neutral-600">↗</span>
+          </a>
+        </div>
       </div>
     </footer>
   );
