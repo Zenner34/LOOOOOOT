@@ -10,9 +10,7 @@
   body {
     padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 24px);
   }
-}
-
-:root {
+}:root {
   color-scheme: dark;
   --bg: #08090b;
   --bg-elev: #0d0f13;
@@ -30,7 +28,12 @@
   --gold-dim: #FFE665;      /* gold-200 */
 }
 
-html, body { height: 100%; }
+html, body { min-height: 100%; }
+/* `min-height` (not `height`) so the body can grow past the viewport when
+   content + bottom padding exceeds it. With `height: 100%` the body is
+   capped at viewport height and the mobile tab bar's reserved padding
+   (set above) gets eaten by Tailwind's box-sizing: border-box, leaving
+   the last row of content covered. */
 
 body {
   background:
