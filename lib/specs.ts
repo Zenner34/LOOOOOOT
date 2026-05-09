@@ -77,6 +77,48 @@ export function bucketForSpec(specKey: string): Exclude<Bucket, "all"> | null {
   return s.damageType ?? "melee";
 }
 
+// Canonical talent-tree icons per spec (Wowhead/Blizzard icon names).
+// Served from https://wow.zamimg.com/images/wow/icons/medium/<name>.jpg
+export const SPEC_ICON: Record<string, string> = {
+  // Warrior
+  "Arms Warrior":           "ability_warrior_savageblow",
+  "Fury Warrior":           "ability_warrior_innerrage",
+  "Protection Warrior":     "ability_warrior_defensivestance",
+  // Paladin
+  "Holy Paladin":           "spell_holy_holybolt",
+  "Protection Paladin":     "spell_holy_devotionaura",
+  "Retribution Paladin":    "spell_holy_auraoflight",
+  // Hunter
+  "Beast Mastery Hunter":   "ability_hunter_beasttaming",
+  "Marksmanship Hunter":    "ability_marksmanship",
+  "Survival Hunter":        "ability_hunter_swiftstrike",
+  // Rogue
+  "Assassination Rogue":    "ability_rogue_eviscerate",
+  "Combat Rogue":           "ability_backstab",
+  "Subtlety Rogue":         "ability_stealth",
+  // Priest
+  "Discipline Priest":      "spell_holy_wordfortitude",
+  "Holy Priest":            "spell_holy_guardianspirit",
+  "Shadow Priest":          "spell_shadow_shadowwordpain",
+  // Shaman
+  "Elemental Shaman":       "spell_nature_lightning",
+  "Enhancement Shaman":     "spell_nature_lightningshield",
+  "Restoration Shaman":     "spell_nature_magicimmunity",
+  // Mage
+  "Arcane Mage":            "spell_holy_magicalsentry",
+  "Fire Mage":              "spell_fire_firebolt02",
+  "Frost Mage":             "spell_frost_frostbolt02",
+  // Warlock
+  "Affliction Warlock":     "spell_shadow_deathcoil",
+  "Demonology Warlock":     "spell_shadow_metamorphosis",
+  "Destruction Warlock":    "spell_shadow_rainoffire",
+  // Druid
+  "Balance Druid":          "spell_nature_starfall",
+  "Feral Druid (DPS)":      "ability_racial_bearform",
+  "Feral Druid (Tank)":     "ability_racial_bearform",
+  "Restoration Druid":      "spell_nature_healingtouch",
+};
+
 // TBC class color palette (approximate WoW client colors).
 export const CLASS_COLOR: Record<string, string> = {
   Warrior:  "#C79C6E",

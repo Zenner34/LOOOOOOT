@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CLASS_COLOR, SPECS } from "@/lib/specs";
 import { ClassIcon } from "@/app/components/ClassIcon";
+import { SpecIcon } from "@/app/components/SpecIcon";
 import { Select } from "@/app/components/Select";
 
 type Character = {
@@ -31,7 +32,18 @@ const specGroups = (() => {
   }
   return Array.from(byClass.entries()).map(([cls, specs]) => ({
     label: cls,
-    options: specs.map(s => ({ value: s.key, label: s.key.replace(`${cls} `, "").replace(` ${cls}`, "") })),
+    options: specs.map(s => {
+      const shortName = s.key.replace(`${cls} `, "").replace(` ${cls}`, "");
+      return {
+        value: s.key,
+        label: (
+          <span className="inline-flex items-center gap-2">
+            <SpecIcon spec={s.key} size={16} />
+            <span>{shortName}</span>
+          </span>
+        ),
+      };
+    }),
   }));
 })();
 
