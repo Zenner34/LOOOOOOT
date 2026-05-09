@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
 import { ClassIcon } from "@/app/components/ClassIcon";
+import { SpecIcon } from "@/app/components/SpecIcon";
 
 type Character = { id: number; name: string; class: string; spec: string; role: string };
 type Member = { characterId: number; memberRole: string; character: Character };
@@ -102,7 +103,7 @@ export default function NightClient({ night, admin }: {
         {night.roster.members.map(m => (
           <div key={m.characterId} className="panel p-3">
             <div className="flex items-center gap-2">
-              <ClassIcon cls={m.character.class} size={18} />
+              <SpecIcon spec={m.character.spec} size={18} />
               <span className="font-medium" style={{ color: CLASS_COLOR[m.character.class] ?? "#fff" }}>
                 {m.character.name}
               </span>
@@ -146,7 +147,7 @@ export default function NightClient({ night, admin }: {
               <tr key={m.characterId}>
                 <td className="font-medium">
                   <span className="inline-flex items-center gap-2">
-                    <ClassIcon cls={m.character.class} size={18} />
+                    <SpecIcon spec={m.character.spec} size={18} />
                     <span style={{ color: CLASS_COLOR[m.character.class] ?? "#fff" }}>{m.character.name}</span>
                   </span>
                 </td>

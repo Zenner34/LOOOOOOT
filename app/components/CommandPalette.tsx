@@ -4,6 +4,7 @@ import { Command } from "cmdk";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CLASS_COLOR } from "@/lib/specs";
+import { SpecIcon } from "@/app/components/SpecIcon";
 
 type Player = { id: number; displayName: string };
 type Character = { id: number; name: string; class: string; spec: string; playerId: number | null };
@@ -136,8 +137,11 @@ export default function CommandPalette({ admin = false }: { admin?: boolean }) {
                   onSelect={() => c.playerId ? jump(`/players/${c.playerId}`) : jump("/characters")}
                   className="px-2 py-2 rounded-md text-sm cursor-pointer data-[selected=true]:bg-vermillion-500/10"
                 >
-                  <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }} className="font-medium">{c.name}</span>
-                  <span className="text-neutral-500 text-xs"> · {c.spec}</span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <SpecIcon spec={c.spec} size={14} />
+                    <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }} className="font-medium">{c.name}</span>
+                    <span className="text-neutral-500 text-xs">· {c.spec}</span>
+                  </span>
                 </Command.Item>
               ))}
             </Command.Group>

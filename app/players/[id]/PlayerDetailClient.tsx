@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CLASS_COLOR } from "@/lib/specs";
 import { ClassIcon } from "@/app/components/ClassIcon";
+import { SpecIcon } from "@/app/components/SpecIcon";
 import { WowheadLink } from "@/lib/wowhead";
 
 type Char = {
@@ -193,7 +194,7 @@ export default function PlayerDetailClient({
                 <div key={c.id} className={`flex items-center justify-between rounded-md px-2 py-1.5 ${c.isMain ? "bg-gold-400/10 ring-1 ring-gold-400/25" : "bg-white/[0.03]"}`}>
                   <div className="flex items-center gap-2">
                     {c.isMain && <span className="text-gold-300 text-xs leading-none" title="main">★</span>}
-                    <ClassIcon cls={c.class} size={16} />
+                    <SpecIcon spec={c.spec} size={16} />
                     <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }} className="font-medium text-sm">{c.name}</span>
                     <span className="text-xs text-neutral-500">{c.spec}</span>
                   </div>
@@ -217,7 +218,7 @@ export default function PlayerDetailClient({
                       onClick={async () => { await bind(o.id, player.characters.length === 0); setAdding(false); }}
                       className="chip hover:bg-vermillion-500/10 hover:border-vermillion-500/40"
                     >
-                      <ClassIcon cls={o.class} size={14} />
+                      <SpecIcon spec={o.spec} size={14} />
                       <span style={{ color: CLASS_COLOR[o.class] ?? "#fff" }}>{o.name}</span>
                       <span className="text-neutral-500">· {o.spec}</span>
                     </button>
@@ -303,8 +304,11 @@ export default function PlayerDetailClient({
                           <td className="w-1/3"><WowheadLink name={a.item.name} wowheadId={a.item.wowheadId} /></td>
                           <td className="text-xs text-neutral-400">{a.item.boss.name} <span className="text-neutral-600">· {a.item.boss.raid.shortName}</span></td>
                           <td className="text-xs">
-                            <span style={{ color: CLASS_COLOR[a.character.class] ?? "#fff" }}>{a.character.name}</span>
-                            <span className="text-neutral-500"> · {a.character.spec}</span>
+                            <span className="inline-flex items-center gap-1.5">
+                              <SpecIcon spec={a.character.spec} size={12} />
+                              <span style={{ color: CLASS_COLOR[a.character.class] ?? "#fff" }}>{a.character.name}</span>
+                              <span className="text-neutral-500">· {a.character.spec}</span>
+                            </span>
                           </td>
                         </tr>
                       ))}

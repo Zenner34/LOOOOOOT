@@ -7,6 +7,7 @@ import { CLASS_COLOR, BUCKETS, BUCKET_LABEL, bucketForSpec, type Bucket } from "
 import { itemCount, type ScoringAward } from "@/lib/scoring";
 import { WowheadLink } from "@/lib/wowhead";
 import { ClassIcon } from "@/app/components/ClassIcon";
+import { SpecIcon } from "@/app/components/SpecIcon";
 import { Select } from "@/app/components/Select";
 
 type Character = {
@@ -311,7 +312,7 @@ export default function OverviewClient({
                         className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 ${c.isMain ? "bg-gold-400/10 ring-1 ring-gold-400/25" : "bg-white/5"}`}
                       >
                         {c.isMain && <span className="text-gold-300 text-[9px]">★</span>}
-                        <ClassIcon cls={c.class} size={12} />
+                        <SpecIcon spec={c.spec} size={12} />
                         <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</span>
                       </span>
                     ))}
@@ -421,7 +422,7 @@ export default function OverviewClient({
                             title={`${c.spec} · ${c.role}`}
                           >
                             {c.isMain && <span className="text-gold-300 text-[9px] leading-none">★</span>}
-                            <ClassIcon cls={c.class} size={14} />
+                            <SpecIcon spec={c.spec} size={14} />
                             <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</span>
                             <span className="text-neutral-500">· {c.spec}</span>
                           </span>

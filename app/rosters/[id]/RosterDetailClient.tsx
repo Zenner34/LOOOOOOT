@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
 import { Select } from "@/app/components/Select";
 import { ClassIcon } from "@/app/components/ClassIcon";
+import { SpecIcon } from "@/app/components/SpecIcon";
 
 type Roster = { id: number; name: string; description: string | null };
 type Character = { id: number; name: string; class: string; spec: string; role: string; active: boolean; isMain: boolean };
@@ -112,7 +113,7 @@ export default function RosterDetailClient(props: {
                 value: String(c.id),
                 label: (
                   <span className="inline-flex items-center gap-2">
-                    <ClassIcon cls={c.class} size={14} />
+                    <SpecIcon spec={c.spec} size={14} />
                     <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</span>
                     <span className="text-neutral-500 text-xs">{c.spec}</span>
                   </span>
@@ -134,7 +135,7 @@ export default function RosterDetailClient(props: {
             <ul className="space-y-1">
               {(grouped[role] ?? []).map(m => (
                 <li key={m.id} className="flex items-center gap-2 text-sm rounded-md hover:bg-white/[0.02] transition py-1 -mx-1 px-1">
-                  <ClassIcon cls={m.character.class} size={16} />
+                  <SpecIcon spec={m.character.spec} size={16} />
                   <span className="flex-1 min-w-0 truncate font-medium" style={{ color: CLASS_COLOR[m.character.class] ?? "#fff" }}>
                     {m.character.name}
                   </span>

@@ -176,7 +176,7 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
           <div key={c.id} className={`panel p-3 ${c.active ? "" : "opacity-50"}`}>
             <div className="flex items-center justify-between gap-2">
               <span className="inline-flex items-center gap-2 min-w-0 flex-1">
-                <ClassIcon cls={c.class} size={22} />
+                <SpecIcon spec={c.spec} size={22} />
                 <span className="min-w-0">
                   <div className="font-semibold truncate" style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</div>
                   <div className="text-xs text-neutral-400 truncate">{c.spec}</div>
@@ -189,6 +189,13 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
             </div>
             {admin && (
               <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Select
+                  size="sm"
+                  value={c.spec}
+                  onValueChange={v => patch(c.id, { spec: v })}
+                  groups={specGroups}
+                  triggerClassName="!min-w-[160px]"
+                />
                 <Select
                   size="sm"
                   value={c.isMain ? "main" : "alt"}
@@ -269,11 +276,21 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
               <tr key={c.id} className={c.active ? "" : "opacity-50"}>
                 <td className="font-medium">
                   <span className="inline-flex items-center gap-2">
-                    <ClassIcon cls={c.class} size={20} />
+                    <SpecIcon spec={c.spec} size={20} />
                     <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</span>
                   </span>
                 </td>
-                <td className="text-neutral-300 text-sm">{c.spec}</td>
+                <td className="text-neutral-300 text-sm">
+                  {admin ? (
+                    <Select
+                      size="sm"
+                      value={c.spec}
+                      onValueChange={v => patch(c.id, { spec: v })}
+                      groups={specGroups}
+                      triggerClassName="!min-w-[180px]"
+                    />
+                  ) : c.spec}
+                </td>
                 <td>
                   {admin ? (
                     <Select

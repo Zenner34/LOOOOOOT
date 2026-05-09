@@ -6,6 +6,7 @@ import { Command } from "cmdk";
 import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
 import { WowheadLink } from "@/lib/wowhead";
+import { SpecIcon } from "@/app/components/SpecIcon";
 import { Select } from "@/app/components/Select";
 
 type Weight = { spec: string; weight: number };
@@ -354,6 +355,7 @@ function ItemCard({ item, roster, onAssign }: { item: Item; roster?: Roster; onA
             searchKey: `${m.character.name} ${m.character.spec} ${m.character.class}`,
             label: (
               <span className="inline-flex items-center gap-2 w-full">
+                <SpecIcon spec={m.character.spec} size={14} />
                 <span style={{ color: CLASS_COLOR[m.character.class] ?? "#fff" }} className="font-medium">
                   {m.character.name}
                 </span>
