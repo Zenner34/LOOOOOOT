@@ -180,11 +180,11 @@ export default function AssignClient({ phases, rosters, recent, admin }: {
         <div className="min-w-[180px]">
           <label className="label">Raid night</label>
           <Select
-            value={String(raidNightId || "")}
-            onValueChange={v => setRaidNightId(Number(v) || "")}
+            value={raidNightId ? String(raidNightId) : "none"}
+            onValueChange={v => setRaidNightId(v === "none" ? "" : (Number(v) || ""))}
             placeholder="— none —"
             options={[
-              { value: "", label: "— none —" },
+              { value: "none", label: "— none —" },
               ...(activeRoster?.raidNights ?? []).map(n => ({
                 value: String(n.id),
                 label: new Date(n.date).toISOString().slice(0, 10),
@@ -347,24 +347,21 @@ function ItemCard({ item, roster, onAssign }: { item: Item; roster?: Roster; onA
       <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
         <Select
           size="sm"
-          value={String(sel || "")}
+          value={sel ? String(sel) : ""}
           onValueChange={v => setSel(Number(v) || "")}
           placeholder="Pick recipient…"
           triggerClassName="w-full sm:min-w-[260px] sm:flex-1"
-          options={[
-            { value: "", label: <span className="text-neutral-500">Pick recipient…</span> },
-            ...ranked.map(({ m }) => ({
-              value: String(m.characterId),
-              label: (
-                <span className="inline-flex items-center gap-2 w-full">
-                  <span style={{ color: CLASS_COLOR[m.character.class] ?? "#fff" }} className="font-medium">
-                    {m.character.name}
-                  </span>
-                  <span className="text-neutral-500 text-xs">{m.character.spec}</span>
+          options={ranked.map(({ m }) => ({
+            value: String(m.characterId),
+            label: (
+              <span className="inline-flex items-center gap-2 w-full">
+                <span style={{ color: CLASS_COLOR[m.character.class] ?? "#fff" }} className="font-medium">
+                  {m.character.name}
                 </span>
-              ),
-            })),
-          ]}
+                <span className="text-neutral-500 text-xs">{m.character.spec}</span>
+              </span>
+            ),
+          }))}
         />
         <button
           className="btn-primary"

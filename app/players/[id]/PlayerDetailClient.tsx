@@ -166,7 +166,7 @@ export default function PlayerDetailClient({
           <Stat label="Items" value={String(totalCount)} />
           <Stat
             label="Last loot"
-            value={daysAgo == null ? "—" : daysAgo === 0 ? "today" : `${daysAgo}d ago`}
+            value={daysAgo == null ? "—" : daysAgo === 0 ? "today" : `${daysAgo}d`}
             tone={
               daysAgo == null ? "muted" :
               daysAgo < 7  ? "fresh" :

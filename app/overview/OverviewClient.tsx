@@ -59,11 +59,11 @@ function daysAgo(d: Date | string | null | undefined): number | null {
 function lastLootBadge(days: number | null): { text: string; tone: "fresh" | "warm" | "cold" | "icy" | "none" } {
   if (days == null) return { text: "no loot yet", tone: "none" };
   if (days === 0) return { text: "today", tone: "fresh" };
-  if (days === 1) return { text: "1 day ago", tone: "fresh" };
-  if (days < 7) return { text: `${days} days ago`, tone: "fresh" };
-  if (days < 14) return { text: `${days} days ago`, tone: "warm" };
-  if (days < 30) return { text: `${days} days ago`, tone: "cold" };
-  return { text: `${days} days ago`, tone: "icy" };
+  if (days === 1) return { text: "1 day", tone: "fresh" };
+  if (days < 7) return { text: `${days} days`, tone: "fresh" };
+  if (days < 14) return { text: `${days} days`, tone: "warm" };
+  if (days < 30) return { text: `${days} days`, tone: "cold" };
+  return { text: `${days} days`, tone: "icy" };
 }
 const TONE_CLASS: Record<"fresh" | "warm" | "cold" | "icy" | "none", string> = {
   fresh: "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/25",
