@@ -129,6 +129,21 @@ body {
   .nav-link-active {
     @apply relative px-3 py-1.5 rounded-lg text-sm font-semibold text-vermillion-200 bg-vermillion-500/10;
   }
+
+  /* Polish utilities used across the design system. */
+  .eyebrow      { @apply text-[11px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90; }
+  .hairline     { @apply border-white/[0.06]; }
+  .surface-muted { @apply rounded-lg bg-white/[0.025] border border-white/[0.04]; }
+
+  /* Hover lift on cards used as links/buttons. Pair with a transition utility. */
+  .hoverable    { @apply transition-transform duration-150 ease-out hover:-translate-y-0.5; }
+  /* Press feedback on interactive controls. */
+  .press        { @apply active:scale-[0.98] transition-transform duration-100; }
+}
+
+/* Apply press feedback to every button primitive automatically. */
+.btn, .btn-primary, .btn-ghost, .btn-danger, .btn-gold {
+  @apply active:scale-[0.98] transition-transform duration-100;
 }
 
 a.wh { @apply text-gold-200 hover:text-gold-100; }
@@ -143,4 +158,28 @@ a.wh { @apply text-gold-200 hover:text-gold-100; }
 /* Prevent iOS Safari from zooming inputs on focus */
 @media (max-width: 767px) {
   input, select, textarea { font-size: 16px; }
+}
+
+/* Cross-document view transitions. Chromium honors these; other browsers
+   ignore them gracefully. Gives a soft crossfade on every same-origin
+   navigation without any per-route wiring. */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 180ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+  .animate-fade-in,
+  .animate-pulse {
+    animation: none !important;
+  }
 }

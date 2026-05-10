@@ -49,7 +49,7 @@ export default function AttendanceIndexClient({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <span className="heading-eyebrow">Roster</span>
         <h1 className="text-2xl font-bold tracking-tight">Raid nights</h1>
