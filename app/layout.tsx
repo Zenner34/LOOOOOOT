@@ -7,6 +7,7 @@ import NavBar from "./components/NavBar";
 import MobileTabBar from "./components/MobileTabBar";
 import CommandPalette from "./components/CommandPalette";
 import Footer from "./components/Footer";
+import { TooltipProvider } from "./components/ui/Tooltip";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -41,11 +42,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script src="https://wow.zamimg.com/js/tooltips.js" defer></script>
       </head>
       <body className="font-sans">
-        <NavBar admin={admin} />
-        <main className="mx-auto max-w-7xl px-4 py-6 md:py-8">{children}</main>
-        <Footer />
-        <MobileTabBar admin={admin} />
-        <CommandPalette admin={admin} />
+        <TooltipProvider delayDuration={200} skipDelayDuration={300}>
+          <NavBar admin={admin} />
+          <main className="mx-auto max-w-7xl px-4 py-6 md:py-8">{children}</main>
+          <Footer />
+          <MobileTabBar admin={admin} />
+          <CommandPalette admin={admin} />
+        </TooltipProvider>
         <Toaster
           theme="dark"
           position="top-right"

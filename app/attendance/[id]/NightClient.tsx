@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
 import { ClassIcon } from "@/app/components/ClassIcon";
 import { SpecIcon } from "@/app/components/SpecIcon";
+import { EmptyState } from "@/app/components/ui/EmptyState";
+import { Users } from "@/app/components/ui/Icon";
 
 type Character = { id: number; name: string; class: string; spec: string; role: string };
 type Member = { characterId: number; memberRole: string; character: Character };
@@ -132,7 +134,12 @@ export default function NightClient({ night, admin }: {
           </div>
         ))}
         {night.roster.members.length === 0 && (
-          <div className="panel p-6 text-center text-neutral-500 text-sm">Roster has no members yet.</div>
+          <EmptyState
+            icon={Users}
+            title="Roster has no members"
+            description="Add characters to the roster before tracking attendance."
+            variant="compact"
+          />
         )}
       </div>
 

@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
 import { ClassIcon } from "@/app/components/ClassIcon";
 import { SpecIcon } from "@/app/components/SpecIcon";
+import { EmptyState } from "@/app/components/ui/EmptyState";
+import { Users } from "@/app/components/ui/Icon";
 
 type Char = {
   id: number;
@@ -184,10 +186,11 @@ export default function PlayersClient({
         ))}
 
         {players.length === 0 && (
-          <div className="panel px-6 py-12 text-center text-neutral-400 text-sm">
-            <div className="mb-2 text-3xl opacity-50">⚐</div>
-            No players yet. {admin ? "Add one above to start." : "An admin needs to add the first player."}
-          </div>
+          <EmptyState
+            icon={Users}
+            title="No players yet"
+            description={admin ? "Add one above to start." : "An admin needs to add the first player."}
+          />
         )}
 
         {orphans.length > 0 && (

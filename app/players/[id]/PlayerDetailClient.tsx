@@ -7,6 +7,8 @@ import { CLASS_COLOR } from "@/lib/specs";
 import { ClassIcon } from "@/app/components/ClassIcon";
 import { SpecIcon } from "@/app/components/SpecIcon";
 import { WowheadLink } from "@/lib/wowhead";
+import { EmptyState } from "@/app/components/ui/EmptyState";
+import { Inbox } from "@/app/components/ui/Icon";
 
 type Char = {
   id: number;
@@ -274,8 +276,13 @@ export default function PlayerDetailClient({
           </div>
 
           {grouped.length === 0 ? (
-            <div className="px-6 py-12 text-center text-neutral-500 text-sm">
-              No loot awarded yet.
+            <div className="p-3">
+              <EmptyState
+                icon={Inbox}
+                title="No loot yet"
+                description={`${player.displayName} hasn't received any awards.`}
+                variant="compact"
+              />
             </div>
           ) : (
             <div className="divide-y divide-white/5">

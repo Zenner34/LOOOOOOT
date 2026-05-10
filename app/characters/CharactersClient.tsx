@@ -7,6 +7,8 @@ import { CLASS_COLOR, SPECS } from "@/lib/specs";
 import { ClassIcon } from "@/app/components/ClassIcon";
 import { SpecIcon } from "@/app/components/SpecIcon";
 import { Select } from "@/app/components/Select";
+import { EmptyState } from "@/app/components/ui/EmptyState";
+import { Shield } from "@/app/components/ui/Icon";
 
 type Character = {
   id: number;
@@ -232,9 +234,12 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
           </div>
         ))}
         {visible.length === 0 && (
-          <div className="panel px-4 py-12 text-center text-neutral-500 text-sm">
-            {search ? `No characters match "${search}".` : "No characters yet."}
-          </div>
+          <EmptyState
+            icon={Shield}
+            title={search ? `No characters match "${search}"` : "No characters yet"}
+            description={search ? "Try a broader query or clear the search." : "Add a character to get started."}
+            variant="compact"
+          />
         )}
       </div>
 

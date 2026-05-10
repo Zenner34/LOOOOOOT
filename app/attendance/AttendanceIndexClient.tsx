@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { EmptyState } from "@/app/components/ui/EmptyState";
+import { Calendar } from "@/app/components/ui/Icon";
 import { Select } from "@/app/components/Select";
 
 type Roster = { id: number; name: string };
@@ -103,7 +105,11 @@ export default function AttendanceIndexClient({
           </Link>
         ))}
         {nights.length === 0 && (
-          <div className="panel p-12 text-center text-neutral-500 text-sm">No raid nights yet.</div>
+          <EmptyState
+            icon={Calendar}
+            title="No raid nights yet"
+            description="Schedule a raid night to start tracking attendance and loot."
+          />
         )}
       </div>
 

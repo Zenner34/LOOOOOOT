@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { WowheadItemCell } from "@/lib/wowhead";
 import { iconFor } from "@/lib/wowhead-lookup";
 import { Select } from "@/app/components/Select";
+import { EmptyState } from "@/app/components/ui/EmptyState";
+import { Package } from "@/app/components/ui/Icon";
 
 type Boss = { id: number; name: string };
 type Raid = { id: number; name: string; shortName: string; bosses: Boss[] };
@@ -234,8 +236,13 @@ export default function LootBrowser({
               <span className="hidden lg:inline">Pick a boss from the sidebar to see its drops and award history.</span>
             </div>
           ) : filteredItems.length === 0 ? (
-            <div className="px-6 py-16 text-center text-neutral-500 text-sm">
-              {items.length === 0 ? "No items seeded for this boss yet." : "No items match your search."}
+            <div className="p-3">
+              <EmptyState
+                icon={Package}
+                title={items.length === 0 ? "No items seeded for this boss yet" : "No items match your search"}
+                description={items.length === 0 ? "Items appear here once the seed catalog is updated." : "Try a broader query or clear the filter."}
+                variant="compact"
+              />
             </div>
           ) : (
             <>

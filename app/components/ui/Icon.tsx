@@ -1,0 +1,35 @@
+// Central re-export for the lucide-react icons used across the app.
+// Importing through this shim keeps the surface narrow so future swaps
+// (different icon set, custom SVGs) only touch one file.
+
+export {
+  ArrowDown,
+  ArrowRight,
+  ArrowUp,
+  ArrowUpRight,
+  Award,
+  Calendar,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Cog,
+  Crown,
+  ExternalLink,
+  Eye,
+  Inbox,
+  Info,
+  List,
+  ListOrdered,
+  Minus,
+  Package,
+  Pencil,
+  Plus,
+  Search,
+  Shield,
+  Sparkles,
+  Star,
+  Swords,
+  Trophy,
+  Users,
+  X,
+} from "lucide-react";

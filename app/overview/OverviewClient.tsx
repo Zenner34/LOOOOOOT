@@ -9,6 +9,8 @@ import { WowheadLink } from "@/lib/wowhead";
 import { ClassIcon } from "@/app/components/ClassIcon";
 import { SpecIcon } from "@/app/components/SpecIcon";
 import { Select } from "@/app/components/Select";
+import { EmptyState } from "@/app/components/ui/EmptyState";
+import { Users } from "@/app/components/ui/Icon";
 
 type Character = {
   id: number;
@@ -363,9 +365,12 @@ export default function OverviewClient({
           );
         })}
         {sortedRows.length === 0 && (
-          <div className="panel px-4 py-12 text-center text-neutral-500 text-sm">
-            No {EMPTY_LABEL[tab]} in this roster yet.
-          </div>
+          <EmptyState
+            icon={Users}
+            title={`No ${EMPTY_LABEL[tab]} in this roster`}
+            description="Once characters are added and loot is awarded, they'll appear here."
+            variant="compact"
+          />
         )}
       </div>
 

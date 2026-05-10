@@ -8,6 +8,8 @@ import { CLASS_COLOR } from "@/lib/specs";
 import { WowheadLink } from "@/lib/wowhead";
 import { SpecIcon } from "@/app/components/SpecIcon";
 import { Select } from "@/app/components/Select";
+import { EmptyState } from "@/app/components/ui/EmptyState";
+import { Package } from "@/app/components/ui/Icon";
 
 type Weight = { spec: string; weight: number };
 type Item = { id: number; name: string; slot: string | null; itemLevel: number | null; wowheadId: number | null; weights: Weight[] };
@@ -260,7 +262,12 @@ export default function AssignClient({ phases, rosters, recent, admin }: {
               <div className="text-xs text-neutral-500">{selected.phase.name} · {selected.raid.name}</div>
               <h2 className="text-lg font-semibold mb-3">{selected.boss.name}</h2>
               {selected.boss.items.length === 0 ? (
-                <div className="py-10 text-center text-neutral-500 text-sm">No items — add some in admin.</div>
+                <EmptyState
+                  icon={Package}
+                  title="No items for this boss"
+                  description="Add items to the seed catalog to assign loot here."
+                  variant="compact"
+                />
               ) : (
                 <ul className="space-y-2.5">
                   {selected.boss.items.map(it => (

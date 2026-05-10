@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { EmptyState } from "@/app/components/ui/EmptyState";
+import { List } from "@/app/components/ui/Icon";
 
 type RosterRow = {
   id: number;
@@ -35,7 +37,15 @@ export default function RostersClient({ initial, admin: _admin }: { initial: Ros
             </div>
           </Link>
         ))}
-        {initial.length === 0 && <p className="text-neutral-500">No rosters yet.</p>}
+        {initial.length === 0 && (
+          <div className="sm:col-span-2 lg:col-span-3">
+            <EmptyState
+              icon={List}
+              title="No rosters yet"
+              description="Create one to start tracking attendance and loot per raid team."
+            />
+          </div>
+        )}
       </div>
     </div>
   );
