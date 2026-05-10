@@ -14,7 +14,6 @@ import {
 export const dynamic = "force-dynamic";
 
 const WOW_ICON_BASE = "https://wow.zamimg.com/images/wow/icons/medium/";
-const WOW_ICON_FALLBACK = `${WOW_ICON_BASE}inv_misc_questionmark.jpg`;
 
 export default async function Home() {
   const [players, characters, awards, lastNight] = await Promise.all([
@@ -103,7 +102,6 @@ function NavCard({
           height={36}
           loading="lazy"
           className={`h-9 w-9 rounded-lg ring-1 ${iconRing} transition`}
-          onError={(e) => { (e.currentTarget as HTMLImageElement).src = WOW_ICON_FALLBACK; }}
         />
         <ArrowUpRight size={16} className="text-neutral-600 group-hover:text-neutral-200 transition" />
       </div>
