@@ -10,7 +10,7 @@ import { EmptyState } from "@/app/components/ui/EmptyState";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { Users } from "@/app/components/ui/Icon";
 
-type Character = { id: number; name: string; class: string; spec: string; role: string };
+type Character = { id: number; name: string; class: string; spec: string; role: string; isMain: boolean };
 type Member = { characterId: number; memberRole: string; character: Character };
 type Attendance = { characterId: number; status: string };
 
@@ -121,7 +121,9 @@ export default function NightClient({ night, admin }: {
                 {m.character.name}
               </span>
               <span className="text-xs text-neutral-500 ml-auto">{m.character.spec}</span>
-              <span className="pill !uppercase">{m.memberRole}</span>
+              <span className={`pill !uppercase ${m.character.isMain ? "!text-gold-300 !border-gold-400/30" : ""}`}>
+                {m.character.isMain ? "main" : "alt"}
+              </span>
             </div>
             {admin ? (
               <div className="mt-2 flex gap-1.5">
@@ -170,7 +172,9 @@ export default function NightClient({ night, admin }: {
                   </span>
                 </td>
                 <td className="text-neutral-300">{m.character.spec}</td>
-                <td className="text-xs uppercase text-neutral-500">{m.memberRole}</td>
+                <td className={`text-xs uppercase ${m.character.isMain ? "text-gold-300" : "text-neutral-500"}`}>
+                  {m.character.isMain ? "main" : "alt"}
+                </td>
                 <td>
                   {admin ? (
                     <div className="flex gap-1">
