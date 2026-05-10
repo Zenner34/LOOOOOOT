@@ -47,10 +47,9 @@ export default async function OverviewPage({
     ? await prisma.character.findMany({ orderBy: { name: "asc" } })
     : (rosters.find(r => r.id === selectedRosterId)?.members.map(m => m.character) ?? []);
 
-  // Pull players. Each player has many characters; we render player rows by
-  // joining the character list to player ownership via Character.playerId.
+  // Pull all players (including inactive). The client-side filter controls
+  // whether inactive rows are shown — defaults to active-only.
   const players = await prisma.player.findMany({
-    where: { active: true },
     orderBy: { displayName: "asc" },
   });
 
@@ -66,10 +65,12 @@ export default async function OverviewPage({
         role: c.role,
         playerId: c.playerId,
         isMain: c.isMain,
+        active: c.active,
       }))}
       players={players.map(p => ({
         id: p.id,
         displayName: p.displayName,
+        active: p.active,
       }))}
       awards={awards as any}
     />

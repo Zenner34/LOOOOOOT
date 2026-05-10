@@ -21,8 +21,9 @@ type Character = {
   role: string;
   playerId: number | null;
   isMain: boolean;
+  active: boolean;
 };
-type Player = { id: number; displayName: string };
+type Player = { id: number; displayName: string; active: boolean };
 
 type Award = ScoringAward & {
   id: number;
@@ -101,6 +102,7 @@ export default function OverviewClient({
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filtersRef = useRef<HTMLDivElement>(null);
   const [classFilter, setClassFilter] = useState<Set<string>>(new Set());
+  const [showInactive, setShowInactive] = useState(false);
 
   function toggleClass(cls: string) {
     setClassFilter(prev => {
@@ -138,7 +140,8 @@ export default function OverviewClient({
     : classFilter.size === 1
       ? Array.from(classFilter)[0]
       : `${classFilter.size} classes`;
-  const summaryParts = [rosterLabel, groupLabel, sortLabel, classLabel].filter(Boolean);
+  const inactiveLabel = showInactive ? "Inactive shown" : null;
+  const summaryParts = [rosterLabel, groupLabel, sortLabel, classLabel, inactiveLabel].filter(Boolean);
 
   function setRoster(v: string) {
     const sp = new URLSearchParams(params);
@@ -170,6 +173,7 @@ export default function OverviewClient({
     const filtered = characters.filter(c => {
       if (tab !== "all" && bucketForSpec(c.spec) !== tab) return false;
       if (classFilter.size > 0 && !classFilter.has(c.class)) return false;
+      if (!showInactive && !c.active) return false;
       return true;
     });
 
@@ -203,6 +207,7 @@ export default function OverviewClient({
 
     const playerRows: Row[] = [];
     for (const p of players) {
+      if (!showInactive && !p.active) continue;
       const chars = byPlayer.get(p.id);
       if (!chars || chars.length === 0) continue;
       let count = 0;
@@ -241,7 +246,7 @@ export default function OverviewClient({
     });
 
     return [...playerRows, ...orphanRows];
-  }, [characters, players, tab, groupBy, awardsByChar, classFilter]);
+  }, [characters, players, tab, groupBy, awardsByChar, classFilter, showInactive]);
 
   const sortedRows = useMemo(() => {
     const r = [...rows];
@@ -369,6 +374,34 @@ export default function OverviewClient({
                 })}
               </div>
             </div>
+            <div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={showInactive}
+                onClick={() => setShowInactive(v => !v)}
+                className="w-full flex items-center justify-between gap-3 rounded-lg border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/10 px-3 py-2 transition"
+              >
+                <span className="text-left">
+                  <span className="block text-sm text-neutral-200">Show inactive players</span>
+                  <span className="block text-[11px] text-neutral-500">Include retired raiders and their loot</span>
+                </span>
+                <span
+                  aria-hidden="true"
+                  className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border transition ${
+                    showInactive
+                      ? "bg-vermillion-500/40 border-vermillion-500/60"
+                      : "bg-white/[0.04] border-white/10"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-all ${
+                      showInactive ? "left-[18px]" : "left-0.5"
+                    }`}
+                  />
+                </span>
+              </button>
+            </div>
             <div className="pt-1 flex justify-end">
               <button
                 type="button"
@@ -380,7 +413,7 @@ export default function OverviewClient({
         )}
       </div>
 
-      <div className="flex gap-1 border-b border-white/[0.06] overflow-x-auto">
+      <div className="flex gap-1 border-b border-white/[0.06] overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {BUCKETS.map(b => (
           <button
             key={b}
