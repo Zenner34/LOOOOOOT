@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-const VALID = ["present", "late", "absent"];
+// 'no_show' = was on the roster, expected to attend, but didn't sign up
+// or join — distinct from a heads-up absence so we can flag the pattern.
+const VALID = ["present", "late", "absent", "no_show"];
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   const raidNightId = Number(params.id);

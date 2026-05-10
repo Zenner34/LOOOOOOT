@@ -14,13 +14,24 @@ type Character = { id: number; name: string; class: string; spec: string; role: 
 type Member = { characterId: number; memberRole: string; character: Character };
 type Attendance = { characterId: number; status: string };
 
-const STATUSES = ["present", "late", "absent"] as const;
+// 'no_show' = was on the roster, expected to attend, never showed.
+// Distinct from 'absent' (which means a heads-up miss) so we can flag
+// the bail-on-the-team pattern and call it out on player profiles.
+const STATUSES = ["present", "late", "absent", "no_show"] as const;
 type Status = typeof STATUSES[number];
 
+const STATUS_LABEL: Record<string, string> = {
+  present: "Present",
+  late:    "Late",
+  absent:  "Absent",
+  no_show: "No-show",
+};
+
 const STATUS_CLASS: Record<string, { active: string; inactive: string }> = {
-  present: { active: "bg-emerald-600 border-emerald-500 text-white",  inactive: "border-white/10 text-neutral-400 hover:border-emerald-500/40" },
-  late:    { active: "bg-amber-600 border-amber-500 text-black",       inactive: "border-white/10 text-neutral-400 hover:border-amber-500/40" },
-  absent:  { active: "bg-red-700 border-red-600 text-white",           inactive: "border-white/10 text-neutral-400 hover:border-red-500/40" },
+  present: { active: "bg-emerald-600 border-emerald-500 text-white",        inactive: "border-white/10 text-neutral-400 hover:border-emerald-500/40" },
+  late:    { active: "bg-amber-600 border-amber-500 text-black",            inactive: "border-white/10 text-neutral-400 hover:border-amber-500/40" },
+  absent:  { active: "bg-neutral-700 border-neutral-600 text-neutral-100",  inactive: "border-white/10 text-neutral-400 hover:border-neutral-500/60" },
+  no_show: { active: "bg-vermillion-600 border-vermillion-500 text-white",  inactive: "border-white/10 text-neutral-400 hover:border-vermillion-500/50" },
 };
 
 export default function NightClient({ night, admin }: {
@@ -71,6 +82,7 @@ export default function NightClient({ night, admin }: {
   const presentCount = Object.values(statuses).filter(s => s === "present").length;
   const lateCount    = Object.values(statuses).filter(s => s === "late").length;
   const absentCount  = Object.values(statuses).filter(s => s === "absent").length;
+  const noShowCount  = Object.values(statuses).filter(s => s === "no_show").length;
 
   return (
     <div className="space-y-6 animate-fade-in pb-24">
@@ -81,10 +93,11 @@ export default function NightClient({ night, admin }: {
         subtitle={`${night.roster.name}${night.notes ? ` · ${night.notes}` : ""}`}
       />
       <div>
-        <div className="mt-3 grid grid-cols-3 gap-2 sm:flex sm:gap-3">
+        <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           <Stat label="Present" value={String(presentCount)} tone="fresh" />
-          <Stat label="Late" value={String(lateCount)} tone="warm" />
-          <Stat label="Absent" value={String(absentCount)} tone="cold" />
+          <Stat label="Late"    value={String(lateCount)}    tone="warm" />
+          <Stat label="Absent"  value={String(absentCount)} />
+          <Stat label="No-show" value={String(noShowCount)}  tone="cold" />
         </div>
       </div>
 
@@ -92,8 +105,9 @@ export default function NightClient({ night, admin }: {
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="text-neutral-500">Mark all:</span>
           <button onClick={() => bulkSet("present")} className="btn btn-xs">Present</button>
-          <button onClick={() => bulkSet("late")} className="btn btn-xs">Late</button>
-          <button onClick={() => bulkSet("absent")} className="btn btn-xs">Absent</button>
+          <button onClick={() => bulkSet("late")}    className="btn btn-xs">Late</button>
+          <button onClick={() => bulkSet("absent")}  className="btn btn-xs">Absent</button>
+          <button onClick={() => bulkSet("no_show")} className="btn btn-xs hover:!border-vermillion-500/40 hover:!text-vermillion-200">No-show</button>
         </div>
       )}
 
@@ -118,15 +132,15 @@ export default function NightClient({ night, admin }: {
                       key={s}
                       type="button"
                       onClick={() => update(m.characterId, s)}
-                      className={`flex-1 px-2 py-2 rounded-md text-xs uppercase tracking-wider font-semibold border transition min-h-[36px] ${
+                      className={`flex-1 px-2 py-2 rounded-md text-[11px] uppercase tracking-wider font-semibold border transition min-h-[36px] ${
                         active ? STATUS_CLASS[s].active : STATUS_CLASS[s].inactive
                       }`}
-                    >{s}</button>
+                    >{STATUS_LABEL[s]}</button>
                   );
                 })}
               </div>
             ) : (
-              <div className="mt-1 text-xs uppercase text-neutral-400">{statuses[m.characterId] ?? "absent"}</div>
+              <div className="mt-1 text-xs uppercase text-neutral-400">{STATUS_LABEL[statuses[m.characterId] ?? "absent"]}</div>
             )}
           </div>
         ))}
@@ -167,14 +181,14 @@ export default function NightClient({ night, admin }: {
                             key={s}
                             type="button"
                             onClick={() => update(m.characterId, s)}
-                            className={`px-2.5 py-1 rounded text-xs border transition ${
+                            className={`px-2.5 py-1 rounded text-xs border transition whitespace-nowrap ${
                               active ? STATUS_CLASS[s].active : STATUS_CLASS[s].inactive
                             }`}
-                          >{s}</button>
+                          >{STATUS_LABEL[s]}</button>
                         );
                       })}
                     </div>
-                  ) : <span className="text-xs uppercase">{statuses[m.characterId] ?? "absent"}</span>}
+                  ) : <span className="text-xs uppercase">{STATUS_LABEL[statuses[m.characterId] ?? "absent"]}</span>}
                 </td>
               </tr>
             ))}
