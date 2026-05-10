@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CLASS_COLOR, BUCKETS, BUCKET_LABEL, bucketForSpec, type Bucket } from "@/lib/specs";
+import { CLASS_COLOR, CLASSES, BUCKETS, BUCKET_LABEL, bucketForSpec, type Bucket } from "@/lib/specs";
 import { itemCount, type ScoringAward } from "@/lib/scoring";
 import { WowheadLink } from "@/lib/wowhead";
 import { ClassIcon } from "@/app/components/ClassIcon";
@@ -100,6 +100,16 @@ export default function OverviewClient({
   const [sort, setSort] = useState<"lastLoot" | "count" | "nameAsc" | "nameDesc">("lastLoot");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filtersRef = useRef<HTMLDivElement>(null);
+  const [classFilter, setClassFilter] = useState<Set<string>>(new Set());
+
+  function toggleClass(cls: string) {
+    setClassFilter(prev => {
+      const next = new Set(prev);
+      if (next.has(cls)) next.delete(cls);
+      else next.add(cls);
+      return next;
+    });
+  }
 
   useEffect(() => {
     if (!filtersOpen) return;
@@ -123,6 +133,12 @@ export default function OverviewClient({
     sort === "lastLoot" ? "Recently looted" :
     sort === "count"    ? "Most items" :
     sort === "nameAsc"  ? "A → Z" : "Z → A";
+  const classLabel = classFilter.size === 0
+    ? null
+    : classFilter.size === 1
+      ? Array.from(classFilter)[0]
+      : `${classFilter.size} classes`;
+  const summaryParts = [rosterLabel, groupLabel, sortLabel, classLabel].filter(Boolean);
 
   function setRoster(v: string) {
     const sp = new URLSearchParams(params);
@@ -152,8 +168,9 @@ export default function OverviewClient({
   // row label so it still feels seamless).
   const rows: Row[] = useMemo(() => {
     const filtered = characters.filter(c => {
-      if (tab === "all") return true;
-      return bucketForSpec(c.spec) === tab;
+      if (tab !== "all" && bucketForSpec(c.spec) !== tab) return false;
+      if (classFilter.size > 0 && !classFilter.has(c.class)) return false;
+      return true;
     });
 
     if (groupBy === "character") {
@@ -224,7 +241,7 @@ export default function OverviewClient({
     });
 
     return [...playerRows, ...orphanRows];
-  }, [characters, players, tab, groupBy, awardsByChar]);
+  }, [characters, players, tab, groupBy, awardsByChar, classFilter]);
 
   const sortedRows = useMemo(() => {
     const r = [...rows];
@@ -268,9 +285,14 @@ export default function OverviewClient({
         >
           <Filter size={14} className="text-neutral-400" />
           <span className="font-medium">Filters</span>
+          {classFilter.size > 0 && (
+            <span className="inline-flex items-center justify-center rounded-full bg-vermillion-500/20 text-vermillion-200 text-[10px] font-semibold min-w-[16px] h-4 px-1.5">
+              {classFilter.size}
+            </span>
+          )}
           <span className="hidden sm:inline text-neutral-600">·</span>
-          <span className="hidden sm:inline text-xs text-neutral-400 truncate max-w-[260px]">
-            {rosterLabel} · {groupLabel} · {sortLabel}
+          <span className="hidden sm:inline text-xs text-neutral-400 truncate max-w-[280px]">
+            {summaryParts.join(" · ")}
           </span>
           <ChevronDown size={14} className={`text-neutral-500 transition ${filtersOpen ? "rotate-180" : ""}`} />
         </button>
@@ -314,6 +336,38 @@ export default function OverviewClient({
                   { value: "nameDesc", label: "Name Z → A" },
                 ]}
               />
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="label !mb-0">Classes</label>
+                {classFilter.size > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setClassFilter(new Set())}
+                    className="text-[11px] text-vermillion-300 hover:text-vermillion-200 transition"
+                  >Clear</button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {CLASSES.map(cls => {
+                  const active = classFilter.has(cls);
+                  return (
+                    <button
+                      key={cls}
+                      type="button"
+                      onClick={() => toggleClass(cls)}
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs transition border ${
+                        active
+                          ? "bg-vermillion-500/15 border-vermillion-500/45 text-vermillion-100"
+                          : "bg-white/[0.03] border-white/10 text-neutral-300 hover:bg-white/[0.06] hover:border-white/15"
+                      }`}
+                    >
+                      <ClassIcon cls={cls} size={12} />
+                      <span style={{ color: active ? CLASS_COLOR[cls] : undefined }}>{cls}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             <div className="pt-1 flex justify-end">
               <button
