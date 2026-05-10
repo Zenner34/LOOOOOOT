@@ -281,7 +281,7 @@ export default function LootBrowser({
 
               {/* Desktop: table */}
               <table className="hidden md:table table">
-                <thead>
+                <thead className="sticky top-0 z-10 bg-[var(--surface)]/95 backdrop-blur-sm">
                   <tr>
                     <th>Item</th>
                     <th>Slot</th>
@@ -291,8 +291,12 @@ export default function LootBrowser({
                 </thead>
                 <tbody>
                   {filteredItems.map(it => (
-                    <tr key={it.id}>
-                      <td>
+                    <tr
+                      key={it.id}
+                      className="group odd:bg-white/[0.012] hover:bg-vermillion-500/[0.04] transition-colors relative"
+                    >
+                      <td className="relative">
+                        <span className="absolute left-0 top-0 bottom-0 w-[2px] bg-vermillion-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                         <WowheadItemCell
                           name={it.name}
                           wowheadId={it.wowheadId}

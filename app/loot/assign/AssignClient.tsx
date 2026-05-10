@@ -10,6 +10,8 @@ import { SpecIcon } from "@/app/components/SpecIcon";
 import { Select } from "@/app/components/Select";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { PageHeader } from "@/app/components/ui/PageHeader";
+import { Card } from "@/app/components/ui/Card";
+import { Kbd } from "@/app/components/ui/Kbd";
 import { Package } from "@/app/components/ui/Icon";
 
 type Weight = { spec: string; weight: number };
@@ -172,39 +174,43 @@ export default function AssignClient({ phases, rosters, recent, admin }: {
         subtitle="Pick a roster, raid night, and item — then award it to the right recipient."
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-end gap-3">
-        {rosters.length > 1 && (
+      <Card>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-end gap-4">
+          {rosters.length > 1 && (
+            <div className="min-w-[180px]">
+              <label className="label">Roster</label>
+              <Select
+                value={String(rosterId)}
+                onValueChange={v => setRosterId(Number(v) || "")}
+                options={rosters.map(r => ({ value: String(r.id), label: r.name }))}
+              />
+              <p className="mt-1 text-[11px] text-neutral-500">Awards are scoped to this roster.</p>
+            </div>
+          )}
           <div className="min-w-[180px]">
-            <label className="label">Roster</label>
+            <label className="label">Raid night</label>
             <Select
-              value={String(rosterId)}
-              onValueChange={v => setRosterId(Number(v) || "")}
-              options={rosters.map(r => ({ value: String(r.id), label: r.name }))}
+              value={raidNightId ? String(raidNightId) : "none"}
+              onValueChange={v => setRaidNightId(v === "none" ? "" : (Number(v) || ""))}
+              placeholder="— none —"
+              options={[
+                { value: "none", label: "— none —" },
+                ...(activeRoster?.raidNights ?? []).map(n => ({
+                  value: String(n.id),
+                  label: new Date(n.date).toISOString().slice(0, 10),
+                })),
+              ]}
             />
+            <p className="mt-1 text-[11px] text-neutral-500">Optional — pin awards to a specific night for attendance reports.</p>
           </div>
-        )}
-        <div className="min-w-[180px]">
-          <label className="label">Raid night</label>
-          <Select
-            value={raidNightId ? String(raidNightId) : "none"}
-            onValueChange={v => setRaidNightId(v === "none" ? "" : (Number(v) || ""))}
-            placeholder="— none —"
-            options={[
-              { value: "none", label: "— none —" },
-              ...(activeRoster?.raidNights ?? []).map(n => ({
-                value: String(n.id),
-                label: new Date(n.date).toISOString().slice(0, 10),
-              })),
-            ]}
-          />
+          {!activeRoster?.raidNights.length && (
+            <Link href="/attendance" className="btn-ghost btn-xs text-vermillion-300 self-center">+ Create a raid night</Link>
+          )}
+          <span className="hidden lg:inline-flex items-center gap-1.5 ml-auto text-xs text-neutral-500">
+            Press <Kbd>U</Kbd> to undo the last award
+          </span>
         </div>
-        {!activeRoster?.raidNights.length && (
-          <Link href="/attendance" className="btn-ghost btn-xs text-vermillion-300 self-center">+ Create a raid night</Link>
-        )}
-        <span className="hidden lg:inline ml-auto text-xs text-neutral-500">
-          Hotkey: <kbd className="bg-white/10 border border-white/15 rounded px-1">u</kbd> to undo last award
-        </span>
-      </div>
+      </Card>
 
       {/* Mobile: trigger button to open boss picker sheet */}
       <button

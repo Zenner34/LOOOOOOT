@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CLASS_COLOR } from "@/lib/specs";
 import { SpecIcon } from "@/app/components/SpecIcon";
+import { Kbd } from "@/app/components/ui/Kbd";
 
 type Player = { id: number; displayName: string };
 type Character = { id: number; name: string; class: string; spec: string; playerId: number | null };
@@ -164,10 +165,13 @@ export default function CommandPalette({ admin = false }: { admin?: boolean }) {
           )}
         </Command.List>
 
-        <div className="px-3 py-2 border-t border-white/5 flex items-center gap-3 text-[10px] text-neutral-500">
-          <span><kbd className="px-1 py-0.5 rounded bg-white/10 font-mono">↑↓</kbd> navigate</span>
-          <span><kbd className="px-1 py-0.5 rounded bg-white/10 font-mono">↵</kbd> open</span>
-          <span><kbd className="px-1 py-0.5 rounded bg-white/10 font-mono">esc</kbd> close</span>
+        <div className="px-3 py-2 border-t border-white/5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10px] text-neutral-500">
+          <span className="inline-flex items-center gap-1"><Kbd>↑↓</Kbd> navigate</span>
+          <span className="inline-flex items-center gap-1"><Kbd>↵</Kbd> open</span>
+          <span className="inline-flex items-center gap-1"><Kbd>esc</Kbd> close</span>
+          <span className="ml-auto inline-flex items-center gap-1">
+            <Kbd>⌘</Kbd><Kbd>K</Kbd> from anywhere
+          </span>
         </div>
       </Command>
     </div>

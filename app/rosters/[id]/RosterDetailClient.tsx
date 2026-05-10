@@ -131,7 +131,11 @@ export default function RosterDetailClient(props: {
             </h2>
             <ul className="space-y-1">
               {(grouped[role] ?? []).map(m => (
-                <li key={m.id} className="flex items-center gap-2 text-sm rounded-md hover:bg-white/[0.02] transition py-1 -mx-1 px-1">
+                <li
+                  key={m.id}
+                  className="relative flex items-center gap-2 text-sm rounded-md hover:bg-white/[0.025] transition py-1.5 -mx-1 pl-3 pr-1"
+                  style={{ boxShadow: `inset 3px 0 0 0 ${CLASS_COLOR[m.character.class] ?? "transparent"}` }}
+                >
                   <SpecIcon spec={m.character.spec} size={16} />
                   <span className="flex-1 min-w-0 truncate font-medium" style={{ color: CLASS_COLOR[m.character.class] ?? "#fff" }}>
                     {m.character.name}
