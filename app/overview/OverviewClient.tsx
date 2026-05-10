@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CLASS_COLOR, BUCKETS, BUCKET_LABEL, bucketForSpec, type Bucket } from "@/lib/specs";
@@ -11,7 +11,7 @@ import { SpecIcon } from "@/app/components/SpecIcon";
 import { Select } from "@/app/components/Select";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { PageHeader } from "@/app/components/ui/PageHeader";
-import { Filter, Users } from "@/app/components/ui/Icon";
+import { ChevronDown, Filter, Users } from "@/app/components/ui/Icon";
 
 type Character = {
   id: number;
@@ -98,6 +98,31 @@ export default function OverviewClient({
   const [groupBy, setGroupBy] = useState<"player" | "character">("player");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [sort, setSort] = useState<"lastLoot" | "count" | "nameAsc" | "nameDesc">("lastLoot");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const filtersRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!filtersOpen) return;
+    function onDoc(e: MouseEvent) {
+      if (filtersRef.current && !filtersRef.current.contains(e.target as Node)) setFiltersOpen(false);
+    }
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") setFiltersOpen(false); }
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [filtersOpen]);
+
+  const rosterLabel = selectedRosterId === "all"
+    ? "All rosters"
+    : (rosters.find(r => r.id === selectedRosterId)?.name ?? "Roster");
+  const groupLabel = groupBy === "player" ? "By player" : "By character";
+  const sortLabel =
+    sort === "lastLoot" ? "Recently looted" :
+    sort === "count"    ? "Most items" :
+    sort === "nameAsc"  ? "A → Z" : "Z → A";
 
   function setRoster(v: string) {
     const sp = new URLSearchParams(params);
@@ -233,43 +258,72 @@ export default function OverviewClient({
         subtitle="Who's looted what across every raid we've run, sorted to surface the next-up players first."
       />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-500 pr-1">
-          <Filter size={13} />
-          Filter
-        </span>
-        <Select
-          size="sm"
-          value={String(selectedRosterId)}
-          onValueChange={setRoster}
-          triggerClassName="!min-w-[140px]"
-          options={[
-            ...rosters.map(r => ({ value: String(r.id), label: r.name })),
-            { value: "all", label: "All rosters" },
-          ]}
-        />
-        <Select
-          size="sm"
-          value={groupBy}
-          onValueChange={v => setGroupBy(v as any)}
-          triggerClassName="!min-w-[140px]"
-          options={[
-            { value: "player",    label: "By player" },
-            { value: "character", label: "By character" },
-          ]}
-        />
-        <Select
-          size="sm"
-          value={sort}
-          onValueChange={v => setSort(v as any)}
-          triggerClassName="!min-w-[160px]"
-          options={[
-            { value: "lastLoot", label: "Recently looted" },
-            { value: "count",    label: "Most items" },
-            { value: "nameAsc",  label: "Name A → Z" },
-            { value: "nameDesc", label: "Name Z → A" },
-          ]}
-        />
+      <div ref={filtersRef} className="relative">
+        <button
+          type="button"
+          onClick={() => setFiltersOpen(o => !o)}
+          aria-haspopup="dialog"
+          aria-expanded={filtersOpen}
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[var(--surface)] pl-3 pr-2.5 py-1.5 text-sm text-neutral-200 hover:border-white/20 hover:bg-white/[0.03] transition"
+        >
+          <Filter size={14} className="text-neutral-400" />
+          <span className="font-medium">Filters</span>
+          <span className="hidden sm:inline text-neutral-600">·</span>
+          <span className="hidden sm:inline text-xs text-neutral-400 truncate max-w-[260px]">
+            {rosterLabel} · {groupLabel} · {sortLabel}
+          </span>
+          <ChevronDown size={14} className={`text-neutral-500 transition ${filtersOpen ? "rotate-180" : ""}`} />
+        </button>
+        {filtersOpen && (
+          <div
+            role="dialog"
+            aria-label="Filters"
+            className="absolute z-30 mt-2 left-0 w-[calc(100vw-2rem)] sm:w-[360px] rounded-xl border border-white/10 bg-[var(--surface)] shadow-2xl p-4 space-y-3 animate-fade-in"
+          >
+            <div>
+              <label className="label">Roster</label>
+              <Select
+                value={String(selectedRosterId)}
+                onValueChange={v => { setRoster(v); }}
+                options={[
+                  ...rosters.map(r => ({ value: String(r.id), label: r.name })),
+                  { value: "all", label: "All rosters" },
+                ]}
+              />
+            </div>
+            <div>
+              <label className="label">Group by</label>
+              <Select
+                value={groupBy}
+                onValueChange={v => setGroupBy(v as any)}
+                options={[
+                  { value: "player",    label: "By player" },
+                  { value: "character", label: "By character" },
+                ]}
+              />
+            </div>
+            <div>
+              <label className="label">Sort</label>
+              <Select
+                value={sort}
+                onValueChange={v => setSort(v as any)}
+                options={[
+                  { value: "lastLoot", label: "Recently looted" },
+                  { value: "count",    label: "Most items" },
+                  { value: "nameAsc",  label: "Name A → Z" },
+                  { value: "nameDesc", label: "Name Z → A" },
+                ]}
+              />
+            </div>
+            <div className="pt-1 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setFiltersOpen(false)}
+                className="btn-ghost btn-xs"
+              >Done</button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex gap-1 border-b border-white/[0.06] overflow-x-auto">
