@@ -55,11 +55,11 @@ export default async function Home() {
         <SectionTitle eyebrow="Jump to" title="Where to next" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
-            { href: "/overview",   title: "Overview",     blurb: "Who's looted what, sorted by most recent.",   iconName: "inv_box_03",                        accent: "vermillion" as const },
-            { href: "/loot",       title: "Loot catalog", blurb: "Every raid drop, browsable by phase / boss.", iconName: "inv_misc_bag_10",                   accent: "gold"       as const },
+            { href: "/overview",   title: "Overview",     blurb: "Who's looted what, sorted by most recent.",   iconName: "inv_misc_treasurechest_03",         accent: "vermillion" as const },
+            { href: "/loot",       title: "Loot catalog", blurb: "Every raid drop, browsable by phase / boss.", iconName: "inv_helm_circlet_28",               accent: "gold"       as const },
             { href: "/players",    title: "Players",      blurb: "Mains and alts grouped by human.",            iconName: "inv_misc_tournaments_banner_human", accent: "vermillion" as const },
-            { href: "/characters", title: "Characters",   blurb: "One row per character — class, spec, role.",  iconName: "spell_holy_powerwordshield",        accent: "gold"       as const },
-            { href: "/rosters",    title: "Roster",       blurb: "Master Roster membership and slot.",          iconName: "inv_misc_book_11",                  accent: "vermillion" as const },
+            { href: "/characters", title: "Characters",   blurb: "One row per character — class, spec, role.",  iconName: "inv_misc_head_murloc_01",           accent: "gold"       as const },
+            { href: "/rosters",    title: "Roster",       blurb: "Master Roster membership and slot.",          iconName: "inv_inscription_scrollofwisdom_01", accent: "vermillion" as const },
             { href: "/attendance", title: "Attendance",   blurb: "Per-night attendance and raid history.",      iconName: "inv_misc_pocketwatch_01",           accent: "gold"       as const },
           ].map((card, i) => (
             <NavCard key={card.href} {...card} delay={i * 50} />
