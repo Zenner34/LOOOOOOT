@@ -57,12 +57,16 @@ export default async function Home() {
       <section>
         <SectionTitle eyebrow="Jump to" title="Where to next" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <NavCard href="/overview"   title="Overview"      blurb="Who's looted what, sorted by most recent."     icon={Swords}   accent="vermillion" />
-          <NavCard href="/loot"       title="Loot catalog"  blurb="Every raid drop, browsable by phase / boss."   icon={Package}  accent="gold" />
-          <NavCard href="/players"    title="Players"       blurb="Mains and alts grouped by human."              icon={Users}    accent="vermillion" />
-          <NavCard href="/characters" title="Characters"    blurb="One row per character — class, spec, role."    icon={Shield}   accent="gold" />
-          <NavCard href="/rosters"    title="Roster"        blurb="Master Roster membership and slot."            icon={List}     accent="vermillion" />
-          <NavCard href="/attendance" title="Attendance"    blurb="Per-night attendance and raid history."        icon={Calendar} accent="gold" />
+          {[
+            { href: "/overview",   title: "Overview",     blurb: "Who's looted what, sorted by most recent.",   icon: Swords,   accent: "vermillion" as const },
+            { href: "/loot",       title: "Loot catalog", blurb: "Every raid drop, browsable by phase / boss.", icon: Package,  accent: "gold"       as const },
+            { href: "/players",    title: "Players",      blurb: "Mains and alts grouped by human.",            icon: Users,    accent: "vermillion" as const },
+            { href: "/characters", title: "Characters",   blurb: "One row per character — class, spec, role.",  icon: Shield,   accent: "gold"       as const },
+            { href: "/rosters",    title: "Roster",       blurb: "Master Roster membership and slot.",          icon: List,     accent: "vermillion" as const },
+            { href: "/attendance", title: "Attendance",   blurb: "Per-night attendance and raid history.",      icon: Calendar, accent: "gold"       as const },
+          ].map((card, i) => (
+            <NavCard key={card.href} {...card} delay={i * 50} />
+          ))}
         </div>
       </section>
     </div>
@@ -70,13 +74,14 @@ export default async function Home() {
 }
 
 function NavCard({
-  href, title, blurb, icon: Icon, accent,
+  href, title, blurb, icon: Icon, accent, delay = 0,
 }: {
   href: string;
   title: string;
   blurb: string;
   icon: LucideIcon;
   accent: "vermillion" | "gold";
+  delay?: number;
 }) {
   const ring = accent === "vermillion"
     ? "hover:border-vermillion-500/50 hover:shadow-[0_8px_24px_-12px_rgba(200,16,46,0.4)]"
@@ -88,7 +93,8 @@ function NavCard({
   return (
     <Link
       href={href}
-      className={`panel p-5 group transition-all ${ring} hoverable`}
+      style={{ animationDelay: `${delay}ms` }}
+      className={`panel p-5 group transition-all animate-fade-in-up ${ring} hoverable`}
     >
       <div className="flex items-start justify-between gap-3">
         <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ring-1 ${iconBg}`}>

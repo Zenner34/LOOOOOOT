@@ -22,11 +22,12 @@ export default function RostersClient({ initial, admin: _admin }: { initial: Ros
       />
 
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {initial.map(r => (
+        {initial.map((r, i) => (
           <Link
             key={r.id}
             href={`/rosters/${r.id}`}
-            className="panel p-5 group hoverable hover:border-vermillion-500/40 hover:shadow-[0_8px_24px_-12px_rgba(200,16,46,0.35)] transition-colors"
+            style={{ animationDelay: `${Math.min(i, 11) * 40}ms` }}
+            className="panel p-5 group hoverable animate-fade-in-up hover:border-vermillion-500/40 hover:shadow-[0_8px_24px_-12px_rgba(200,16,46,0.35)] transition-colors"
           >
             <div className="flex items-start justify-between gap-3">
               <h2 className="text-lg font-semibold text-vermillion-200 truncate">{r.name}</h2>

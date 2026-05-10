@@ -179,6 +179,7 @@ a.wh { @apply text-gold-200 hover:text-gold-100; }
     animation: none !important;
   }
   .animate-fade-in,
+  .animate-fade-in-up,
   .animate-pulse {
     animation: none !important;
   }
