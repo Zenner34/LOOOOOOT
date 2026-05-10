@@ -16,6 +16,7 @@ export {
   Crown,
   ExternalLink,
   Eye,
+  Filter,
   Inbox,
   Info,
   List,

@@ -11,7 +11,7 @@ import { SpecIcon } from "@/app/components/SpecIcon";
 import { Select } from "@/app/components/Select";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { PageHeader } from "@/app/components/ui/PageHeader";
-import { Users } from "@/app/components/ui/Icon";
+import { Filter, Users } from "@/app/components/ui/Icon";
 
 type Character = {
   id: number;
@@ -233,43 +233,43 @@ export default function OverviewClient({
         subtitle="Who's looted what across every raid we've run, sorted to surface the next-up players first."
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_1fr_minmax(200px,auto)] gap-3 items-end">
-        <div>
-          <label className="label">Roster</label>
-          <Select
-            value={String(selectedRosterId)}
-            onValueChange={setRoster}
-            options={[
-              ...rosters.map(r => ({ value: String(r.id), label: r.name })),
-              { value: "all", label: "All rosters (merged)" },
-            ]}
-          />
-        </div>
-        <div>
-          <label className="label">Group by</label>
-          <Select
-            value={groupBy}
-            onValueChange={v => setGroupBy(v as any)}
-            options={[
-              { value: "player", label: "Player (mains + alts)" },
-              { value: "character", label: "Character (one row each)" },
-            ]}
-          />
-        </div>
-        <div className="hidden lg:block" />
-        <div>
-          <label className="label">Sort</label>
-          <Select
-            value={sort}
-            onValueChange={v => setSort(v as any)}
-            options={[
-              { value: "lastLoot", label: "Recently looted" },
-              { value: "count",    label: "Items received" },
-              { value: "nameAsc",  label: "Name (A → Z)" },
-              { value: "nameDesc", label: "Name (Z → A)" },
-            ]}
-          />
-        </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-500 pr-1">
+          <Filter size={13} />
+          Filter
+        </span>
+        <Select
+          size="sm"
+          value={String(selectedRosterId)}
+          onValueChange={setRoster}
+          triggerClassName="!min-w-[140px]"
+          options={[
+            ...rosters.map(r => ({ value: String(r.id), label: r.name })),
+            { value: "all", label: "All rosters" },
+          ]}
+        />
+        <Select
+          size="sm"
+          value={groupBy}
+          onValueChange={v => setGroupBy(v as any)}
+          triggerClassName="!min-w-[140px]"
+          options={[
+            { value: "player",    label: "By player" },
+            { value: "character", label: "By character" },
+          ]}
+        />
+        <Select
+          size="sm"
+          value={sort}
+          onValueChange={v => setSort(v as any)}
+          triggerClassName="!min-w-[160px]"
+          options={[
+            { value: "lastLoot", label: "Recently looted" },
+            { value: "count",    label: "Most items" },
+            { value: "nameAsc",  label: "Name A → Z" },
+            { value: "nameDesc", label: "Name Z → A" },
+          ]}
+        />
       </div>
 
       <div className="flex gap-1 border-b border-white/[0.06] overflow-x-auto">
