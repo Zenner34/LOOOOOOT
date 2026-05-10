@@ -59,8 +59,8 @@ export default async function Home() {
             { href: "/overview",   title: "Overview",     blurb: "Who's looted what, sorted by most recent.",   iconName: "inv_misc_spyglass_03",            accent: "vermillion" as const },
             { href: "/loot",       title: "Loot catalog", blurb: "Every raid drop, browsable by phase / boss.", iconName: "inv_box_03",                      accent: "gold"       as const },
             { href: "/players",    title: "Players",      blurb: "Mains and alts grouped by human.",            iconName: "inv_misc_tournaments_banner_human", accent: "vermillion" as const },
-            { href: "/characters", title: "Characters",   blurb: "One row per character — class, spec, role.",  iconName: "inv_misc_tabard_guildtabard01",   accent: "gold"       as const },
-            { href: "/rosters",    title: "Roster",       blurb: "Master Roster membership and slot.",          iconName: "inv_scroll_03",                   accent: "vermillion" as const },
+            { href: "/characters", title: "Characters",   blurb: "One row per character — class, spec, role.",  iconName: "spell_holy_powerwordshield",      accent: "gold"       as const },
+            { href: "/rosters",    title: "Roster",       blurb: "Master Roster membership and slot.",          iconName: "inv_misc_book_11",                accent: "vermillion" as const },
             { href: "/attendance", title: "Attendance",   blurb: "Per-night attendance and raid history.",      iconName: "inv_misc_pocketwatch_01",         accent: "gold"       as const },
           ].map((card, i) => (
             <NavCard key={card.href} {...card} delay={i * 50} />
@@ -85,27 +85,27 @@ function NavCard({
     ? "hover:border-vermillion-500/50 hover:shadow-[0_8px_24px_-12px_rgba(200,16,46,0.4)]"
     : "hover:border-gold-400/50 hover:shadow-[0_8px_24px_-12px_rgba(218,165,32,0.4)]";
   const titleColor = accent === "vermillion" ? "text-vermillion-200" : "text-gold-200";
-  const iconRing = accent === "vermillion"
-    ? "ring-vermillion-500/30 group-hover:ring-vermillion-500/60"
-    : "ring-gold-400/30 group-hover:ring-gold-400/60";
+  const iconGlow = accent === "vermillion"
+    ? "group-hover:shadow-[0_6px_18px_-4px_rgba(200,16,46,0.55)]"
+    : "group-hover:shadow-[0_6px_18px_-4px_rgba(218,165,32,0.55)]";
   return (
     <Link
       href={href}
       style={{ animationDelay: `${delay}ms` }}
-      className={`panel p-5 group transition-all animate-fade-in-up ${ring} hoverable`}
+      className={`panel p-6 group transition-all animate-fade-in-up ${ring} hoverable`}
     >
       <div className="flex items-start justify-between gap-3">
         <img
           src={`${WOW_ICON_BASE}${iconName}.jpg`}
           alt=""
-          width={36}
-          height={36}
+          width={44}
+          height={44}
           loading="lazy"
-          className={`h-9 w-9 rounded-lg ring-1 ${iconRing} transition`}
+          className={`h-11 w-11 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.35)] ${iconGlow} group-hover:scale-[1.04] transition`}
         />
-        <ArrowUpRight size={16} className="text-neutral-600 group-hover:text-neutral-200 transition" />
+        <ArrowUpRight size={16} className="text-neutral-600 group-hover:text-neutral-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" />
       </div>
-      <h3 className={`mt-3 text-base font-semibold tracking-tight ${titleColor}`}>{title}</h3>
+      <h3 className={`mt-4 text-base font-semibold tracking-tight ${titleColor}`}>{title}</h3>
       <p className="mt-1 text-sm text-neutral-400 leading-relaxed">{blurb}</p>
     </Link>
   );
