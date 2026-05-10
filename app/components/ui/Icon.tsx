@@ -19,6 +19,7 @@ export {
   Inbox,
   Info,
   List,
+  Menu,
   ListOrdered,
   Minus,
   Package,

@@ -2,28 +2,30 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { type LucideIcon } from "lucide-react";
+import { Award, Calendar, List, Package, Swords, Users } from "@/app/components/ui/Icon";
 
 // Five most-used routes get prime thumb-reach real estate at the bottom of
 // the screen on phones. Mirrors the pattern of native apps (iOS tab bar,
 // Material bottom navigation). Hidden at md and up since desktop has the
 // horizontal nav.
 
-const ITEMS: Array<{ href: string; label: string; icon: any; adminOnly?: boolean }> = [
-  { href: "/overview",    label: "Overview", icon: IconOverview },
-  { href: "/loot",        label: "Loot",     icon: IconLoot },
-  { href: "/loot/assign", label: "Assign",   icon: IconAssign, adminOnly: true },
-  { href: "/players",     label: "Players",  icon: IconPlayers },
-  { href: "/attendance",  label: "Nights",   icon: IconCalendar },
+const ITEMS: Array<{ href: string; label: string; icon: LucideIcon; adminOnly?: boolean }> = [
+  { href: "/overview",    label: "Overview", icon: Swords },
+  { href: "/loot",        label: "Loot",     icon: Package },
+  { href: "/loot/assign", label: "Assign",   icon: Award, adminOnly: true },
+  { href: "/players",     label: "Players",  icon: Users },
+  { href: "/attendance",  label: "Nights",   icon: Calendar },
 ];
 
 // Public-only fallback set so non-admins still see 5 tabs (Loot moves into
 // the slot Assign would have occupied; Roster fills the gap).
-const PUBLIC_ITEMS: Array<{ href: string; label: string; icon: any }> = [
-  { href: "/overview",   label: "Overview", icon: IconOverview },
-  { href: "/loot",       label: "Loot",     icon: IconLoot },
-  { href: "/players",    label: "Players",  icon: IconPlayers },
-  { href: "/rosters",    label: "Roster",   icon: IconRoster },
-  { href: "/attendance", label: "Nights",   icon: IconCalendar },
+const PUBLIC_ITEMS: Array<{ href: string; label: string; icon: LucideIcon }> = [
+  { href: "/overview",   label: "Overview", icon: Swords },
+  { href: "/loot",       label: "Loot",     icon: Package },
+  { href: "/players",    label: "Players",  icon: Users },
+  { href: "/rosters",    label: "Roster",   icon: List },
+  { href: "/attendance", label: "Nights",   icon: Calendar },
 ];
 
 export default function MobileTabBar({ admin }: { admin: boolean }) {
@@ -47,13 +49,13 @@ export default function MobileTabBar({ admin }: { admin: boolean }) {
             <li key={item.href}>
               <Link
                 href={item.href}
+                aria-label={item.label}
+                aria-current={active ? "page" : undefined}
                 className={`flex flex-col items-center justify-center gap-0.5 py-2 min-h-[56px] text-[10px] font-medium transition ${
                   active ? "text-vermillion-300" : "text-neutral-400 active:text-vermillion-200"
                 }`}
               >
-                <span className={active ? "text-vermillion-300" : "text-neutral-300"}>
-                  <Icon active={active} />
-                </span>
+                <Icon size={20} strokeWidth={active ? 2.4 : 2} />
                 <span>{item.label}</span>
               </Link>
             </li>
@@ -61,59 +63,5 @@ export default function MobileTabBar({ admin }: { admin: boolean }) {
         })}
       </ul>
     </nav>
-  );
-}
-
-// --- Icons ---
-
-function IconOverview({ active }: { active: boolean }) {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1.5" />
-      <rect x="14" y="3" width="7" height="7" rx="1.5" />
-      <rect x="3" y="14" width="7" height="7" rx="1.5" />
-      <rect x="14" y="14" width="7" height="7" rx="1.5" />
-    </svg>
-  );
-}
-function IconLoot({ active }: { active: boolean }) {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 8H3m18 0v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8m18 0-2-4H5L3 8m9 4v3" />
-    </svg>
-  );
-}
-function IconAssign({ active }: { active: boolean }) {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9" />
-      <polyline points="9 12 11 14 15 10" />
-    </svg>
-  );
-}
-function IconPlayers({ active }: { active: boolean }) {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
-function IconRoster({ active }: { active: boolean }) {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 7h18M3 12h18M3 17h12" />
-    </svg>
-  );
-}
-function IconCalendar({ active }: { active: boolean }) {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="4" width="18" height="17" rx="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
   );
 }
