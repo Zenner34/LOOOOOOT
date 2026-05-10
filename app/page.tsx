@@ -90,19 +90,21 @@ function NavCard({
     <Link
       href={href}
       style={{ animationDelay: `${delay}ms` }}
-      className={`relative block rounded-xl border border-white/[0.06] bg-[var(--surface)] p-6 group transition-all duration-200 animate-fade-in-up hover:-translate-y-1 hover:border-white/[0.12] ${hoverShadow}`}
+      className={`relative flex items-center gap-4 rounded-xl border border-white/[0.06] bg-[var(--surface)] p-4 group transition-all duration-200 animate-fade-in-up hover:-translate-y-0.5 hover:border-white/[0.12] ${hoverShadow}`}
     >
       <img
         src={`${WOW_ICON_BASE}${iconName}.jpg`}
         alt=""
-        width={52}
-        height={52}
+        width={44}
+        height={44}
         loading="lazy"
-        className="h-13 w-13 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.5)] group-hover:scale-[1.05] transition-transform duration-200"
-        style={{ width: 52, height: 52 }}
+        className="rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.45)] group-hover:scale-[1.05] transition-transform duration-200 flex-shrink-0"
+        style={{ width: 44, height: 44 }}
       />
-      <h3 className={`mt-5 text-lg font-semibold tracking-tight text-neutral-100 ${titleHover} transition-colors`}>{title}</h3>
-      <p className="mt-1.5 text-sm text-neutral-400 leading-relaxed">{blurb}</p>
+      <div className="min-w-0 flex-1">
+        <h3 className={`text-[15px] font-semibold tracking-tight text-neutral-100 ${titleHover} transition-colors`}>{title}</h3>
+        <p className="mt-0.5 text-[13px] text-neutral-400 leading-snug truncate">{blurb}</p>
+      </div>
     </Link>
   );
 }
