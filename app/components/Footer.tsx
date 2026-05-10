@@ -27,7 +27,7 @@ export default function Footer() {
             className="inline-flex items-center gap-1.5 text-sm text-neutral-400 hover:text-white transition group"
           >
             <img
-              src="https://www.warcraftlogs.com/favicon.ico"
+              src="https://assets.rpglogs.com/img/warcraft/favicon.png?v=4"
               alt=""
               width={16}
               height={16}
