@@ -1,5 +1,19 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { StatCard } from "@/app/components/ui/StatCard";
+import { CountUp } from "@/app/components/ui/CountUp";
+import { SectionTitle } from "@/app/components/ui/SectionTitle";
+import {
+  ArrowUpRight,
+  Award,
+  Calendar,
+  List,
+  Package,
+  Shield,
+  Swords,
+  Users,
+} from "@/app/components/ui/Icon";
+import { type LucideIcon } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -16,115 +30,74 @@ export default async function Home() {
     : "—";
 
   return (
-    <div className="space-y-10 animate-fade-in">
-      <section className="flex flex-col items-center text-center pt-4 sm:pt-8">
+    <div className="space-y-12 animate-fade-in">
+      <section className="flex flex-col items-center text-center pt-6 sm:pt-10">
         <img
           src="/logo.png"
           alt="Rising Sun"
           width={96}
           height={96}
-          className="w-24 h-24 rounded-2xl ring-1 ring-gold-400/40 shadow-glow mb-4"
+          className="w-24 h-24 rounded-2xl ring-1 ring-gold-400/40 shadow-glow mb-5"
         />
-        <span className="heading-eyebrow">and he say me i noob LOL</span>
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-vermillion-100">Rising Sun</h1>
-        <p className="mt-3 max-w-xl text-neutral-400 text-sm sm:text-base">
+        <span className="eyebrow">and he say me i noob LOL</span>
+        <h1 className="mt-2 text-4xl sm:text-5xl font-semibold tracking-tight text-vermillion-100">Rising Sun</h1>
+        <p className="mt-3 max-w-xl text-neutral-400 text-sm sm:text-base leading-relaxed">
           Burning Crusade Classic guild loot tracker — roster, attendance, and a transparent
           loot history for every raid we run.
         </p>
       </section>
 
       <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Stat label="Players"      value={players} />
-        <Stat label="Characters"   value={characters} />
-        <Stat label="Items looted" value={awards} tone="gold" />
-        <Stat label="Last raid"    value={lastRaidLabel} mono={false} />
+        <StatCard label="Players"      value={<CountUp value={players} />}    icon={Users} />
+        <StatCard label="Characters"   value={<CountUp value={characters} />} icon={Shield} />
+        <StatCard label="Items looted" value={<CountUp value={awards} />}     tone="gold" icon={Award} />
+        <StatCard label="Last raid"    value={lastRaidLabel}                  icon={Calendar} />
       </section>
 
       <section>
-        <span className="heading-eyebrow">Jump to</span>
-        <h2 className="text-lg font-semibold tracking-tight mb-3">Where to next</h2>
+        <SectionTitle eyebrow="Jump to" title="Where to next" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <NavCard
-            href="/overview"
-            title="Overview"
-            blurb="Who's looted what, sorted by most recent."
-            accent="vermillion"
-          />
-          <NavCard
-            href="/loot"
-            title="Loot catalog"
-            blurb="Every raid drop, browsable by phase / boss."
-            accent="gold"
-          />
-          <NavCard
-            href="/players"
-            title="Players"
-            blurb="Mains and alts grouped by human."
-            accent="vermillion"
-          />
-          <NavCard
-            href="/characters"
-            title="Characters"
-            blurb="One row per character — class, spec, role."
-            accent="gold"
-          />
-          <NavCard
-            href="/rosters"
-            title="Roster"
-            blurb="Master Roster membership and slot."
-            accent="vermillion"
-          />
-          <NavCard
-            href="/attendance"
-            title="Attendance"
-            blurb="Per-night attendance and raid history."
-            accent="gold"
-          />
+          <NavCard href="/overview"   title="Overview"      blurb="Who's looted what, sorted by most recent."     icon={Swords}   accent="vermillion" />
+          <NavCard href="/loot"       title="Loot catalog"  blurb="Every raid drop, browsable by phase / boss."   icon={Package}  accent="gold" />
+          <NavCard href="/players"    title="Players"       blurb="Mains and alts grouped by human."              icon={Users}    accent="vermillion" />
+          <NavCard href="/characters" title="Characters"    blurb="One row per character — class, spec, role."    icon={Shield}   accent="gold" />
+          <NavCard href="/rosters"    title="Roster"        blurb="Master Roster membership and slot."            icon={List}     accent="vermillion" />
+          <NavCard href="/attendance" title="Attendance"    blurb="Per-night attendance and raid history."        icon={Calendar} accent="gold" />
         </div>
       </section>
     </div>
   );
 }
 
-function Stat({
-  label, value, tone = "default", mono = true,
-}: {
-  label: string;
-  value: string | number;
-  tone?: "default" | "gold";
-  mono?: boolean;
-}) {
-  const valueClass = tone === "gold" ? "text-gold-200" : "text-neutral-100";
-  return (
-    <div className="panel-elev px-4 py-3">
-      <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500">{label}</div>
-      <div className={`text-2xl font-bold ${mono ? "tabular-nums" : ""} ${valueClass}`}>{value}</div>
-    </div>
-  );
-}
-
 function NavCard({
-  href, title, blurb, accent,
+  href, title, blurb, icon: Icon, accent,
 }: {
   href: string;
   title: string;
   blurb: string;
+  icon: LucideIcon;
   accent: "vermillion" | "gold";
 }) {
   const ring = accent === "vermillion"
     ? "hover:border-vermillion-500/50 hover:shadow-[0_8px_24px_-12px_rgba(200,16,46,0.4)]"
     : "hover:border-gold-400/50 hover:shadow-[0_8px_24px_-12px_rgba(218,165,32,0.4)]";
   const titleColor = accent === "vermillion" ? "text-vermillion-200" : "text-gold-200";
+  const iconBg = accent === "vermillion"
+    ? "bg-vermillion-500/10 text-vermillion-300 ring-vermillion-500/30"
+    : "bg-gold-400/10 text-gold-200 ring-gold-400/30";
   return (
     <Link
       href={href}
-      className={`panel p-4 sm:p-5 group transition-all ${ring} hover:-translate-y-0.5`}
+      className={`panel p-5 group transition-all ${ring} hoverable`}
     >
       <div className="flex items-start justify-between gap-3">
-        <h3 className={`text-base font-semibold tracking-tight ${titleColor}`}>{title}</h3>
-        <span className="text-neutral-500 group-hover:text-white transition" aria-hidden="true">→</span>
+        <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ring-1 ${iconBg}`}>
+          <Icon size={18} />
+        </span>
+        <ArrowUpRight size={16} className="text-neutral-600 group-hover:text-neutral-200 transition" />
       </div>
-      <p className="mt-1.5 text-sm text-neutral-400 leading-relaxed">{blurb}</p>
+      <h3 className={`mt-3 text-base font-semibold tracking-tight ${titleColor}`}>{title}</h3>
+      <p className="mt-1 text-sm text-neutral-400 leading-relaxed">{blurb}</p>
     </Link>
   );
 }

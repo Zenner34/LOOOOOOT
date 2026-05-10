@@ -2,6 +2,7 @@
 // Stable URL pattern: classicon_<lowercase-class>.jpg
 
 import { CLASS_COLOR } from "@/lib/specs";
+import { Tooltip } from "@/app/components/ui/Tooltip";
 
 const ICON_BASE = "https://wow.zamimg.com/images/wow/icons/medium/classicon_";
 
@@ -25,16 +26,17 @@ export function ClassIcon({
   const key = CLASS_KEY[cls];
   if (!key) return null;
   return (
-    <img
-      src={`${ICON_BASE}${key}.jpg`}
-      alt={cls}
-      title={cls}
-      width={size}
-      height={size}
-      className={`inline-block rounded-[4px] ring-1 ring-white/10 align-[-3px] ${className ?? ""}`}
-      style={{ width: size, height: size }}
-      loading="lazy"
-    />
+    <Tooltip content={cls}>
+      <img
+        src={`${ICON_BASE}${key}.jpg`}
+        alt={cls}
+        width={size}
+        height={size}
+        className={`inline-block rounded-[4px] ring-1 ring-white/10 align-[-3px] ${className ?? ""}`}
+        style={{ width: size, height: size }}
+        loading="lazy"
+      />
+    </Tooltip>
   );
 }
 
