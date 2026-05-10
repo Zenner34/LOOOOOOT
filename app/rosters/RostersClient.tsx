@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { EmptyState } from "@/app/components/ui/EmptyState";
-import { List } from "@/app/components/ui/Icon";
+import { PageHeader } from "@/app/components/ui/PageHeader";
+import { ArrowUpRight, List } from "@/app/components/ui/Icon";
 
 type RosterRow = {
   id: number;
@@ -14,26 +15,28 @@ type RosterRow = {
 export default function RostersClient({ initial, admin: _admin }: { initial: RosterRow[]; admin: boolean }) {
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <span className="heading-eyebrow">Roster</span>
-        <h1 className="text-2xl font-bold tracking-tight">Rosters</h1>
-        <p className="text-sm text-neutral-400 mt-1">
-          You have multiple rosters from earlier setups. The Master Roster is the canonical one going forward.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Roster"
+        title="Rosters"
+        subtitle="The Master Roster is the canonical raid team — older rosters are kept for historical loot context."
+      />
 
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {initial.map(r => (
-          <Link key={r.id} href={`/rosters/${r.id}`} className="panel p-4 hover:border-vermillion-500/60 transition-colors">
-            <div className="flex items-baseline justify-between">
-              <h2 className="text-lg font-semibold text-vermillion-200">{r.name}</h2>
-              <span className="text-xs text-neutral-500">#{r.id}</span>
+          <Link
+            key={r.id}
+            href={`/rosters/${r.id}`}
+            className="panel p-5 group hoverable hover:border-vermillion-500/40 hover:shadow-[0_8px_24px_-12px_rgba(200,16,46,0.35)] transition-colors"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="text-lg font-semibold text-vermillion-200 truncate">{r.name}</h2>
+              <ArrowUpRight size={16} className="text-neutral-600 group-hover:text-neutral-200 transition flex-shrink-0" />
             </div>
-            {r.description && <p className="text-sm text-neutral-400 mt-1">{r.description}</p>}
-            <div className="mt-3 flex gap-3 text-xs text-neutral-400">
-              <span>{r._count.members} members</span>
-              <span>{r._count.raidNights} nights</span>
-              <span>{r._count.awards} awards</span>
+            {r.description && <p className="text-sm text-neutral-400 mt-1.5 leading-relaxed">{r.description}</p>}
+            <div className="mt-4 flex gap-4 text-xs text-neutral-400">
+              <span><span className="tabular-nums text-neutral-200 font-semibold">{r._count.members}</span> members</span>
+              <span><span className="tabular-nums text-neutral-200 font-semibold">{r._count.raidNights}</span> nights</span>
+              <span><span className="tabular-nums text-neutral-200 font-semibold">{r._count.awards}</span> awards</span>
             </div>
           </Link>
         ))}

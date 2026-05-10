@@ -10,6 +10,7 @@ import { ClassIcon } from "@/app/components/ClassIcon";
 import { SpecIcon } from "@/app/components/SpecIcon";
 import { Select } from "@/app/components/Select";
 import { EmptyState } from "@/app/components/ui/EmptyState";
+import { PageHeader } from "@/app/components/ui/PageHeader";
 import { Users } from "@/app/components/ui/Icon";
 
 type Character = {
@@ -225,11 +226,12 @@ export default function OverviewClient({
   }, [characters]);
 
   return (
-    <div className="space-y-5 animate-fade-in">
-      <div>
-        <span className="heading-eyebrow">Roster</span>
-        <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
-      </div>
+    <div className="space-y-6 animate-fade-in">
+      <PageHeader
+        eyebrow="Roster"
+        title="Overview"
+        subtitle="Who's looted what across every raid we've run, sorted to surface the next-up players first."
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_1fr_minmax(200px,auto)] gap-3 items-end">
         <div>

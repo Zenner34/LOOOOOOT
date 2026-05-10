@@ -8,6 +8,7 @@ import { ClassIcon } from "@/app/components/ClassIcon";
 import { SpecIcon } from "@/app/components/SpecIcon";
 import { Select } from "@/app/components/Select";
 import { EmptyState } from "@/app/components/ui/EmptyState";
+import { PageHeader } from "@/app/components/ui/PageHeader";
 import { Shield } from "@/app/components/ui/Icon";
 
 type Character = {
@@ -137,13 +138,14 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-end justify-between flex-wrap gap-3">
-        <div>
-          <span className="heading-eyebrow">Roster</span>
-          <h1 className="text-2xl font-bold tracking-tight">Characters</h1>
-        </div>
-        <span className="text-sm text-neutral-400">{chars.length} total{search && ` · ${visible.length} match search`}</span>
-      </div>
+      <PageHeader
+        eyebrow="Roster"
+        title="Characters"
+        subtitle="Every character in the master roster — class, spec, role, and main/alt at a glance."
+        actions={
+          <span className="text-sm text-neutral-400">{chars.length} total{search && ` · ${visible.length} match search`}</span>
+        }
+      />
 
       {admin && (
         <form onSubmit={add} className="panel p-4 flex flex-wrap items-end gap-3">

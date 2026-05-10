@@ -8,6 +8,7 @@ import { ClassIcon } from "@/app/components/ClassIcon";
 import { SpecIcon } from "@/app/components/SpecIcon";
 import { WowheadLink } from "@/lib/wowhead";
 import { EmptyState } from "@/app/components/ui/EmptyState";
+import { PageHeader } from "@/app/components/ui/PageHeader";
 import { Inbox } from "@/app/components/ui/Icon";
 
 type Char = {
@@ -156,28 +157,28 @@ export default function PlayerDetailClient({
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <Link href="/players" className="text-xs text-neutral-500 hover:text-vermillion-200">← Players</Link>
-        <div className="mt-2">
-          <span className="heading-eyebrow">Player</span>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2.5">
+      <Link href="/players" className="inline-flex items-center text-xs text-neutral-500 hover:text-vermillion-200 transition">← Players</Link>
+      <PageHeader
+        eyebrow="Player"
+        title={
+          <span className="inline-flex items-center gap-2.5">
             {mainChar && <ClassIcon cls={mainChar.class} size={28} />}
             {player.displayName}
-          </h1>
-        </div>
-        <div className="mt-3 grid grid-cols-2 sm:flex gap-2 sm:gap-3 text-sm">
-          <Stat label="Items" value={String(totalCount)} />
-          <Stat
-            label="Last loot"
-            value={daysAgo == null ? "—" : daysAgo === 0 ? "today" : `${daysAgo}d`}
-            tone={
-              daysAgo == null ? "muted" :
-              daysAgo < 7  ? "fresh" :
-              daysAgo < 14 ? "warm"  :
-              daysAgo < 30 ? "cold"  : "icy"
-            }
-          />
-        </div>
+          </span>
+        }
+      />
+      <div className="grid grid-cols-2 sm:flex gap-2 sm:gap-3 text-sm">
+        <Stat label="Items" value={String(totalCount)} />
+        <Stat
+          label="Last loot"
+          value={daysAgo == null ? "—" : daysAgo === 0 ? "today" : `${daysAgo}d`}
+          tone={
+            daysAgo == null ? "muted" :
+            daysAgo < 7  ? "fresh" :
+            daysAgo < 14 ? "warm"  :
+            daysAgo < 30 ? "cold"  : "icy"
+          }
+        />
       </div>
 
       <div className="grid grid-cols-12 gap-4">

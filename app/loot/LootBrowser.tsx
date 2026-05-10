@@ -6,6 +6,7 @@ import { WowheadItemCell } from "@/lib/wowhead";
 import { iconFor } from "@/lib/wowhead-lookup";
 import { Select } from "@/app/components/Select";
 import { EmptyState } from "@/app/components/ui/EmptyState";
+import { PageHeader } from "@/app/components/ui/PageHeader";
 import { Package } from "@/app/components/ui/Icon";
 
 type Boss = { id: number; name: string };
@@ -146,13 +147,12 @@ export default function LootBrowser({
   );
 
   return (
-    <div className="space-y-5 animate-fade-in">
-      <div className="flex items-end justify-between flex-wrap gap-3">
-        <div>
-          <span className="heading-eyebrow">Browse</span>
-          <h1 className="text-2xl font-bold tracking-tight">Loot catalog</h1>
-        </div>
-      </div>
+    <div className="space-y-6 animate-fade-in">
+      <PageHeader
+        eyebrow="Browse"
+        title="Loot catalog"
+        subtitle="Every drop in the seed catalog, organised by phase, raid, and boss."
+      />
 
       {/* Mobile: trigger button to open picker sheet */}
       <button

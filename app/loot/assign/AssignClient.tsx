@@ -9,6 +9,7 @@ import { WowheadLink } from "@/lib/wowhead";
 import { SpecIcon } from "@/app/components/SpecIcon";
 import { Select } from "@/app/components/Select";
 import { EmptyState } from "@/app/components/ui/EmptyState";
+import { PageHeader } from "@/app/components/ui/PageHeader";
 import { Package } from "@/app/components/ui/Icon";
 
 type Weight = { spec: string; weight: number };
@@ -164,11 +165,12 @@ export default function AssignClient({ phases, rosters, recent, admin }: {
   );
 
   return (
-    <div className="space-y-4 animate-fade-in">
-      <div>
-        <span className="heading-eyebrow">Admin</span>
-        <h1 className="text-2xl font-bold tracking-tight">Assign loot</h1>
-      </div>
+    <div className="space-y-6 animate-fade-in">
+      <PageHeader
+        eyebrow="Admin"
+        title="Assign loot"
+        subtitle="Pick a roster, raid night, and item — then award it to the right recipient."
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-end gap-3">
         {rosters.length > 1 && (

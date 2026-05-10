@@ -8,6 +8,7 @@ import { CLASS_COLOR } from "@/lib/specs";
 import { ClassIcon } from "@/app/components/ClassIcon";
 import { SpecIcon } from "@/app/components/SpecIcon";
 import { EmptyState } from "@/app/components/ui/EmptyState";
+import { PageHeader } from "@/app/components/ui/PageHeader";
 import { Users } from "@/app/components/ui/Icon";
 
 type Char = {
@@ -132,19 +133,17 @@ export default function PlayersClient({
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-end justify-between flex-wrap gap-3">
-        <div>
-          <span className="heading-eyebrow">Roster</span>
-          <h1 className="text-2xl font-bold tracking-tight">Players</h1>
-          <p className="text-sm text-neutral-400 mt-1">
-            Group a person's main + alts so loot rolls up across all their characters.
-          </p>
-        </div>
-        <div className="text-sm text-neutral-400">
-          {players.length} player{players.length !== 1 ? "s" : ""}
-          {orphans.length > 0 && <span className="ml-3 text-gold-300">· {orphans.length} unbound character{orphans.length !== 1 ? "s" : ""}</span>}
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Roster"
+        title="Players"
+        subtitle="Group a person's main + alts so loot rolls up across all their characters."
+        actions={
+          <span className="text-sm text-neutral-400">
+            {players.length} player{players.length !== 1 ? "s" : ""}
+            {orphans.length > 0 && <span className="ml-3 text-gold-300">· {orphans.length} unbound character{orphans.length !== 1 ? "s" : ""}</span>}
+          </span>
+        }
+      />
 
       {admin && (
         <form onSubmit={addPlayer} className="panel p-4 flex flex-wrap items-end gap-3">

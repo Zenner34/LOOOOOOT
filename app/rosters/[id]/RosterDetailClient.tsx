@@ -8,6 +8,7 @@ import { CLASS_COLOR } from "@/lib/specs";
 import { Select } from "@/app/components/Select";
 import { ClassIcon } from "@/app/components/ClassIcon";
 import { SpecIcon } from "@/app/components/SpecIcon";
+import { PageHeader } from "@/app/components/ui/PageHeader";
 
 type Roster = { id: number; name: string; description: string | null };
 type Character = { id: number; name: string; class: string; spec: string; role: string; active: boolean; isMain: boolean };
@@ -89,17 +90,13 @@ export default function RosterDetailClient(props: {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <Link href="/rosters" className="text-xs text-neutral-500 hover:text-vermillion-200">← Rosters</Link>
-        <div className="mt-2 flex items-start justify-between flex-wrap gap-3">
-          <div className="min-w-0">
-            <span className="heading-eyebrow">Roster</span>
-            <h1 className="text-2xl font-bold tracking-tight">{props.roster.name}</h1>
-            {props.roster.description && <p className="text-neutral-400 text-sm mt-1">{props.roster.description}</p>}
-          </div>
-          {props.admin && <button className="btn-danger btn-xs" onClick={deleteRoster}>Delete roster</button>}
-        </div>
-      </div>
+      <Link href="/rosters" className="inline-flex items-center text-xs text-neutral-500 hover:text-vermillion-200 transition">← Rosters</Link>
+      <PageHeader
+        eyebrow="Roster"
+        title={props.roster.name}
+        subtitle={props.roster.description ?? undefined}
+        actions={props.admin ? <button className="btn-danger btn-xs" onClick={deleteRoster}>Delete roster</button> : undefined}
+      />
 
       {props.admin && (
         <form onSubmit={addMember} className="panel p-4 grid grid-cols-1 sm:grid-cols-[1fr_auto] items-end gap-3">

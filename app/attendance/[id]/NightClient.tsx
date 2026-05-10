@@ -7,6 +7,7 @@ import { CLASS_COLOR } from "@/lib/specs";
 import { ClassIcon } from "@/app/components/ClassIcon";
 import { SpecIcon } from "@/app/components/SpecIcon";
 import { EmptyState } from "@/app/components/ui/EmptyState";
+import { PageHeader } from "@/app/components/ui/PageHeader";
 import { Users } from "@/app/components/ui/Icon";
 
 type Character = { id: number; name: string; class: string; spec: string; role: string };
@@ -72,18 +73,14 @@ export default function NightClient({ night, admin }: {
   const absentCount  = Object.values(statuses).filter(s => s === "absent").length;
 
   return (
-    <div className="space-y-5 animate-fade-in pb-24">
+    <div className="space-y-6 animate-fade-in pb-24">
+      <Link href="/attendance" className="inline-flex items-center text-xs text-neutral-500 hover:text-vermillion-200 transition">← Raid nights</Link>
+      <PageHeader
+        eyebrow="Attendance"
+        title={new Date(night.date).toISOString().slice(0, 10)}
+        subtitle={`${night.roster.name}${night.notes ? ` · ${night.notes}` : ""}`}
+      />
       <div>
-        <Link href="/attendance" className="text-xs text-neutral-500 hover:text-vermillion-200">← Raid nights</Link>
-        <div className="mt-2">
-          <span className="heading-eyebrow">Attendance</span>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {new Date(night.date).toISOString().slice(0, 10)}
-          </h1>
-          <p className="text-sm text-neutral-400 mt-1">
-            {night.roster.name}{night.notes && ` · ${night.notes}`}
-          </p>
-        </div>
         <div className="mt-3 grid grid-cols-3 gap-2 sm:flex sm:gap-3">
           <Stat label="Present" value={String(presentCount)} tone="fresh" />
           <Stat label="Late" value={String(lateCount)} tone="warm" />

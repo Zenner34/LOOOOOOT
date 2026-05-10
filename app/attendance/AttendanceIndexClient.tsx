@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { EmptyState } from "@/app/components/ui/EmptyState";
+import { PageHeader } from "@/app/components/ui/PageHeader";
 import { Calendar } from "@/app/components/ui/Icon";
 import { Select } from "@/app/components/Select";
 
@@ -52,11 +53,11 @@ export default function AttendanceIndexClient({
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <span className="heading-eyebrow">Roster</span>
-        <h1 className="text-2xl font-bold tracking-tight">Raid nights</h1>
-        <p className="text-sm text-neutral-400 mt-1">Each raid night is one row. Mark attendance and award loot from the night.</p>
-      </div>
+      <PageHeader
+        eyebrow="Roster"
+        title="Raid nights"
+        subtitle="Every raid night is one row. Mark attendance and award loot from the night detail."
+      />
 
       {admin && (
         <form onSubmit={createNight} className="panel p-4 flex flex-wrap items-end gap-3">
