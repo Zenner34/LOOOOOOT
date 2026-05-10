@@ -7,15 +7,14 @@ import {
   ArrowUpRight,
   Award,
   Calendar,
-  List,
-  Package,
   Shield,
-  Swords,
   Users,
 } from "@/app/components/ui/Icon";
-import { type LucideIcon } from "lucide-react";
 
 export const dynamic = "force-dynamic";
+
+const WOW_ICON_BASE = "https://wow.zamimg.com/images/wow/icons/medium/";
+const WOW_ICON_FALLBACK = `${WOW_ICON_BASE}inv_misc_questionmark.jpg`;
 
 export default async function Home() {
   const [players, characters, awards, lastNight] = await Promise.all([
@@ -58,12 +57,12 @@ export default async function Home() {
         <SectionTitle eyebrow="Jump to" title="Where to next" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {[
-            { href: "/overview",   title: "Overview",     blurb: "Who's looted what, sorted by most recent.",   icon: Swords,   accent: "vermillion" as const },
-            { href: "/loot",       title: "Loot catalog", blurb: "Every raid drop, browsable by phase / boss.", icon: Package,  accent: "gold"       as const },
-            { href: "/players",    title: "Players",      blurb: "Mains and alts grouped by human.",            icon: Users,    accent: "vermillion" as const },
-            { href: "/characters", title: "Characters",   blurb: "One row per character — class, spec, role.",  icon: Shield,   accent: "gold"       as const },
-            { href: "/rosters",    title: "Roster",       blurb: "Master Roster membership and slot.",          icon: List,     accent: "vermillion" as const },
-            { href: "/attendance", title: "Attendance",   blurb: "Per-night attendance and raid history.",      icon: Calendar, accent: "gold"       as const },
+            { href: "/overview",   title: "Overview",     blurb: "Who's looted what, sorted by most recent.",   iconName: "inv_misc_spyglass_03",            accent: "vermillion" as const },
+            { href: "/loot",       title: "Loot catalog", blurb: "Every raid drop, browsable by phase / boss.", iconName: "inv_box_03",                      accent: "gold"       as const },
+            { href: "/players",    title: "Players",      blurb: "Mains and alts grouped by human.",            iconName: "inv_misc_tournaments_banner_human", accent: "vermillion" as const },
+            { href: "/characters", title: "Characters",   blurb: "One row per character — class, spec, role.",  iconName: "inv_misc_tabard_guildtabard01",   accent: "gold"       as const },
+            { href: "/rosters",    title: "Roster",       blurb: "Master Roster membership and slot.",          iconName: "inv_scroll_03",                   accent: "vermillion" as const },
+            { href: "/attendance", title: "Attendance",   blurb: "Per-night attendance and raid history.",      iconName: "inv_misc_pocketwatch_01",         accent: "gold"       as const },
           ].map((card, i) => (
             <NavCard key={card.href} {...card} delay={i * 50} />
           ))}
@@ -74,12 +73,12 @@ export default async function Home() {
 }
 
 function NavCard({
-  href, title, blurb, icon: Icon, accent, delay = 0,
+  href, title, blurb, iconName, accent, delay = 0,
 }: {
   href: string;
   title: string;
   blurb: string;
-  icon: LucideIcon;
+  iconName: string;
   accent: "vermillion" | "gold";
   delay?: number;
 }) {
@@ -87,9 +86,9 @@ function NavCard({
     ? "hover:border-vermillion-500/50 hover:shadow-[0_8px_24px_-12px_rgba(200,16,46,0.4)]"
     : "hover:border-gold-400/50 hover:shadow-[0_8px_24px_-12px_rgba(218,165,32,0.4)]";
   const titleColor = accent === "vermillion" ? "text-vermillion-200" : "text-gold-200";
-  const iconBg = accent === "vermillion"
-    ? "bg-vermillion-500/10 text-vermillion-300 ring-vermillion-500/30"
-    : "bg-gold-400/10 text-gold-200 ring-gold-400/30";
+  const iconRing = accent === "vermillion"
+    ? "ring-vermillion-500/30 group-hover:ring-vermillion-500/60"
+    : "ring-gold-400/30 group-hover:ring-gold-400/60";
   return (
     <Link
       href={href}
@@ -97,9 +96,15 @@ function NavCard({
       className={`panel p-5 group transition-all animate-fade-in-up ${ring} hoverable`}
     >
       <div className="flex items-start justify-between gap-3">
-        <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ring-1 ${iconBg}`}>
-          <Icon size={18} />
-        </span>
+        <img
+          src={`${WOW_ICON_BASE}${iconName}.jpg`}
+          alt=""
+          width={36}
+          height={36}
+          loading="lazy"
+          className={`h-9 w-9 rounded-lg ring-1 ${iconRing} transition`}
+          onError={(e) => { (e.currentTarget as HTMLImageElement).src = WOW_ICON_FALLBACK; }}
+        />
         <ArrowUpRight size={16} className="text-neutral-600 group-hover:text-neutral-200 transition" />
       </div>
       <h3 className={`mt-3 text-base font-semibold tracking-tight ${titleColor}`}>{title}</h3>
