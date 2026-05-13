@@ -11,7 +11,7 @@ import { SpecIcon } from "@/app/components/SpecIcon";
 import { Select } from "@/app/components/Select";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { PageHeader } from "@/app/components/ui/PageHeader";
-import { ChevronDown, Filter, Users } from "@/app/components/ui/Icon";
+import { ArrowDown, ArrowUp, ChevronDown, Filter, Search, Users } from "@/app/components/ui/Icon";
 
 type Character = {
   id: number;
@@ -98,11 +98,15 @@ export default function OverviewClient({
   const [tab, setTab] = useState<Bucket>(BUCKETS.includes(initialBucket) ? initialBucket : "all");
   const [groupBy, setGroupBy] = useState<"player" | "character">("player");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const [sort, setSort] = useState<"lastLoot" | "count" | "nameAsc" | "nameDesc">("lastLoot");
+  const [sort, setSort] = useState<
+    "lastLootDesc" | "lastLootAsc" | "countDesc" | "countAsc" | "nameAsc" | "nameDesc"
+  >("lastLootDesc");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filtersRef = useRef<HTMLDivElement>(null);
   const [classFilter, setClassFilter] = useState<Set<string>>(new Set());
   const [showInactive, setShowInactive] = useState(false);
+  const [query, setQuery] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
 
   function toggleClass(cls: string) {
     setClassFilter(prev => {
@@ -127,14 +131,35 @@ export default function OverviewClient({
     };
   }, [filtersOpen]);
 
+  // "/" focuses the search input — same affordance as GitHub/Linear.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== "/") return;
+      const t = e.target as HTMLElement | null;
+      const tag = t?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || t?.isContentEditable) return;
+      e.preventDefault();
+      searchRef.current?.focus();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
+  const queryTokens = useMemo(
+    () => query.trim().toLowerCase().split(/\s+/).filter(Boolean),
+    [query],
+  );
+
   const rosterLabel = selectedRosterId === "all"
     ? "All rosters"
     : (rosters.find(r => r.id === selectedRosterId)?.name ?? "Roster");
   const groupLabel = groupBy === "player" ? "By player" : "By character";
   const sortLabel =
-    sort === "lastLoot" ? "Recently looted" :
-    sort === "count"    ? "Most items" :
-    sort === "nameAsc"  ? "A → Z" : "Z → A";
+    sort === "lastLootDesc" ? "Recently looted" :
+    sort === "lastLootAsc"  ? "Stalest first" :
+    sort === "countDesc"    ? "Most items" :
+    sort === "countAsc"     ? "Fewest items" :
+    sort === "nameAsc"      ? "A → Z" : "Z → A";
   const classLabel = classFilter.size === 0
     ? null
     : classFilter.size === 1
@@ -177,8 +202,18 @@ export default function OverviewClient({
       return true;
     });
 
+    function matchesQuery(r: Row): boolean {
+      if (queryTokens.length === 0) return true;
+      const hay = [
+        r.displayName,
+        ...r.characters.flatMap(c => [c.name, c.class, c.spec]),
+        ...r.awards.map(a => a.item.name),
+      ].join(" ").toLowerCase();
+      return queryTokens.every(t => hay.includes(t));
+    }
+
     if (groupBy === "character") {
-      return filtered.map(c => {
+      const rows = filtered.map(c => {
         const mine = awardsByChar.get(c.id) ?? [];
         return {
           key: `c${c.id}`,
@@ -191,6 +226,7 @@ export default function OverviewClient({
           lastAwardAt: mine[0] ? new Date(mine[0].awardedAt) : null,
         };
       });
+      return rows.filter(matchesQuery);
     }
 
     // Player mode
@@ -245,20 +281,25 @@ export default function OverviewClient({
       };
     });
 
-    return [...playerRows, ...orphanRows];
-  }, [characters, players, tab, groupBy, awardsByChar, classFilter, showInactive]);
+    return [...playerRows, ...orphanRows].filter(matchesQuery);
+  }, [characters, players, tab, groupBy, awardsByChar, classFilter, showInactive, queryTokens]);
 
   const sortedRows = useMemo(() => {
     const r = [...rows];
     r.sort((a, b) => {
-      if (sort === "count")    return b.count - a.count || a.displayName.localeCompare(b.displayName);
-      if (sort === "nameAsc")  return a.displayName.localeCompare(b.displayName);
-      if (sort === "nameDesc") return b.displayName.localeCompare(a.displayName);
-      // lastLoot: most recently looted first; players with no loot pinned to bottom.
-      const at = a.lastAwardAt?.getTime() ?? -Infinity;
-      const bt = b.lastAwardAt?.getTime() ?? -Infinity;
-      if (at !== bt) return bt - at;
-      return a.displayName.localeCompare(b.displayName);
+      if (sort === "countDesc") return b.count - a.count || a.displayName.localeCompare(b.displayName);
+      if (sort === "countAsc")  return a.count - b.count || a.displayName.localeCompare(b.displayName);
+      if (sort === "nameAsc")   return a.displayName.localeCompare(b.displayName);
+      if (sort === "nameDesc")  return b.displayName.localeCompare(a.displayName);
+      // lastLootAsc: stalest (oldest) first; never-looted rows still pinned to bottom.
+      // lastLootDesc (default): most recently looted first; never-looted pinned to bottom.
+      const at = a.lastAwardAt?.getTime() ?? null;
+      const bt = b.lastAwardAt?.getTime() ?? null;
+      if (at == null && bt == null) return a.displayName.localeCompare(b.displayName);
+      if (at == null) return 1;
+      if (bt == null) return -1;
+      if (sort === "lastLootAsc") return at - bt || a.displayName.localeCompare(b.displayName);
+      return bt - at || a.displayName.localeCompare(b.displayName);
     });
     return r;
   }, [rows, sort]);
@@ -335,10 +376,12 @@ export default function OverviewClient({
                 value={sort}
                 onValueChange={v => setSort(v as any)}
                 options={[
-                  { value: "lastLoot", label: "Recently looted" },
-                  { value: "count",    label: "Most items" },
-                  { value: "nameAsc",  label: "Name A → Z" },
-                  { value: "nameDesc", label: "Name Z → A" },
+                  { value: "lastLootDesc", label: "Recently looted" },
+                  { value: "lastLootAsc",  label: "Stalest first" },
+                  { value: "countDesc",    label: "Most items" },
+                  { value: "countAsc",     label: "Fewest items" },
+                  { value: "nameAsc",      label: "Name A → Z" },
+                  { value: "nameDesc",     label: "Name Z → A" },
                 ]}
               />
             </div>
@@ -413,21 +456,47 @@ export default function OverviewClient({
         )}
       </div>
 
-      <div className="flex gap-1 border-b border-white/[0.06] overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {BUCKETS.map(b => (
-          <button
-            key={b}
-            onClick={() => setTabAndUrl(b)}
-            className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition flex items-center gap-2 ${
-              tab === b ? "border-vermillion-500 text-vermillion-200" : "border-transparent text-neutral-400 hover:text-white"
-            }`}
-          >
-            {BUCKET_LABEL[b]}
-            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${tab === b ? "bg-vermillion-500/15 text-vermillion-200" : "bg-white/5 text-neutral-400"}`}>
-              {bucketCounts[b]}
-            </span>
-          </button>
-        ))}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 border-b border-white/[0.06]">
+        <div className="flex gap-1 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {BUCKETS.map(b => (
+            <button
+              key={b}
+              onClick={() => setTabAndUrl(b)}
+              className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition flex items-center gap-2 ${
+                tab === b ? "border-vermillion-500 text-vermillion-200" : "border-transparent text-neutral-400 hover:text-white"
+              }`}
+            >
+              {BUCKET_LABEL[b]}
+              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${tab === b ? "bg-vermillion-500/15 text-vermillion-200" : "bg-white/5 text-neutral-400"}`}>
+                {bucketCounts[b]}
+              </span>
+            </button>
+          ))}
+        </div>
+        <div className="sm:ml-auto pb-2 sm:pb-2">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" aria-hidden />
+            <input
+              ref={searchRef}
+              type="search"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search item, character, player…"
+              aria-label="Search loot"
+              className="w-full sm:w-72 rounded-full bg-[var(--surface)] border border-white/10 pl-9 pr-9 py-1.5 text-sm text-neutral-100 placeholder:text-neutral-500 outline-none transition focus:border-vermillion-500/40 focus:ring-2 focus:ring-vermillion-500/20"
+            />
+            {query ? (
+              <button
+                type="button"
+                onClick={() => { setQuery(""); searchRef.current?.focus(); }}
+                aria-label="Clear search"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-200 transition w-5 h-5 inline-flex items-center justify-center rounded"
+              >×</button>
+            ) : (
+              <kbd className="hidden sm:inline-flex absolute right-2 top-1/2 -translate-y-1/2 items-center justify-center min-w-[20px] h-5 px-1.5 rounded border border-white/10 bg-white/5 text-[10px] font-mono text-neutral-500 pointer-events-none">/</kbd>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Mobile: card list. Below md, the desktop table is hidden. */}
@@ -508,12 +577,21 @@ export default function OverviewClient({
           );
         })}
         {sortedRows.length === 0 && (
-          <EmptyState
-            icon={Users}
-            title={`No ${EMPTY_LABEL[tab]} in this roster`}
-            description="Once characters are added and loot is awarded, they'll appear here."
-            variant="compact"
-          />
+          queryTokens.length > 0 ? (
+            <EmptyState
+              icon={Search}
+              title={`No matches for "${query.trim()}"`}
+              description="Try a different player, character, or item name."
+              variant="compact"
+            />
+          ) : (
+            <EmptyState
+              icon={Users}
+              title={`No ${EMPTY_LABEL[tab]} in this roster`}
+              description="Once characters are added and loot is awarded, they'll appear here."
+              variant="compact"
+            />
+          )
         )}
       </div>
 
@@ -534,8 +612,28 @@ export default function OverviewClient({
                 </button>
               </th>
               <th>{groupBy === "player" ? "Characters" : "Spec"}</th>
-              <th className="text-right">Items</th>
-              <th>Last loot</th>
+              <th className="text-right">
+                <button
+                  onClick={() => setSort(s => s === "countDesc" ? "countAsc" : "countDesc")}
+                  className="hover:text-vermillion-200 transition inline-flex items-center gap-1"
+                  title="Sort by item count"
+                >
+                  Items
+                  {sort === "countDesc" && <ArrowDown size={12} aria-hidden />}
+                  {sort === "countAsc"  && <ArrowUp   size={12} aria-hidden />}
+                </button>
+              </th>
+              <th className="whitespace-nowrap min-w-[7rem]">
+                <button
+                  onClick={() => setSort(s => s === "lastLootDesc" ? "lastLootAsc" : "lastLootDesc")}
+                  className="hover:text-vermillion-200 transition inline-flex items-center gap-1"
+                  title="Sort by last loot"
+                >
+                  Last loot
+                  {sort === "lastLootDesc" && <ArrowDown size={12} aria-hidden />}
+                  {sort === "lastLootAsc"  && <ArrowUp   size={12} aria-hidden />}
+                </button>
+              </th>
               <th>Last item</th>
               <th></th>
             </tr>
@@ -640,7 +738,13 @@ export default function OverviewClient({
               );
             })}
             {sortedRows.length === 0 && (
-              <tr><td colSpan={6} className="py-10 text-center text-neutral-500">No {EMPTY_LABEL[tab]} in this roster yet.</td></tr>
+              <tr>
+                <td colSpan={6} className="py-10 text-center text-neutral-500">
+                  {queryTokens.length > 0
+                    ? <>No matches for &ldquo;{query.trim()}&rdquo;.</>
+                    : <>No {EMPTY_LABEL[tab]} in this roster yet.</>}
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
