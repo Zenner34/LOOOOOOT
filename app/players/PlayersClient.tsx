@@ -1,15 +1,18 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, memo, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
 import { ClassIcon } from "@/app/components/ClassIcon";
 import { SpecIcon } from "@/app/components/SpecIcon";
+import { Select } from "@/app/components/Select";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { PageHeader } from "@/app/components/ui/PageHeader";
-import { Users } from "@/app/components/ui/Icon";
+import { Search, Users } from "@/app/components/ui/Icon";
+
+type Sort = "nameAsc" | "nameDesc" | "charsDesc" | "activeFirst";
 
 type Char = {
   id: number;
@@ -43,6 +46,52 @@ export default function PlayersClient({
   const [name, setName] = useState("");
   const [discord, setDiscord] = useState("");
   const [busy, setBusy] = useState(false);
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<Sort>("activeFirst");
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // "/" focuses the player search input.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== "/") return;
+      const t = e.target as HTMLElement | null;
+      const tag = t?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || t?.isContentEditable) return;
+      e.preventDefault();
+      searchRef.current?.focus();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
+  const queryTokens = useMemo(
+    () => query.trim().toLowerCase().split(/\s+/).filter(Boolean),
+    [query],
+  );
+
+  const visiblePlayers = useMemo(() => {
+    let rows = players;
+    if (queryTokens.length > 0) {
+      rows = rows.filter(p => {
+        const hay = [
+          p.displayName,
+          p.discordHandle ?? "",
+          ...p.characters.flatMap(c => [c.name, c.class, c.spec]),
+        ].join(" ").toLowerCase();
+        return queryTokens.every(t => hay.includes(t));
+      });
+    }
+    const out = [...rows];
+    out.sort((a, b) => {
+      if (sort === "nameAsc")  return a.displayName.localeCompare(b.displayName);
+      if (sort === "nameDesc") return b.displayName.localeCompare(a.displayName);
+      if (sort === "charsDesc") return (b.characters.length - a.characters.length) || a.displayName.localeCompare(b.displayName);
+      // activeFirst: active before inactive, then by name.
+      if (a.active !== b.active) return a.active ? -1 : 1;
+      return a.displayName.localeCompare(b.displayName);
+    });
+    return out;
+  }, [players, queryTokens, sort]);
 
   const filteredOrphans = useMemo(() => orphans, [orphans]);
 
@@ -170,8 +219,45 @@ export default function PlayersClient({
         </form>
       )}
 
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="relative flex-1">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" aria-hidden />
+          <input
+            ref={searchRef}
+            type="search"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search by player, character, class, or spec…"
+            aria-label="Search players"
+            className="w-full rounded-full bg-[var(--surface)] border border-white/10 pl-9 pr-9 py-1.5 text-sm text-neutral-100 placeholder:text-neutral-500 outline-none transition focus:border-vermillion-500/40 focus:ring-2 focus:ring-vermillion-500/20"
+          />
+          {query ? (
+            <button
+              type="button"
+              onClick={() => { setQuery(""); searchRef.current?.focus(); }}
+              aria-label="Clear search"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-200 transition w-5 h-5 inline-flex items-center justify-center rounded"
+            >×</button>
+          ) : (
+            <kbd className="hidden sm:inline-flex absolute right-2 top-1/2 -translate-y-1/2 items-center justify-center min-w-[20px] h-5 px-1.5 rounded border border-white/10 bg-white/5 text-[10px] font-mono text-neutral-500 pointer-events-none">/</kbd>
+          )}
+        </div>
+        <div className="sm:w-56">
+          <Select
+            value={sort}
+            onValueChange={v => setSort(v as Sort)}
+            options={[
+              { value: "activeFirst", label: "Active first" },
+              { value: "nameAsc",     label: "Name A → Z" },
+              { value: "nameDesc",    label: "Name Z → A" },
+              { value: "charsDesc",   label: "Most characters" },
+            ]}
+          />
+        </div>
+      </div>
+
       <div className="space-y-3">
-        {players.map(p => (
+        {visiblePlayers.map(p => (
           <PlayerCard
             key={p.id}
             player={p}
@@ -189,6 +275,15 @@ export default function PlayersClient({
             icon={Users}
             title="No players yet"
             description={admin ? "Add one above to start." : "An admin needs to add the first player."}
+          />
+        )}
+
+        {players.length > 0 && visiblePlayers.length === 0 && (
+          <EmptyState
+            icon={Search}
+            title={`No players match "${query.trim()}"`}
+            description="Try a different name, character, class, or spec."
+            variant="compact"
           />
         )}
 
@@ -220,7 +315,7 @@ export default function PlayersClient({
   );
 }
 
-function PlayerCard({
+const PlayerCard = memo(function PlayerCard({
   player, orphans, admin, onBind, onUnbind, onSetMain, onRemove,
 }: {
   player: Player;
@@ -294,7 +389,7 @@ function PlayerCard({
       )}
     </div>
   );
-}
+});
 
 function CharacterChip({
   c, admin, onUnbind, onSetMain,
