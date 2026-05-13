@@ -1,11 +1,11 @@
 -- Week 13 (May 12, 2026) loot import.
 -- Self-contained: creates the missing Player (Frustrated) and Characters
 -- (Frustrated's Arms Warrior main, Barbatos's Affliction Warlock alt,
--- Pizookies's Combat Rogue alt) before inserting the 11 awards.
+-- Pizookies's Combat Rogue alt) before inserting the 10 awards.
 -- Pit Lord's Satchel is deliberately not tracked, so even though
 -- Pizookies's Rogue is now on the roster the satchel award is excluded.
--- Includes an extra Magtheridon's Head award for Blargn (per the
--- post-table addendum).
+-- The Koco Magtheridon's Head from the table was reassigned to Blargn
+-- on the night, so only the Blargn row is recorded.
 -- Idempotent — re-running deletes and re-inserts the May 12 RaidNight
 -- + its awards, so duplicate runs converge on the same final state.
 
@@ -96,11 +96,11 @@ DELETE FROM "RaidNight"
 INSERT INTO "RaidNight" ("rosterId", date, notes)
 VALUES ((SELECT id FROM "Roster" WHERE name = 'Master Roster'), '2026-05-12', 'Week 13');
 
--- 6. Insert the 11 LootAwards. Pit Lord's Satchel (Pizookies) is
---    intentionally excluded from tracking. The final Magtheridon's Head
---    row is the post-table addendum for Blargn.
+-- 6. Insert the 10 LootAwards. Pit Lord's Satchel (Pizookies) is
+--    intentionally excluded from tracking. Koco's Magtheridon's Head
+--    was reassigned to Blargn on the night, so only the Blargn row
+--    is recorded.
 INSERT INTO "LootAward" ("itemId", "characterId", "rosterId", "raidNightId", "awardedAt") VALUES
-  ((SELECT id FROM "Item" WHERE name = 'Magtheridon''s Head' LIMIT 1), (SELECT c.id FROM "Character" c JOIN "Player" p ON c."playerId" = p.id WHERE p."displayName" = 'Koco' AND c.class = 'Warlock' AND c.spec = 'Affliction Warlock' LIMIT 1), (SELECT id FROM "Roster" WHERE name = 'Master Roster'), (SELECT id FROM "RaidNight" WHERE date = '2026-05-12' AND "rosterId" = (SELECT id FROM "Roster" WHERE name = 'Master Roster') LIMIT 1), '2026-05-12T00:00:00Z'::timestamp),
   ((SELECT id FROM "Item" WHERE name = 'Cloak of the Pit Stalker' LIMIT 1), (SELECT c.id FROM "Character" c JOIN "Player" p ON c."playerId" = p.id WHERE p."displayName" = 'Corr' AND c.class = 'Warrior' AND c.spec = 'Fury Warrior' LIMIT 1), (SELECT id FROM "Roster" WHERE name = 'Master Roster'), (SELECT id FROM "RaidNight" WHERE date = '2026-05-12' AND "rosterId" = (SELECT id FROM "Roster" WHERE name = 'Master Roster') LIMIT 1), '2026-05-12T00:00:00Z'::timestamp),
   ((SELECT id FROM "Item" WHERE name = 'Pauldrons of the Fallen Hero' LIMIT 1), (SELECT c.id FROM "Character" c JOIN "Player" p ON c."playerId" = p.id WHERE p."displayName" = 'Barbatos' AND c.class = 'Warlock' AND c.spec = 'Affliction Warlock' LIMIT 1), (SELECT id FROM "Roster" WHERE name = 'Master Roster'), (SELECT id FROM "RaidNight" WHERE date = '2026-05-12' AND "rosterId" = (SELECT id FROM "Roster" WHERE name = 'Master Roster') LIMIT 1), '2026-05-12T00:00:00Z'::timestamp),
   ((SELECT id FROM "Item" WHERE name = 'Pauldrons of the Fallen Champion' LIMIT 1), (SELECT c.id FROM "Character" c JOIN "Player" p ON c."playerId" = p.id WHERE p."displayName" = 'Elektro' AND c.class = 'Shaman' AND c.spec = 'Elemental Shaman' LIMIT 1), (SELECT id FROM "Roster" WHERE name = 'Master Roster'), (SELECT id FROM "RaidNight" WHERE date = '2026-05-12' AND "rosterId" = (SELECT id FROM "Roster" WHERE name = 'Master Roster') LIMIT 1), '2026-05-12T00:00:00Z'::timestamp),
@@ -117,7 +117,7 @@ COMMIT;
 -- Sanity checks (run separately):
 -- SELECT COUNT(*) FROM "LootAward" la
 --   JOIN "RaidNight" rn ON la."raidNightId" = rn.id
---   WHERE rn.date = '2026-05-12';   -- expect 11
+--   WHERE rn.date = '2026-05-12';   -- expect 10
 -- SELECT p."displayName", c.class, c.spec, i.name
 --   FROM "LootAward" la
 --   JOIN "RaidNight" rn ON la."raidNightId" = rn.id
