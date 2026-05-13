@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { CLASS_COLOR } from "@/lib/specs";
+import { CLASS_COLOR, bucketForSpec } from "@/lib/specs";
 import { Select } from "@/app/components/Select";
 import { ClassIcon } from "@/app/components/ClassIcon";
 import { SpecIcon } from "@/app/components/SpecIcon";
@@ -123,56 +123,99 @@ export default function RosterDetailClient(props: {
       )}
 
       <div className="grid gap-3 md:grid-cols-3">
-        {(["tank", "heal", "dps"] as const).map(role => (
-          <div key={role} className="panel p-3">
-            <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-2 flex items-center justify-between">
-              <span>{role === "tank" ? "Tanks" : role === "heal" ? "Healers" : "DPS"}</span>
-              <span className="pill">{grouped[role]?.length ?? 0}</span>
-            </h2>
-            <ul className="space-y-1">
-              {(grouped[role] ?? []).map(m => (
-                <li
-                  key={m.id}
-                  className="relative flex items-center gap-2 text-sm rounded-md hover:bg-white/[0.025] transition py-1.5 -mx-1 pl-3 pr-1"
-                  style={{ boxShadow: `inset 3px 0 0 0 ${CLASS_COLOR[m.character.class] ?? "transparent"}` }}
-                >
-                  <SpecIcon spec={m.character.spec} size={16} />
-                  <span className="flex-1 min-w-0 truncate font-medium" style={{ color: CLASS_COLOR[m.character.class] ?? "#fff" }}>
-                    {m.character.name}
-                  </span>
-                  <span className="text-[11px] text-neutral-500 truncate hidden sm:inline">{m.character.spec}</span>
-                  {props.admin ? (
-                    <>
-                      <Select
-                        size="sm"
-                        value={m.character.isMain ? "main" : "alt"}
-                        onValueChange={v => setMainAlt(m.characterId, v === "main")}
-                        triggerClassName="!w-[60px]"
-                        options={[
-                          { value: "main", label: "main" },
-                          { value: "alt",  label: "alt" },
-                        ]}
-                      />
-                      <button
-                        className="text-neutral-500 hover:text-red-400 active:text-red-300 min-w-[28px] min-h-[28px] flex items-center justify-center"
-                        onClick={() => removeMember(m.characterId)}
-                        aria-label={`Remove ${m.character.name}`}
-                      >×</button>
-                    </>
-                  ) : (
-                    m.character.isMain ? (
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-gold-200">★ main</span>
-                    ) : (
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500">alt</span>
-                    )
+        {(["tank", "heal", "dps"] as const).map(role => {
+          const items = grouped[role] ?? [];
+          const dpsMelee = role === "dps" ? items.filter(m => bucketForSpec(m.character.spec) === "melee") : [];
+          const dpsCaster = role === "dps" ? items.filter(m => bucketForSpec(m.character.spec) === "caster") : [];
+          return (
+            <div key={role} className="panel p-3">
+              <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-2 flex items-center justify-between">
+                <span>{role === "tank" ? "Tanks" : role === "heal" ? "Healers" : "DPS"}</span>
+                <span className="pill">{items.length}</span>
+              </h2>
+              {role === "dps" ? (
+                <div className="space-y-3">
+                  {dpsMelee.length > 0 && (
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-500 mb-1">
+                        Melee · {dpsMelee.length}
+                      </div>
+                      <ul className="space-y-1">
+                        {dpsMelee.map(m => renderMember(m, props.admin, setMainAlt, removeMember))}
+                      </ul>
+                    </div>
                   )}
-                </li>
-              ))}
-              {(grouped[role]?.length ?? 0) === 0 && <li className="text-xs text-neutral-600 italic px-1">none</li>}
-            </ul>
-          </div>
-        ))}
+                  {dpsMelee.length > 0 && dpsCaster.length > 0 && (
+                    <div className="border-t border-white/[0.06]" />
+                  )}
+                  {dpsCaster.length > 0 && (
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-500 mb-1">
+                        Casters · {dpsCaster.length}
+                      </div>
+                      <ul className="space-y-1">
+                        {dpsCaster.map(m => renderMember(m, props.admin, setMainAlt, removeMember))}
+                      </ul>
+                    </div>
+                  )}
+                  {items.length === 0 && <div className="text-xs text-neutral-600 italic px-1">none</div>}
+                </div>
+              ) : (
+                <ul className="space-y-1">
+                  {items.map(m => renderMember(m, props.admin, setMainAlt, removeMember))}
+                  {items.length === 0 && <li className="text-xs text-neutral-600 italic px-1">none</li>}
+                </ul>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
+  );
+}
+
+function renderMember(
+  m: Member,
+  admin: boolean,
+  setMainAlt: (characterId: number, isMain: boolean) => Promise<void>,
+  removeMember: (characterId: number) => Promise<void>,
+) {
+  return (
+    <li
+      key={m.id}
+      className="relative flex items-center gap-2 text-sm rounded-md hover:bg-white/[0.025] transition py-1.5 -mx-1 pl-3 pr-1"
+      style={{ boxShadow: `inset 3px 0 0 0 ${CLASS_COLOR[m.character.class] ?? "transparent"}` }}
+    >
+      <SpecIcon spec={m.character.spec} size={16} />
+      <span className="flex-1 min-w-0 truncate font-medium" style={{ color: CLASS_COLOR[m.character.class] ?? "#fff" }}>
+        {m.character.name}
+      </span>
+      <span className="text-[11px] text-neutral-500 truncate hidden sm:inline">{m.character.spec}</span>
+      {admin ? (
+        <>
+          <Select
+            size="sm"
+            value={m.character.isMain ? "main" : "alt"}
+            onValueChange={v => setMainAlt(m.characterId, v === "main")}
+            triggerClassName="!w-[60px]"
+            options={[
+              { value: "main", label: "main" },
+              { value: "alt",  label: "alt" },
+            ]}
+          />
+          <button
+            className="text-neutral-500 hover:text-red-400 active:text-red-300 min-w-[28px] min-h-[28px] flex items-center justify-center"
+            onClick={() => removeMember(m.characterId)}
+            aria-label={`Remove ${m.character.name}`}
+          >×</button>
+        </>
+      ) : (
+        m.character.isMain ? (
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-gold-200">★ main</span>
+        ) : (
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500">alt</span>
+        )
+      )}
+    </li>
   );
 }

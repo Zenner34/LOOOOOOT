@@ -1,9 +1,13 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { PageHeader } from "@/app/components/ui/PageHeader";
+import { Select } from "@/app/components/Select";
 import { ArrowUpRight, List } from "@/app/components/ui/Icon";
+
+type Sort = "nameAsc" | "nameDesc" | "membersDesc" | "nightsDesc" | "awardsDesc";
 
 type RosterRow = {
   id: number;
@@ -13,6 +17,19 @@ type RosterRow = {
 };
 
 export default function RostersClient({ initial, admin: _admin }: { initial: RosterRow[]; admin: boolean }) {
+  const [sort, setSort] = useState<Sort>("nameAsc");
+  const rosters = useMemo(() => {
+    const out = [...initial];
+    out.sort((a, b) => {
+      if (sort === "nameAsc")     return a.name.localeCompare(b.name);
+      if (sort === "nameDesc")    return b.name.localeCompare(a.name);
+      if (sort === "membersDesc") return (b._count.members - a._count.members) || a.name.localeCompare(b.name);
+      if (sort === "nightsDesc")  return (b._count.raidNights - a._count.raidNights) || a.name.localeCompare(b.name);
+      return (b._count.awards - a._count.awards) || a.name.localeCompare(b.name);
+    });
+    return out;
+  }, [initial, sort]);
+
   return (
     <div className="space-y-6 animate-fade-in">
       <PageHeader
@@ -21,8 +38,25 @@ export default function RostersClient({ initial, admin: _admin }: { initial: Ros
         subtitle="The Master Roster is the canonical raid team — older rosters are kept for historical loot context."
       />
 
+      <div className="flex items-center gap-3">
+        <label className="text-xs uppercase tracking-wider text-neutral-500">Sort</label>
+        <div className="w-56">
+          <Select
+            value={sort}
+            onValueChange={v => setSort(v as Sort)}
+            options={[
+              { value: "nameAsc",     label: "Name A → Z" },
+              { value: "nameDesc",    label: "Name Z → A" },
+              { value: "membersDesc", label: "Most members" },
+              { value: "nightsDesc",  label: "Most raid nights" },
+              { value: "awardsDesc",  label: "Most awards" },
+            ]}
+          />
+        </div>
+      </div>
+
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {initial.map((r, i) => (
+        {rosters.map((r, i) => (
           <Link
             key={r.id}
             href={`/rosters/${r.id}`}
@@ -41,7 +75,7 @@ export default function RostersClient({ initial, admin: _admin }: { initial: Ros
             </div>
           </Link>
         ))}
-        {initial.length === 0 && (
+        {rosters.length === 0 && (
           <div className="sm:col-span-2 lg:col-span-3">
             <EmptyState
               icon={List}
