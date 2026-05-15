@@ -20,6 +20,13 @@
 -- the admin UI after the original roster import. Lookups for Skryt,
 -- Koco, Hazi, Blargn all use "Arcane Mage".
 --
+-- Warlocks are a per-character mix in the DB:
+--   Destruction Warlock: Doge, Xenodank, Yaske, Daladed, Dumpsterbob,
+--                        Slamchamber, Koco's alt
+--   Affliction Warlock:  Jalisco, Massesto's alt, Barbatos's alt
+-- Source spreadsheet listed every warlock as Affliction; the
+-- five Destruction mains have been corrected in this file.
+--
 -- Idempotent — re-running deletes and re-inserts the May 14 RaidNight
 -- + its awards, so duplicate runs converge on the same final state.
 
@@ -152,14 +159,14 @@ SELECT
     ('Pizookies',     'Warrior', 'Fury Warrior',         'Warboots of Obliteration'),
     ('Veile',         'Hunter',  'Beast Mastery Hunter', 'Gloves of the Vanquished Hero'),
     ('Massesto',      'Paladin', 'Protection Paladin',   'Ring of Sundered Souls'),
-    ('Doge',          'Warlock', 'Affliction Warlock',   'Fang of the Leviathan'),
+    ('Doge',          'Warlock', 'Destruction Warlock',  'Fang of the Leviathan'),
     ('Shmoo',         'Priest',  'Holy Priest',          'Earring of Soulful Meditation'),
     ('Priestlynn',    'Priest',  'Shadow Priest',        'Robe of Hateful Echoes'),
     ('Fishynethers',  'Druid',   'Restoration Druid',    'Gnarled Chestpiece of the Ancients'),
     ('Fishynethers',  'Druid',   'Restoration Druid',    'Runetotem''s Mantle'),
     ('Fishynethers',  'Druid',   'Restoration Druid',    'Idol of the Crescent Goddess'),
     ('Rfx',           'Warrior', 'Fury Warrior',         'Gloves of the Vanquished Defender'),
-    ('Xenodank',      'Warlock', 'Affliction Warlock',   'Leggings of the Vanquished Hero'),
+    ('Xenodank',      'Warlock', 'Destruction Warlock',  'Leggings of the Vanquished Hero'),
     ('Koco',          'Mage',    'Arcane Mage',          'Helm of the Vanquished Hero'),
     ('Koco',          'Mage',    'Arcane Mage',          'Leggings of the Vanquished Hero'),
     ('Pizookies',     'Paladin', 'Protection Paladin',   'Pauldrons of the Vanquished Champion'),
@@ -186,16 +193,16 @@ SELECT
     ('Bored',         'Druid',   'Feral Druid (Tank)',   'Leggings of the Vanquished Defender'),
     ('Dommymommy',    'Druid',   'Restoration Druid',    'Living Root of the Wildheart'),
     ('Skryt',         'Shaman',  'Restoration Shaman',   'Lightfathom Scepter'),
-    ('Yaske',         'Warlock', 'Affliction Warlock',   'Fang of the Leviathan'),
+    ('Yaske',         'Warlock', 'Destruction Warlock',  'Fang of the Leviathan'),
     ('Byung',         'Hunter',  'Beast Mastery Hunter', 'Gloves of the Vanquished Hero'),
     ('Pizookies',     'Paladin', 'Protection Paladin',   'Ring of Sundered Souls'),
-    ('Daladed',       'Warlock', 'Affliction Warlock',   'Mallet of the Tides'),
-    ('Daladed',       'Warlock', 'Affliction Warlock',   'Warboots of Obliteration'),
+    ('Daladed',       'Warlock', 'Destruction Warlock',  'Mallet of the Tides'),
+    ('Daladed',       'Warlock', 'Destruction Warlock',  'Warboots of Obliteration'),
     ('DIsrespect',    'Warrior', 'Fury Warrior',         'Girdle of the Tidal Call'),
     ('Blargn',        'Mage',    'Arcane Mage',          'Helm of the Vanquished Hero'),
     ('Blargn',        'Mage',    'Arcane Mage',          'Velvet Boots of the Guardian'),
     ('Hazi',          'Mage',    'Arcane Mage',          'Helm of the Vanquished Hero'),
-    ('Dumpsterbob',   'Warlock', 'Affliction Warlock',   'Leggings of the Vanquished Hero'),
+    ('Dumpsterbob',   'Warlock', 'Destruction Warlock',  'Leggings of the Vanquished Hero'),
     ('Gono',          'Rogue',   'Combat Rogue',         'Boots of Effortless Striking'),
     ('Gono',          'Rogue',   'Combat Rogue',         'Gloves of the Vanquished Champion'),
     ('Gono',          'Rogue',   'Combat Rogue',         'Helm of the Vanquished Champion'),
