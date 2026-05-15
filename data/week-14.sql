@@ -16,6 +16,10 @@
 --   data-entry typo and only one award is recorded. Confirm with the
 --   user and add the second LootAward manually via /admin if it was real.
 --
+-- Plus 7 late-add awards for Bugatti (Protection Warrior main: 4 T5
+-- protector tokens minus helm; Feral Druid alt: 3 T5 vanquisher tokens
+-- — chest/shoulders/gloves). Final total = 79 awards.
+--
 -- Every Mage spec is "Arcane Mage" — the guild renamed all mages via
 -- the admin UI after the original roster import. Lookups for Skryt,
 -- Koco, Hazi, Blargn all use "Arcane Mage".
@@ -119,8 +123,8 @@ INSERT INTO "RaidNight" ("rosterId", date, notes)
 VALUES ((SELECT id FROM "Roster" WHERE name = 'Master Roster'), '2026-05-14', 'Week 14 - SSC + TK');
 
 -- ════════════════════════════════════════════════════════════════════════
--- 5. LootAwards (72 rows — one Massesto / Boots of the Resilient duplicate
---    from the source spreadsheet was dropped).
+-- 5. LootAwards (79 rows — 72 from the source spreadsheet, deduped from
+--    73, plus 7 late-add Bugatti tokens appended at the end of the list).
 -- ════════════════════════════════════════════════════════════════════════
 INSERT INTO "LootAward" ("itemId", "characterId", "rosterId", "raidNightId", "awardedAt")
 SELECT
@@ -206,14 +210,25 @@ SELECT
     ('Gono',          'Rogue',   'Combat Rogue',         'Boots of Effortless Striking'),
     ('Gono',          'Rogue',   'Combat Rogue',         'Gloves of the Vanquished Champion'),
     ('Gono',          'Rogue',   'Combat Rogue',         'Helm of the Vanquished Champion'),
-    ('Rfx',           'Shaman',  'Enhancement Shaman',   'Shoulderpads of the Stranger')
+    ('Rfx',           'Shaman',  'Enhancement Shaman',   'Shoulderpads of the Stranger'),
+    -- Late-add: Bugatti's Protection Warrior main took 4 of the 5 T5
+    -- protector tokens (everything except helm).
+    ('Bugatti',       'Warrior', 'Protection Warrior',   'Pauldrons of the Vanquished Defender'),
+    ('Bugatti',       'Warrior', 'Protection Warrior',   'Chestguard of the Vanquished Defender'),
+    ('Bugatti',       'Warrior', 'Protection Warrior',   'Gloves of the Vanquished Defender'),
+    ('Bugatti',       'Warrior', 'Protection Warrior',   'Leggings of the Vanquished Defender'),
+    -- Bugatti's Feral Druid alt took chest, shoulders, and gloves
+    -- vanquisher tokens.
+    ('Bugatti',       'Druid',   'Feral Druid (Tank)',   'Pauldrons of the Vanquished Hero'),
+    ('Bugatti',       'Druid',   'Feral Druid (Tank)',   'Chestguard of the Vanquished Hero'),
+    ('Bugatti',       'Druid',   'Feral Druid (Tank)',   'Gloves of the Vanquished Hero')
   ) AS v(player, class, spec, item);
 
 COMMIT;
 
 -- Sanity checks (run separately):
 --
--- 1. Total awards for May 14 — expect 72. If you see fewer, a (player,
+-- 1. Total awards for May 14 — expect 79. If you see fewer, a (player,
 --    class, spec) or item lookup returned NULL and that row silently
 --    failed; run a diagnostic similar to week-12-supplemental-diagnose.sql
 --    to identify the missing match.
