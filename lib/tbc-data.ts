@@ -429,6 +429,8 @@ const tempestKeep: RaidDef = {
       { name: "Seventh Ring of the Tirisfalen", wowheadId: 30028, slot: "Finger", itemLevel: 128, archetype: "jewel-caster" },
       { name: "Bark-Gloves of Ancient Wisdom", wowheadId: 30029, slot: "Hands", itemLevel: 128, archetype: "heal-leather" },
       { name: "Girdle of Fallen Stars", wowheadId: 30030, slot: "Waist", itemLevel: 128, archetype: "melee-leather" },
+      { name: "Pattern: Boots of Blasting", wowheadId: 30282, slot: "Pattern", itemLevel: 128, notes: "Tailoring pattern - world drop", weights: {} },
+      { name: "Pattern: Boots of Natural Grace", wowheadId: 30305, slot: "Pattern", itemLevel: 128, notes: "Leatherworking pattern - world drop", weights: {} },
     ]},
   ],
 };
