@@ -64,8 +64,22 @@ UPDATE "Item" SET "wowheadId" = NULL
    -- TK: Kael'thas
    32405, 30236, 30238, 30237, 29990, 29987, 29997, 29995, 29996, 29992,
    29998, 29989, 29994, 29988, 29993, 29991, 29905, 32458, 32896, 30183,
-   30311, 30312, 30313, 30314, 30316, 30317, 30318
+   30311, 30312, 30313, 30314, 30316, 30317, 30318,
+   -- SSC: Trash Loot
+   30021, 30022, 30023, 30025, 30027, 30620,
+   -- TK: Trash Loot
+   30020, 30024, 30026, 30028, 30029, 30030
  );
+
+-- Ensure synthetic "Trash Loot" bosses exist for SSC and TK before we
+-- upsert items into them. Order = 99 so they always sort to the end
+-- of the boss list in /loot.
+INSERT INTO "Boss" (name, "order", "raidId")
+SELECT 'Trash Loot', 99, r.id FROM "Raid" r WHERE r."shortName" = 'SSC'
+ON CONFLICT ("raidId", name) DO NOTHING;
+INSERT INTO "Boss" (name, "order", "raidId")
+SELECT 'Trash Loot', 99, r.id FROM "Raid" r WHERE r."shortName" = 'TK'
+ON CONFLICT ("raidId", name) DO NOTHING;
 
 -- ════════════════════════════════════════════════════════════════════════
 -- 1. Helper: upsert_canonical_item(name, boss, slot, itemLevel, wowheadId)
@@ -73,19 +87,26 @@ UPDATE "Item" SET "wowheadId" = NULL
 --    if missing.
 -- ════════════════════════════════════════════════════════════════════════
 CREATE OR REPLACE FUNCTION pg_temp.upsert_canonical_item(
-  p_name      TEXT,
-  p_boss_name TEXT,
-  p_slot      TEXT,
-  p_ilvl      INT,
-  p_wowhead   INT
+  p_name           TEXT,
+  p_boss_name      TEXT,
+  p_slot           TEXT,
+  p_ilvl           INT,
+  p_wowhead        INT,
+  p_raid_shortname TEXT DEFAULT NULL  -- disambiguate when boss name repeats (Trash Loot)
 ) RETURNS VOID AS $$
 DECLARE
   v_boss_id   INT;
   v_keeper_id INT;
 BEGIN
-  v_boss_id := (SELECT id FROM "Boss" WHERE name = p_boss_name);
+  IF p_raid_shortname IS NULL THEN
+    v_boss_id := (SELECT id FROM "Boss" WHERE name = p_boss_name);
+  ELSE
+    v_boss_id := (SELECT b.id FROM "Boss" b
+                   JOIN "Raid" r ON b."raidId" = r.id
+                   WHERE b.name = p_boss_name AND r."shortName" = p_raid_shortname);
+  END IF;
   IF v_boss_id IS NULL THEN
-    RAISE EXCEPTION 'Boss not found: %', p_boss_name;
+    RAISE EXCEPTION 'Boss not found: % (raid: %)', p_boss_name, p_raid_shortname;
   END IF;
 
   v_keeper_id := (
@@ -303,7 +324,29 @@ SELECT pg_temp.upsert_canonical_item('Cosmic Infuser',                 'Kael''th
 SELECT pg_temp.upsert_canonical_item('Netherstrand Longbow',           'Kael''thas Sunstrider', 'Bow',              141, 30318);
 
 -- ════════════════════════════════════════════════════════════════════════
--- 13. Clean up orphans from the old seed — items wrongly attached to
+-- 13. SSC — Trash Loot (BoE drops from trash mobs in Coilfang/SSC)
+-- ════════════════════════════════════════════════════════════════════════
+-- Pendant of the Perilous was wrongly seeded under Hydross; the upsert
+-- moves it (and preserves any award history) into Trash Loot.
+SELECT pg_temp.upsert_canonical_item('Wildfury Greatstaff',          'Trash Loot', 'Staff',   128, 30021, 'SSC');
+SELECT pg_temp.upsert_canonical_item('Pendant of the Perilous',      'Trash Loot', 'Neck',    128, 30022, 'SSC');
+SELECT pg_temp.upsert_canonical_item('Totem of the Maelstrom',       'Trash Loot', 'Relic',   128, 30023, 'SSC');
+SELECT pg_temp.upsert_canonical_item('Serpentshrine Shuriken',       'Trash Loot', 'Thrown',  128, 30025, 'SSC');
+SELECT pg_temp.upsert_canonical_item('Boots of Courage Unending',    'Trash Loot', 'Feet',    128, 30027, 'SSC');
+SELECT pg_temp.upsert_canonical_item('Spyglass of the Hidden Fleet', 'Trash Loot', 'Trinket', 128, 30620, 'SSC');
+
+-- ════════════════════════════════════════════════════════════════════════
+-- 14. TK — Trash Loot (BoE drops from trash mobs in Tempest Keep)
+-- ════════════════════════════════════════════════════════════════════════
+SELECT pg_temp.upsert_canonical_item('Fire-Cord of the Magus',         'Trash Loot', 'Waist',     128, 30020, 'TK');
+SELECT pg_temp.upsert_canonical_item('Mantle of the Elven Kings',      'Trash Loot', 'Shoulders', 128, 30024, 'TK');
+SELECT pg_temp.upsert_canonical_item('Bands of the Celestial Archer',  'Trash Loot', 'Wrist',     128, 30026, 'TK');
+SELECT pg_temp.upsert_canonical_item('Seventh Ring of the Tirisfalen', 'Trash Loot', 'Finger',    128, 30028, 'TK');
+SELECT pg_temp.upsert_canonical_item('Bark-Gloves of Ancient Wisdom',  'Trash Loot', 'Hands',     128, 30029, 'TK');
+SELECT pg_temp.upsert_canonical_item('Girdle of Fallen Stars',         'Trash Loot', 'Waist',     128, 30030, 'TK');
+
+-- ════════════════════════════════════════════════════════════════════════
+-- 15. Clean up orphans from the old seed — items wrongly attached to
 --     SSC/TK bosses that aren't part of the canonical drop pool and
 --     have no LootAward history. Items WITH awards stay where they are
 --     to preserve guild history.
@@ -319,7 +362,6 @@ DELETE FROM "Item" i
    'Hydross-Encrusted Greaves',
    'Hydrospawn Boots',
    'Leggings of the Seventh Circle',
-   'Pendant of the Perilous',
    'Leggings of Divine Retribution',
    'Bands of Indwelling',
    'Scaled Greaves of the Marksman',
@@ -351,9 +393,9 @@ DELETE FROM "Item" i
  AND NOT EXISTS (SELECT 1 FROM "LootAward" la WHERE la."itemId" = i.id);
 
 -- ════════════════════════════════════════════════════════════════════════
--- 14. Drop the helper function.
+-- 16. Drop the helper function.
 -- ════════════════════════════════════════════════════════════════════════
-DROP FUNCTION pg_temp.upsert_canonical_item(TEXT, TEXT, TEXT, INT, INT);
+DROP FUNCTION pg_temp.upsert_canonical_item(TEXT, TEXT, TEXT, INT, INT, TEXT);
 
 COMMIT;
 

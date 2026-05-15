@@ -336,6 +336,14 @@ const ssc: RaidDef = {
       { name: "Vashj's Vial Remnant", wowheadId: 29906, slot: "Quest", itemLevel: 141, notes: "Quest turn-in — Vials of the Sunwell", weights: {} },
       { name: "Scroll of the Maelstrom", wowheadId: 32895, slot: "Other", itemLevel: 141, notes: "Crafted-recipe scroll", weights: {} },
     ]},
+    { name: "Trash Loot", items: [
+      { name: "Wildfury Greatstaff", wowheadId: 30021, slot: "Staff", itemLevel: 128, archetype: "weapon-staff-feral" },
+      { name: "Pendant of the Perilous", wowheadId: 30022, slot: "Neck", itemLevel: 128, archetype: "jewel-tank" },
+      { name: "Totem of the Maelstrom", wowheadId: 30023, slot: "Relic", itemLevel: 128 },
+      { name: "Serpentshrine Shuriken", wowheadId: 30025, slot: "Thrown", itemLevel: 128, archetype: "weapon-thrown" },
+      { name: "Boots of Courage Unending", wowheadId: 30027, slot: "Feet", itemLevel: 128, archetype: "tank-plate" },
+      { name: "Spyglass of the Hidden Fleet", wowheadId: 30620, slot: "Trinket", itemLevel: 128, archetype: "trinket-hunter" },
+    ]},
   ],
 };
 
@@ -413,6 +421,14 @@ const tempestKeep: RaidDef = {
       { name: "Devastation", wowheadId: 30316, slot: "Two-Hand Axe", itemLevel: 141, archetype: "weapon-2h-melee" },
       { name: "Cosmic Infuser", wowheadId: 30317, slot: "One-Hand Mace", itemLevel: 141, archetype: "weapon-mace-heal" },
       { name: "Netherstrand Longbow", wowheadId: 30318, slot: "Bow", itemLevel: 141, archetype: "weapon-bow" },
+    ]},
+    { name: "Trash Loot", items: [
+      { name: "Fire-Cord of the Magus", wowheadId: 30020, slot: "Waist", itemLevel: 128, archetype: "caster-cloth" },
+      { name: "Mantle of the Elven Kings", wowheadId: 30024, slot: "Shoulders", itemLevel: 128, archetype: "caster-cloth" },
+      { name: "Bands of the Celestial Archer", wowheadId: 30026, slot: "Wrist", itemLevel: 128, archetype: "ranged-hunter" },
+      { name: "Seventh Ring of the Tirisfalen", wowheadId: 30028, slot: "Finger", itemLevel: 128, archetype: "jewel-caster" },
+      { name: "Bark-Gloves of Ancient Wisdom", wowheadId: 30029, slot: "Hands", itemLevel: 128, archetype: "heal-leather" },
+      { name: "Girdle of Fallen Stars", wowheadId: 30030, slot: "Waist", itemLevel: 128, archetype: "melee-leather" },
     ]},
   ],
 };
