@@ -18,7 +18,9 @@
 --
 -- Plus 7 late-add awards for Bugatti (Protection Warrior main: 4 T5
 -- protector tokens minus helm; Feral Druid alt: 3 T5 vanquisher tokens
--- — chest/shoulders/gloves). Final total = 79 awards.
+-- — chest/shoulders/gloves) plus 15 Nether Vortex BoP-reagent awards
+-- distributed 5x to each of Pizookies (Fury), Bugatti (Prot), and
+-- Daladed (Fury). Final total = 94 awards.
 --
 -- Every Mage spec is "Arcane Mage" — the guild renamed all mages via
 -- the admin UI after the original roster import. Lookups for Skryt,
@@ -123,8 +125,9 @@ INSERT INTO "RaidNight" ("rosterId", date, notes)
 VALUES ((SELECT id FROM "Roster" WHERE name = 'Master Roster'), '2026-05-14', 'Week 14 - SSC + TK');
 
 -- ════════════════════════════════════════════════════════════════════════
--- 5. LootAwards (79 rows — 72 from the source spreadsheet, deduped from
---    73, plus 7 late-add Bugatti tokens appended at the end of the list).
+-- 5. LootAwards (94 rows — 72 from the source spreadsheet, deduped from
+--    73, plus 7 late-add Bugatti tokens and 15 Nether Vortex awards
+--    distributed across three warriors).
 -- ════════════════════════════════════════════════════════════════════════
 INSERT INTO "LootAward" ("itemId", "characterId", "rosterId", "raidNightId", "awardedAt")
 SELECT
@@ -221,14 +224,33 @@ SELECT
     -- vanquisher tokens.
     ('Bugatti',       'Druid',   'Feral Druid (Tank)',   'Pauldrons of the Vanquished Hero'),
     ('Bugatti',       'Druid',   'Feral Druid (Tank)',   'Chestguard of the Vanquished Hero'),
-    ('Bugatti',       'Druid',   'Feral Druid (Tank)',   'Gloves of the Vanquished Hero')
+    ('Bugatti',       'Druid',   'Feral Druid (Tank)',   'Gloves of the Vanquished Hero'),
+    -- Nether Vortex distribution: 5 to each of three warriors for the
+    -- BoP crafting reagent. Each row is one award; the catalog has a
+    -- single Nether Vortex item (wowheadId 30183), so 15 LootAward rows
+    -- all reference the same itemId.
+    ('Pizookies',     'Warrior', 'Fury Warrior',         'Nether Vortex'),
+    ('Pizookies',     'Warrior', 'Fury Warrior',         'Nether Vortex'),
+    ('Pizookies',     'Warrior', 'Fury Warrior',         'Nether Vortex'),
+    ('Pizookies',     'Warrior', 'Fury Warrior',         'Nether Vortex'),
+    ('Pizookies',     'Warrior', 'Fury Warrior',         'Nether Vortex'),
+    ('Bugatti',       'Warrior', 'Protection Warrior',   'Nether Vortex'),
+    ('Bugatti',       'Warrior', 'Protection Warrior',   'Nether Vortex'),
+    ('Bugatti',       'Warrior', 'Protection Warrior',   'Nether Vortex'),
+    ('Bugatti',       'Warrior', 'Protection Warrior',   'Nether Vortex'),
+    ('Bugatti',       'Warrior', 'Protection Warrior',   'Nether Vortex'),
+    ('Daladed',       'Warrior', 'Fury Warrior',         'Nether Vortex'),
+    ('Daladed',       'Warrior', 'Fury Warrior',         'Nether Vortex'),
+    ('Daladed',       'Warrior', 'Fury Warrior',         'Nether Vortex'),
+    ('Daladed',       'Warrior', 'Fury Warrior',         'Nether Vortex'),
+    ('Daladed',       'Warrior', 'Fury Warrior',         'Nether Vortex')
   ) AS v(player, class, spec, item);
 
 COMMIT;
 
 -- Sanity checks (run separately):
 --
--- 1. Total awards for May 14 — expect 79. If you see fewer, a (player,
+-- 1. Total awards for May 14 — expect 94. If you see fewer, a (player,
 --    class, spec) or item lookup returned NULL and that row silently
 --    failed; run a diagnostic similar to week-12-supplemental-diagnose.sql
 --    to identify the missing match.
