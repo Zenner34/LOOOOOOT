@@ -3,9 +3,12 @@
 // the href URL pattern AND the explicit data-wowhead attribute so the script
 // can resolve the item even when the href fails to parse.
 //
-// `domain=tbc-classic` forces the lookup against the Burning Crusade Classic
-// item database — without it the script can fall back to retail and show
-// the wrong stats for items whose IDs differ across expansions.
+// `domain=tbc` forces the lookup against the Burning Crusade Classic item
+// database — without it the script can fall back to retail and show the
+// wrong stats for items whose IDs differ across expansions. The `tbc`
+// value matches the URL slug (wowhead.com/tbc/item=...). The same default
+// is also set globally on `window.whTooltips.domain` in app/layout.tsx so
+// any link without an explicit domain still resolves against TBC.
 //
 // We render the icon and the epic-purple text colour ourselves rather than
 // relying on Wowhead's iconizeLinks/colorLinks JS post-decoration: that JS
@@ -61,7 +64,7 @@ export function WowheadLink({
     <a
       className={`inline-flex items-center gap-1.5 align-middle hover:underline decoration-purple-400/60 underline-offset-2 ${className ?? ""}`}
       href={`https://www.wowhead.com/tbc/item=${wowheadId}`}
-      data-wowhead={`item=${wowheadId}&domain=tbc-classic`}
+      data-wowhead={`item=${wowheadId}&domain=tbc`}
       target="_blank"
       rel="noopener noreferrer"
     >
@@ -99,7 +102,7 @@ export function WowheadItemCell({
   return (
     <a
       href={`https://www.wowhead.com/tbc/item=${wowheadId}`}
-      data-wowhead={`item=${wowheadId}&domain=tbc-classic`}
+      data-wowhead={`item=${wowheadId}&domain=tbc`}
       target="_blank"
       rel="noopener noreferrer"
       className="inline-flex items-center gap-2.5 group"

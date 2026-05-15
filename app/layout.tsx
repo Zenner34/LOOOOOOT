@@ -37,7 +37,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en" className={inter.variable}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: `
-          var whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: true};
+          var whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: true, domain: "tbc"};
         `}} />
         <script src="https://wow.zamimg.com/js/tooltips.js" defer></script>
       </head>
