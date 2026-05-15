@@ -129,7 +129,7 @@ SELECT
     ('Capriciousxo', 'Druid',   'Balance Druid',        'Chestguard of the Fallen Defender'),
     ('Frustrated',   'Warrior', 'Arms Warrior',         'Bladespire Warbands'),
     ('Capriciousxo', 'Druid',   'Balance Druid',        'Eye of Gruul'),
-    ('Bored',        'Mage',    'Frost Mage',           'Magtheridon''s Head'),
+    ('Bored',        'Mage',    'Arcane Mage',          'Magtheridon''s Head'),
     ('Rfx',          'Warrior', 'Fury Warrior',         'Girdle of the Endless Pit'),
     ('Kalihiwai',    'Paladin', 'Holy Paladin',         'Chestguard of the Fallen Champion'),
     ('Glzy',         'Hunter',  'Beast Mastery Hunter', 'Gauntlets of the Dragonslayer'),
