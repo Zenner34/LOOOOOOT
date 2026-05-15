@@ -72,6 +72,17 @@ function lastLootBadge(days: number | null): { text: string; tone: "fresh" | "wa
   if (days < 30) return { text: `${days} days`, tone: "cold" };
   return { text: `${days} days`, tone: "icy" };
 }
+// Awards from the player's most recent raid night, in the same order as
+// the input array (descending by awardedAt). Groups by the YYYY-MM-DD of
+// awardedAt — every award on the same date counts as one "session". The
+// import SQL stamps awards on a RaidNight with the RaidNight's date at
+// 00:00 UTC, so all loot from one raid night collapses cleanly here.
+function mostRecentSession<T extends { awardedAt: string | Date }>(awards: T[]): T[] {
+  if (awards.length === 0) return [];
+  const topDay = new Date(awards[0].awardedAt).toISOString().slice(0, 10);
+  return awards.filter(a => new Date(a.awardedAt).toISOString().slice(0, 10) === topDay);
+}
+
 const TONE_CLASS: Record<"fresh" | "warm" | "cold" | "icy" | "none", string> = {
   fresh: "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/25",
   warm:  "bg-gold-400/10 text-gold-200 ring-1 ring-gold-400/25",
@@ -514,7 +525,7 @@ export default function OverviewClient({
       <div className="md:hidden space-y-2">
         {sortedRows.map(r => {
           const isOpen = expanded[r.key] ?? false;
-          const last = r.awards[0];
+          const session = mostRecentSession(r.awards);
           const days = daysAgo(r.lastAwardAt);
           const badge = lastLootBadge(days);
           return (
@@ -561,11 +572,15 @@ export default function OverviewClient({
                   </button>
                 )}
               </div>
-              {last && (
-                <div className="mt-1.5 text-[11px] text-neutral-400 truncate">
-                  last: <WowheadLink name={last.item.name} wowheadId={last.item.wowheadId} />
-                  <span className="text-neutral-600"> · {last.item.boss.raid.shortName}</span>
-                </div>
+              {session.length > 0 && (
+                <ul className="mt-1.5 space-y-0.5 text-[11px] text-neutral-400">
+                  {session.map(a => (
+                    <li key={a.id} className="truncate">
+                      <WowheadLink name={a.item.name} wowheadId={a.item.wowheadId} />
+                      <span className="text-neutral-600"> · {a.item.boss.raid.shortName}</span>
+                    </li>
+                  ))}
+                </ul>
               )}
               {isOpen && r.awards.length > 0 && (
                 <ul className="mt-3 space-y-1.5 border-t border-white/5 pt-3">
@@ -652,7 +667,7 @@ export default function OverviewClient({
           <tbody>
             {sortedRows.map(r => {
               const isOpen = expanded[r.key] ?? false;
-              const last = r.awards[0];
+              const session = mostRecentSession(r.awards);
               return (
                 <Fragment key={r.key}>
                   <tr>
@@ -699,12 +714,16 @@ export default function OverviewClient({
                       })()}
                     </td>
                     <td className="text-neutral-400 text-xs">
-                      {last ? (
-                        <>
-                          <WowheadLink name={last.item.name} wowheadId={last.item.wowheadId} />
-                          <span className="text-neutral-600"> ({last.item.boss.raid.shortName})</span>
-                        </>
-                      ) : "—"}
+                      {session.length === 0 ? "—" : (
+                        <ul className="space-y-0.5">
+                          {session.map(a => (
+                            <li key={a.id}>
+                              <WowheadLink name={a.item.name} wowheadId={a.item.wowheadId} />
+                              <span className="text-neutral-600"> ({a.item.boss.raid.shortName})</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </td>
                     <td className="text-right">
                       {r.awards.length > 0 && (
