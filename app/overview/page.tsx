@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { lootAwardPhaseWhere, parsePhaseParam } from "@/lib/phases";
 import OverviewClient from "./OverviewClient";
 
 export const dynamic = "force-dynamic";
@@ -6,8 +7,9 @@ export const dynamic = "force-dynamic";
 export default async function OverviewPage({
   searchParams,
 }: {
-  searchParams: { roster?: string; bucket?: string };
+  searchParams: { roster?: string; bucket?: string; phase?: string };
 }) {
+  const phaseFilter = parsePhaseParam(searchParams.phase);
   const rosters = await prisma.roster.findMany({
     orderBy: { createdAt: "asc" },
     include: {
@@ -23,10 +25,16 @@ export default async function OverviewPage({
     return r ? r.members.map(m => m.characterId) : [];
   })();
 
+  const phases = await prisma.phase.findMany({
+    orderBy: { order: "asc" },
+    select: { order: true, name: true },
+  });
+
   const awards = await prisma.lootAward.findMany({
     where: {
       ...(selectedRosterId !== "all" ? { rosterId: selectedRosterId } : {}),
       ...(characterIds && characterIds.length ? { characterId: { in: characterIds } } : {}),
+      ...lootAwardPhaseWhere(phaseFilter),
     },
     include: {
       item: {
@@ -73,6 +81,8 @@ export default async function OverviewPage({
         active: p.active,
       }))}
       awards={awards as any}
+      phases={phases}
+      phaseFilterParam={searchParams.phase ?? null}
     />
   );
 }

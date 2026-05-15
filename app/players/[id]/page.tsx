@@ -1,15 +1,23 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { isAdmin } from "@/lib/auth";
+import { lootAwardPhaseWhere, parsePhaseParam } from "@/lib/phases";
 import PlayerDetailClient from "./PlayerDetailClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function PlayerDetailPage({ params }: { params: { id: string } }) {
+export default async function PlayerDetailPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams: { phase?: string };
+}) {
   const id = Number(params.id);
   if (!id) return notFound();
 
-  const [player, allChars, awards] = await Promise.all([
+  const phaseFilter = parsePhaseParam(searchParams.phase);
+  const [player, allChars, awards, phases] = await Promise.all([
     prisma.player.findUnique({
       where: { id },
       include: {
@@ -21,7 +29,10 @@ export default async function PlayerDetailPage({ params }: { params: { id: strin
       orderBy: { name: "asc" },
     }),
     prisma.lootAward.findMany({
-      where: { character: { playerId: id } },
+      where: {
+        character: { playerId: id },
+        ...lootAwardPhaseWhere(phaseFilter),
+      },
       include: {
         item: {
           include: {
@@ -34,6 +45,10 @@ export default async function PlayerDetailPage({ params }: { params: { id: strin
         raidNight: true,
       },
       orderBy: { awardedAt: "desc" },
+    }),
+    prisma.phase.findMany({
+      orderBy: { order: "asc" },
+      select: { order: true, name: true },
     }),
   ]);
 
@@ -83,6 +98,8 @@ export default async function PlayerDetailPage({ params }: { params: { id: strin
         roster: { id: a.roster.id, name: a.roster.name },
       }))}
       admin={admin}
+      phases={phases}
+      phaseFilterParam={searchParams.phase ?? null}
     />
   );
 }

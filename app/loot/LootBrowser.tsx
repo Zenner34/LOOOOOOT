@@ -4,7 +4,8 @@ import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { WowheadItemCell } from "@/lib/wowhead";
 import { iconFor } from "@/lib/wowhead-lookup";
-import { Select } from "@/app/components/Select";
+import { parsePhaseParam, phaseMatches } from "@/lib/phases";
+import { PhaseFilter } from "@/app/components/PhaseFilter";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { Package } from "@/app/components/ui/Icon";
@@ -30,29 +31,29 @@ type Item = {
 
 export default function LootBrowser({
   phases,
-  selectedPhaseFilter,
+  phaseFilterParam,
   selectedRaidId,
   selectedBossId,
   items,
   classColor,
 }: {
   phases: Phase[];
-  selectedPhaseFilter: number | "all";
+  phaseFilterParam: string | null;
   selectedRaidId: number;
   selectedBossId: number;
   items: Item[];
   classColor: Record<string, string>;
 }) {
   const router = useRouter();
+  const phaseFilter = parsePhaseParam(phaseFilterParam);
   const [search, setSearch] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  function go(qs: { phaseFilter?: number | "all"; raid?: number; boss?: number }) {
+  function goBoss(raidId: number, bossId: number) {
     const sp = new URLSearchParams();
-    const pf = qs.phaseFilter ?? selectedPhaseFilter;
-    if (pf !== "all") sp.set("phaseFilter", String(pf));
-    if (qs.raid)  sp.set("raid",  String(qs.raid));
-    if (qs.boss)  sp.set("boss",  String(qs.boss));
+    if (phaseFilterParam) sp.set("phase", phaseFilterParam);
+    sp.set("raid", String(raidId));
+    sp.set("boss", String(bossId));
     router.push(`/loot?${sp.toString()}`);
     setPickerOpen(false);
   }
@@ -72,10 +73,10 @@ export default function LootBrowser({
     };
   }, [pickerOpen]);
 
-  const visiblePhases = useMemo(() => {
-    if (selectedPhaseFilter === "all") return phases;
-    return phases.filter(p => p.id === selectedPhaseFilter);
-  }, [phases, selectedPhaseFilter]);
+  const visiblePhases = useMemo(
+    () => phases.filter(p => phaseMatches(phaseFilter, p.order)),
+    [phases, phaseFilter],
+  );
 
   const selectedRaid = phases
     .flatMap(p => p.raids)
@@ -93,15 +94,11 @@ export default function LootBrowser({
 
   const sidebarTree = (
     <>
-      <div>
-        <label className="label">Phase filter</label>
-        <Select
-          value={String(selectedPhaseFilter)}
-          onValueChange={v => go({ phaseFilter: v === "all" ? "all" : Number(v) })}
-          options={[
-            { value: "all", label: "All Phases" },
-            ...phases.map(p => ({ value: String(p.id), label: p.name })),
-          ]}
+      <div className="flex items-center justify-between gap-2">
+        <span className="label !mb-0">Phase filter</span>
+        <PhaseFilter
+          phases={phases.map(p => ({ order: p.order, name: p.name }))}
+          selected={phaseFilter}
         />
       </div>
 
@@ -124,7 +121,7 @@ export default function LootBrowser({
                       return (
                         <li key={b.id}>
                           <button
-                            onClick={() => go({ phaseFilter: selectedPhaseFilter, raid: raid.id, boss: b.id })}
+                            onClick={() => goBoss(raid.id, b.id)}
                             className={`block w-full text-left pl-3 pr-2 py-2 -ml-px border-l-2 text-sm transition min-h-[36px] ${
                               isActive
                                 ? "border-vermillion-500 text-vermillion-200 font-semibold bg-vermillion-500/[0.06]"

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { CLASS_COLOR } from "@/lib/specs";
+import { parsePhaseParam, phaseMatches } from "@/lib/phases";
 import LootBrowser from "./LootBrowser";
 
 export const dynamic = "force-dynamic";
@@ -7,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function LootPage({
   searchParams,
 }: {
-  searchParams: { phaseFilter?: string; raid?: string; boss?: string };
+  searchParams: { phase?: string; raid?: string; boss?: string };
 }) {
   const phases = await prisma.phase.findMany({
     orderBy: { order: "asc" },
@@ -19,9 +20,7 @@ export default async function LootPage({
     },
   });
 
-  const phaseFilterRaw = searchParams.phaseFilter;
-  const selectedPhaseFilter: number | "all" =
-    phaseFilterRaw && phaseFilterRaw !== "all" ? Number(phaseFilterRaw) : "all";
+  const phaseFilter = parsePhaseParam(searchParams.phase);
   const selectedRaidId = Number(searchParams.raid ?? 0);
   const selectedBossId = Number(searchParams.boss ?? 0);
 
@@ -52,7 +51,7 @@ export default async function LootPage({
           bosses: r.bosses.map(b => ({ id: b.id, name: b.name })),
         })),
       }))}
-      selectedPhaseFilter={selectedPhaseFilter}
+      phaseFilterParam={searchParams.phase ?? null}
       selectedRaidId={selectedRaidId}
       selectedBossId={selectedBossId}
       items={items.map(it => ({

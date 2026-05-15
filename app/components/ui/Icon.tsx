@@ -19,6 +19,7 @@ export {
   Filter,
   Inbox,
   Info,
+  Layers,
   List,
   Menu,
   ListOrdered,

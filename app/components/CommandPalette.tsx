@@ -154,7 +154,7 @@ export default function CommandPalette({ admin = false }: { admin?: boolean }) {
                 <Command.Item
                   key={`bo${b.id}`}
                   value={`boss ${b.name} ${b.raid.name} ${b.raid.shortName}`}
-                  onSelect={() => jump(`/loot?phaseFilter=${b.raid.phaseId}&raid=${b.raid.id}&boss=${b.id}`)}
+                  onSelect={() => jump(`/loot?phase=all&raid=${b.raid.id}&boss=${b.id}`)}
                   className="px-2 py-2 rounded-md text-sm cursor-pointer flex items-center justify-between data-[selected=true]:bg-vermillion-500/10"
                 >
                   <span className="text-neutral-200">{b.name}</span>

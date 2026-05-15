@@ -5,9 +5,11 @@ import Link from "next/link";
 import { Command } from "cmdk";
 import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
+import { parsePhaseParam } from "@/lib/phases";
 import { WowheadLink } from "@/lib/wowhead";
 import { SpecIcon } from "@/app/components/SpecIcon";
 import { Select } from "@/app/components/Select";
+import { PhaseFilter } from "@/app/components/PhaseFilter";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { Card } from "@/app/components/ui/Card";
@@ -31,9 +33,12 @@ type Award = {
   awardedAt: string | Date;
 };
 
-export default function AssignClient({ phases, rosters, recent, admin }: {
+export default function AssignClient({ phases, rosters, recent, admin, allPhases, phaseFilterParam }: {
   phases: Phase[]; rosters: Roster[]; recent: Award[]; admin: boolean;
+  allPhases: Array<{ order: number; name: string }>;
+  phaseFilterParam: string | null;
 }) {
+  const phaseFilter = parsePhaseParam(phaseFilterParam);
   const [rosterId, setRosterId] = useState<number | "">(rosters[0]?.id ?? "");
   const activeRoster = rosters.find(r => r.id === rosterId);
   const [raidNightId, setRaidNightId] = useState<number | "">(
@@ -129,7 +134,10 @@ export default function AssignClient({ phases, rosters, recent, admin }: {
 
   const bossPicker = (
     <>
-      <h2 className="text-sm uppercase text-neutral-400 mb-2">Pick a boss</h2>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <h2 className="text-sm uppercase text-neutral-400">Pick a boss</h2>
+        <PhaseFilter phases={allPhases} selected={phaseFilter} />
+      </div>
       {phases.map(phase => (
         <div key={phase.id} className="mb-2">
           <div className="text-xs uppercase text-vermillion-300/90 font-semibold tracking-wider">{phase.name}</div>

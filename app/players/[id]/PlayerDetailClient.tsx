@@ -4,8 +4,10 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CLASS_COLOR } from "@/lib/specs";
+import { parsePhaseParam } from "@/lib/phases";
 import { ClassIcon } from "@/app/components/ClassIcon";
 import { SpecIcon } from "@/app/components/SpecIcon";
+import { PhaseFilter } from "@/app/components/PhaseFilter";
 import { WowheadLink } from "@/lib/wowhead";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { PageHeader } from "@/app/components/ui/PageHeader";
@@ -55,12 +57,17 @@ export default function PlayerDetailClient({
   orphans: initialOrphans,
   awards,
   admin,
+  phases,
+  phaseFilterParam,
 }: {
   player: Player;
   orphans: Char[];
   awards: Award[];
   admin: boolean;
+  phases: Array<{ order: number; name: string }>;
+  phaseFilterParam: string | null;
 }) {
+  const phaseFilter = parsePhaseParam(phaseFilterParam);
   const router = useRouter();
   const [player, setPlayer] = useState(initialPlayer);
   const [orphans, setOrphans] = useState(initialOrphans);
@@ -271,9 +278,12 @@ export default function PlayerDetailClient({
         </div>
 
         <div className="col-span-12 lg:col-span-8 panel">
-          <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-vermillion-300/90">Loot timeline</h2>
-            <span className="text-xs text-neutral-500">{totalCount} item{totalCount !== 1 ? "s" : ""} across {grouped.length} session{grouped.length !== 1 ? "s" : ""}</span>
+          <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-3 min-w-0">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-vermillion-300/90">Loot timeline</h2>
+              <span className="text-xs text-neutral-500">{totalCount} item{totalCount !== 1 ? "s" : ""} across {grouped.length} session{grouped.length !== 1 ? "s" : ""}</span>
+            </div>
+            <PhaseFilter phases={phases} selected={phaseFilter} />
           </div>
 
           {grouped.length === 0 ? (

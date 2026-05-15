@@ -6,9 +6,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { CLASS_COLOR, CLASSES, BUCKETS, BUCKET_LABEL, bucketForSpec, type Bucket } from "@/lib/specs";
 import { itemCount, type ScoringAward } from "@/lib/scoring";
 import { WowheadLink } from "@/lib/wowhead";
+import { parsePhaseParam, phaseFilterLabel, isDefaultPhaseFilter } from "@/lib/phases";
 import { ClassIcon } from "@/app/components/ClassIcon";
 import { SpecIcon } from "@/app/components/SpecIcon";
 import { Select } from "@/app/components/Select";
+import { PhaseFilter } from "@/app/components/PhaseFilter";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { ArrowDown, ArrowUp, ChevronDown, Filter, Search, Users } from "@/app/components/ui/Icon";
@@ -84,13 +86,19 @@ export default function OverviewClient({
   characters,
   players,
   awards,
+  phases,
+  phaseFilterParam,
 }: {
   rosters: Array<{ id: number; name: string }>;
   selectedRosterId: number | "all";
   characters: Character[];
   players: Player[];
   awards: Award[];
+  phases: Array<{ order: number; name: string }>;
+  phaseFilterParam: string | null;
 }) {
+  const phaseFilter = parsePhaseParam(phaseFilterParam);
+  const phaseLabel = isDefaultPhaseFilter(phaseFilter) ? null : phaseFilterLabel(phaseFilter);
   const router = useRouter();
   const params = useSearchParams();
 
@@ -166,7 +174,7 @@ export default function OverviewClient({
       ? Array.from(classFilter)[0]
       : `${classFilter.size} classes`;
   const inactiveLabel = showInactive ? "Inactive shown" : null;
-  const summaryParts = [rosterLabel, groupLabel, sortLabel, classLabel, inactiveLabel].filter(Boolean);
+  const summaryParts = [rosterLabel, phaseLabel, groupLabel, sortLabel, classLabel, inactiveLabel].filter(Boolean);
 
   function setRoster(v: string) {
     const sp = new URLSearchParams(params);
@@ -321,7 +329,8 @@ export default function OverviewClient({
         subtitle="Who's looted what across every raid we've run, sorted to surface the next-up players first."
       />
 
-      <div ref={filtersRef} className="relative">
+      <div className="flex flex-wrap items-center gap-2">
+        <div ref={filtersRef} className="relative inline-block">
         <button
           type="button"
           onClick={() => setFiltersOpen(o => !o)}
@@ -454,6 +463,8 @@ export default function OverviewClient({
             </div>
           </div>
         )}
+        </div>
+        <PhaseFilter phases={phases} selected={phaseFilter} />
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 border-b border-white/[0.06]">
