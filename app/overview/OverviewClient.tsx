@@ -83,6 +83,24 @@ function mostRecentSession<T extends { awardedAt: string | Date }>(awards: T[]):
   return awards.filter(a => new Date(a.awardedAt).toISOString().slice(0, 10) === topDay);
 }
 
+// Collapse same-(item, character) awards into one row with a count so a
+// player who picked up 5× Nether Vortex on one night renders as
+// "Nether Vortex × 5" instead of five identical lines. Awards stay in
+// the input order (descending by awardedAt) so the most recent unique
+// item still anchors the first row.
+function collapseSession<T extends { item: { id: number }; character: { id: number } }>(
+  awards: T[],
+): Array<{ award: T; count: number }> {
+  const map = new Map<string, { award: T; count: number }>();
+  for (const a of awards) {
+    const key = `${a.item.id}:${a.character.id}`;
+    const existing = map.get(key);
+    if (existing) existing.count++;
+    else map.set(key, { award: a, count: 1 });
+  }
+  return Array.from(map.values());
+}
+
 const TONE_CLASS: Record<"fresh" | "warm" | "cold" | "icy" | "none", string> = {
   fresh: "bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/25",
   warm:  "bg-gold-400/10 text-gold-200 ring-1 ring-gold-400/25",
@@ -574,9 +592,10 @@ export default function OverviewClient({
               </div>
               {session.length > 0 && (
                 <ul className="mt-1.5 space-y-0.5 text-[11px] text-neutral-400">
-                  {session.map(a => (
-                    <li key={a.id} className="truncate">
+                  {collapseSession(session).map(({ award: a, count }) => (
+                    <li key={`${a.item.id}:${a.character.id}`} className="truncate">
                       <WowheadLink name={a.item.name} wowheadId={a.item.wowheadId} />
+                      {count > 1 && <span className="text-vermillion-300 font-semibold"> × {count}</span>}
                       <span className="text-neutral-600"> · {a.item.boss.raid.shortName}</span>
                     </li>
                   ))}
@@ -716,9 +735,10 @@ export default function OverviewClient({
                     <td className="text-neutral-400 text-xs">
                       {session.length === 0 ? "—" : (
                         <ul className="space-y-0.5">
-                          {session.map(a => (
-                            <li key={a.id}>
+                          {collapseSession(session).map(({ award: a, count }) => (
+                            <li key={`${a.item.id}:${a.character.id}`}>
                               <WowheadLink name={a.item.name} wowheadId={a.item.wowheadId} />
+                              {count > 1 && <span className="text-vermillion-300 font-semibold"> × {count}</span>}
                               <span className="text-neutral-600"> ({a.item.boss.raid.shortName})</span>
                             </li>
                           ))}
