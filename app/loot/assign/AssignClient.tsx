@@ -44,6 +44,10 @@ export default function AssignClient({ phases, rosters, recent, admin, allPhases
   const [raidNightId, setRaidNightId] = useState<number | "">(
     activeRoster?.raidNights[0]?.id ?? "",
   );
+  // Batch quantity for awarding multiple copies of the same item to the
+  // same recipient on the same raid night (e.g. 5× Nether Vortex).
+  // Default 1 = single-award flow unchanged.
+  const [quantity, setQuantity] = useState<number>(1);
   const [expandedRaids, setExpandedRaids] = useState<Record<number, boolean>>({});
   const [selectedBossId, setSelectedBossId] = useState<number | null>(null);
   const [awards, setAwards] = useState<Award[]>(recent);
@@ -80,18 +84,33 @@ export default function AssignClient({ phases, rosters, recent, admin, allPhases
 
   async function assign(itemId: number, characterId: number) {
     if (!rosterId || !characterId) return;
+    const qty = Math.max(1, Math.min(20, Math.floor(quantity || 1)));
     const r = await fetch("/api/loot", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ itemId, characterId, rosterId, raidNightId: raidNightId || null }),
+      body: JSON.stringify({
+        itemId,
+        characterId,
+        rosterId,
+        raidNightId: raidNightId || null,
+        quantity: qty,
+      }),
     });
     if (!r.ok) {
       toast.error("Failed to assign.");
       return;
     }
-    const created: Award = await r.json();
-    setAwards([created, ...awards].slice(0, 20));
-    toast.success(`Awarded ${created.item.name} → ${created.character.name}`);
+    const payload = await r.json();
+    // API returns the single award for qty=1, or { awards, quantity } for batches.
+    const created: Award[] = Array.isArray(payload?.awards) ? payload.awards : [payload];
+    setAwards([...created, ...awards].slice(0, 20));
+    if (created.length === 1) {
+      toast.success(`Awarded ${created[0].item.name} → ${created[0].character.name}`);
+    } else {
+      toast.success(`Awarded ${created.length}× ${created[0].item.name} → ${created[0].character.name}`);
+    }
+    // Reset the multiplier so the next pick doesn't accidentally batch again.
+    setQuantity(1);
   }
 
   async function undo(id: number) {
@@ -214,6 +233,46 @@ export default function AssignClient({ phases, rosters, recent, admin, allPhases
           {!activeRoster?.raidNights.length && (
             <Link href="/attendance" className="btn-ghost btn-xs text-vermillion-300 self-center">+ Create a raid night</Link>
           )}
+          {/* Batch-quantity stepper — every copy stamps the same date
+              (the raid night's, or NOW if no raid night), so a 5×
+              award shows as five rows clustered on one day. */}
+          <div className="min-w-[120px]">
+            <label className="label">Quantity</label>
+            <div className="inline-flex items-stretch rounded-lg border border-white/10 bg-black/30 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                disabled={quantity <= 1}
+                aria-label="Decrease quantity"
+                className="px-2.5 text-neutral-300 hover:text-vermillion-200 hover:bg-white/[0.04] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-neutral-300 transition"
+              >−</button>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={20}
+                value={quantity}
+                onChange={e => {
+                  const n = Number(e.target.value);
+                  if (Number.isFinite(n)) setQuantity(Math.max(1, Math.min(20, Math.floor(n))));
+                }}
+                className="w-12 text-center bg-transparent outline-none text-sm tabular-nums text-neutral-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                aria-label="Award quantity"
+              />
+              <button
+                type="button"
+                onClick={() => setQuantity(q => Math.min(20, q + 1))}
+                disabled={quantity >= 20}
+                aria-label="Increase quantity"
+                className="px-2.5 text-neutral-300 hover:text-vermillion-200 hover:bg-white/[0.04] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-neutral-300 transition"
+              >+</button>
+            </div>
+            <p className="mt-1 text-[11px] text-neutral-500">
+              {quantity === 1
+                ? "One award per pick."
+                : `${quantity}× — all on the same date.`}
+            </p>
+          </div>
           <span className="hidden lg:inline-flex items-center gap-1.5 ml-auto text-xs text-neutral-500">
             Press <Kbd>U</Kbd> to undo the last award
           </span>
