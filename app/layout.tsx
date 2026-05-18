@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Cinzel } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 import { isAdmin } from "@/lib/auth";
@@ -13,6 +13,15 @@ const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
+});
+
+// Display serif for raid-y headings (boss names, raid section titles)
+// on /admin/assignments. Used via .font-display utility in globals.css.
+const cinzel = Cinzel({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["500", "600", "700"],
+  variable: "--font-cinzel",
 });
 
 export const metadata: Metadata = {
@@ -34,7 +43,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const admin = await isAdmin();
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${inter.variable} ${cinzel.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: `
           var whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: true, domain: "tbc"};

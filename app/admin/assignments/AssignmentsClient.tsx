@@ -277,13 +277,14 @@ function AssignmentsBody({
             setData={setData}
             characters={characters}
             teamRosterIds={teamRosterIds}
+            teamRosterChars={teamRosterChars}
             charsById={charsById}
           />
 
           {/* Per-boss assignments, grouped by raid. */}
           {(["SSC", "TK"] as const).map(raidShort => (
             <div key={raidShort} className="space-y-3">
-              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200/80 border-b border-amber-200/15 pb-1">
+              <div className="font-display text-3xl text-amber-200 border-b border-amber-200/15 pb-2 mt-2" style={{ letterSpacing: "0.03em" }}>
                 {raidShort === "SSC" ? "Serpentshrine Cavern" : "Tempest Keep — The Eye"}
               </div>
               {ASSIGNMENT_BOSSES.filter(b => b.raidShort === raidShort).map(b => (
@@ -294,6 +295,7 @@ function AssignmentsBody({
                   setData={setData}
                   characters={characters}
                   teamRosterIds={teamRosterIds}
+                  teamRosterChars={teamRosterChars}
                   charsById={charsById}
                 />
               ))}

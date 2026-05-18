@@ -7,12 +7,13 @@ import {
   VASHJ_P2_TIMELINE,
   defaultBossAssignment,
   newSectionId,
+  suggestFillSections,
   type AssignSection,
   type AssignmentData,
   type BossAssignment,
   type BossSlug,
 } from "@/lib/assignments";
-import { Plus, X } from "@/app/components/ui/Icon";
+import { Plus, Sparkles, X } from "@/app/components/ui/Icon";
 import { CharacterChip, type AssignableCharacter } from "./CharacterChip";
 import { CharacterPicker } from "./CharacterPicker";
 
@@ -35,6 +36,7 @@ export function BossCard({
   setData,
   characters,
   teamRosterIds,
+  teamRosterChars,
   charsById,
 }: {
   slug: BossSlug;
@@ -42,6 +44,7 @@ export function BossCard({
   setData: (d: AssignmentData) => void;
   characters: AssignableCharacter[];
   teamRosterIds: number[];
+  teamRosterChars: AssignableCharacter[];
   charsById: Map<number, AssignableCharacter>;
 }) {
   const meta = BOSS_INFO[slug];
@@ -90,101 +93,136 @@ export function BossCard({
     toast.success(`${meta.name} reset to defaults.`);
   }
 
+  function suggestFills() {
+    const next = suggestFillSections(activeSections, teamRosterChars);
+    const filled = next.filter((s, i) => s.characterIds.length !== activeSections[i].characterIds.length).length;
+    if (filled === 0) {
+      toast.message("Nothing to suggest — every eligible section is already filled.");
+      return;
+    }
+    updateActiveSections(next);
+    toast.success(`Filled ${filled} section${filled === 1 ? "" : "s"} for ${meta.name}.`);
+  }
+
   return (
-    <div className="rounded-lg border border-white/10 bg-gradient-to-b from-[#131b2c] to-[#0e1525] overflow-visible">
-      {/* Header */}
-      <div className="flex items-baseline justify-between gap-2 px-4 py-3 border-b border-white/[0.06]">
+    <div className="rounded-lg border border-[#2e3a55] bg-gradient-to-b from-[#1a2236] to-[#111827] overflow-visible">
+      {/* Header — Cinzel boss name, navy-gradient label bar */}
+      <div className="flex items-baseline justify-between gap-2 px-4 py-3 border-b border-[#2e3a55]/70">
         <div className="min-w-0">
-          <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
             {meta.raidShort === "SSC" ? "Serpentshrine Cavern" : "Tempest Keep — The Eye"}
           </div>
-          <h3 className="font-semibold text-amber-200 text-lg truncate">{meta.name}</h3>
+          <h3 className="font-display text-2xl text-amber-200 truncate" style={{ letterSpacing: "0.03em" }}>
+            {meta.name}
+          </h3>
         </div>
-        <button
-          type="button"
-          onClick={resetBoss}
-          className="text-[11px] text-neutral-500 hover:text-vermillion-200 transition whitespace-nowrap"
-          title="Restore canonical sections for this boss"
-        >
-          Reset
-        </button>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <button
+            type="button"
+            onClick={suggestFills}
+            disabled={teamRosterIds.length === 0}
+            className="inline-flex items-center gap-1 text-[11px] text-amber-300 hover:text-amber-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
+            title="Auto-fill empty sections from team roster roles"
+          >
+            <Sparkles size={11} aria-hidden /> Suggest
+          </button>
+          <button
+            type="button"
+            onClick={resetBoss}
+            className="text-[11px] text-neutral-500 hover:text-vermillion-200 transition whitespace-nowrap"
+            title="Restore canonical sections for this boss"
+          >
+            Reset
+          </button>
+        </div>
       </div>
 
-      {/* Phase tabs (multi-phase only) */}
-      {isMultiPhase && (
-        <div className="px-4 pt-3 flex flex-wrap gap-1">
-          {bossData.phases!.map((p, i) => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => setActivePhaseIdx(i)}
-              className={`px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider rounded transition ${
-                i === activePhaseIdx
-                  ? "bg-amber-500 text-black"
-                  : "bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08] hover:text-white"
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Vashj Phase 2 timeline */}
-      {slug === "vashj" && activePhase?.label === "Phase 2" && (
-        <div className="px-4 pt-3">
-          <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-1.5">
-            Phase 2 timeline
-          </div>
+      {/* Body: portrait + content side-by-side */}
+      <div className="grid grid-cols-12 gap-4 p-4">
+        <div className="col-span-12 md:col-span-3">
           <div
-            className="grid gap-px text-center"
-            style={{ gridTemplateColumns: "repeat(13, minmax(0, 1fr))" }}
-          >
-            {VASHJ_P2_TIMELINE.map((c, i) => (
-              <div
-                key={i}
-                className={`px-1.5 py-1.5 border rounded text-[10px] ${
-                  c.danger
-                    ? "bg-[#7a1f2c] border-[#c1394d] text-[#ffd6d6] font-bold"
-                    : c.scary
-                    ? "bg-[#4b2a44] border-[#7a3760] text-neutral-200"
-                    : "bg-[#1a2236] border-[#2e3a55] text-neutral-300"
-                }`}
-              >
-                <div className="font-bold text-[10px] tabular-nums">{c.t}</div>
-                <div className="text-[9px] opacity-90">{c.label}</div>
-              </div>
-            ))}
-          </div>
+            className="aspect-[4/3] rounded-md border border-[#2e3a55] bg-[#0e1525] bg-cover bg-center"
+            style={meta.portrait ? { backgroundImage: `url(${meta.portrait})` } : undefined}
+            role="img"
+            aria-label={`${meta.name} portrait`}
+          />
         </div>
-      )}
+        <div className="col-span-12 md:col-span-9 min-w-0">
+          {/* Phase tabs (multi-phase only) */}
+          {isMultiPhase && (
+            <div className="flex flex-wrap gap-1 mb-3">
+              {bossData.phases!.map((p, i) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setActivePhaseIdx(i)}
+                  className={`px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider rounded transition ${
+                    i === activePhaseIdx
+                      ? "bg-amber-500 text-black"
+                      : "bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08] hover:text-white"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          )}
 
-      {/* Sections grid */}
-      <div className="p-4">
-        {activeSections.length === 0 ? (
-          <div className="text-[11px] text-neutral-500 italic mb-2">No sections in this phase.</div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {activeSections.map(section => (
-              <SectionRow
-                key={section.id}
-                section={section}
-                characters={characters}
-                teamRosterIds={teamRosterIds}
-                charsById={charsById}
-                onPatch={patch => patchSection(section.id, patch)}
-                onDelete={() => deleteSection(section.id)}
-              />
-            ))}
-          </div>
-        )}
-        <button
-          type="button"
-          onClick={addSection}
-          className="mt-3 inline-flex items-center gap-1 text-xs text-vermillion-300 hover:text-vermillion-200 transition"
-        >
-          <Plus size={12} aria-hidden /> Add section
-        </button>
+          {/* Vashj Phase 2 timeline */}
+          {slug === "vashj" && activePhase?.label === "Phase 2" && (
+            <div className="mb-3">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-1.5">
+                Phase 2 timeline
+              </div>
+              <div
+                className="grid gap-px text-center"
+                style={{ gridTemplateColumns: "repeat(13, minmax(0, 1fr))" }}
+              >
+                {VASHJ_P2_TIMELINE.map((c, i) => (
+                  <div
+                    key={i}
+                    className={`px-1.5 py-1.5 border rounded text-[10px] ${
+                      c.danger
+                        ? "bg-[#7a1f2c] border-[#c1394d] text-[#ffd6d6] font-bold"
+                        : c.scary
+                        ? "bg-[#4b2a44] border-[#7a3760] text-neutral-200"
+                        : "bg-[#1a2236] border-[#2e3a55] text-neutral-300"
+                    }`}
+                  >
+                    <div className="font-bold text-[10px] tabular-nums">{c.t}</div>
+                    <div className="text-[9px] opacity-90">{c.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Sections grid */}
+          {activeSections.length === 0 ? (
+            <div className="text-[11px] text-neutral-500 italic">No sections in this phase.</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+              {activeSections.map(section => (
+                <SectionRow
+                  key={section.id}
+                  section={section}
+                  characters={characters}
+                  teamRosterIds={teamRosterIds}
+                  charsById={charsById}
+                  onPatch={patch => patchSection(section.id, patch)}
+                  onDelete={() => deleteSection(section.id)}
+                />
+              ))}
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={addSection}
+            className="mt-3 inline-flex items-center gap-1 text-xs text-vermillion-300 hover:text-vermillion-200 transition"
+          >
+            <Plus size={12} aria-hidden /> Add section
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -298,6 +336,7 @@ function SectionRow({
               characters={characters}
               scopeIds={teamRosterIds.length > 0 ? teamRosterIds : null}
               excludeIds={excludeIds}
+              eligibility={section.eligibility}
               onPick={addChar}
               onClose={() => setPickerOpen(false)}
               anchorRef={addBtnRef}

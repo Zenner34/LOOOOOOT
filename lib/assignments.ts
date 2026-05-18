@@ -9,22 +9,38 @@
 /**
  * Bosses we render assignments for. Slugs are stable strings used as
  * keys in the `bosses` map; display names + which raid they belong to
- * are resolved from the Boss table at render time.
+ * are resolved from the Boss table at render time. Portrait URLs are
+ * zamimg screenshots — same ones used in the mockup.
  */
 export const ASSIGNMENT_BOSSES = [
-  { slug: "hydross",   raidShort: "SSC", name: "Hydross the Unstable" },
-  { slug: "lurker",    raidShort: "SSC", name: "The Lurker Below" },
-  { slug: "morogrim",  raidShort: "SSC", name: "Morogrim Tidewalker" },
-  { slug: "fathom",    raidShort: "SSC", name: "Fathom-Lord Karathress" },
-  { slug: "leotheras", raidShort: "SSC", name: "Leotheras the Blind" },
-  { slug: "vashj",     raidShort: "SSC", name: "Lady Vashj" },
-  { slug: "alar",      raidShort: "TK",  name: "Al'ar" },
-  { slug: "voidreaver",raidShort: "TK",  name: "Void Reaver" },
-  { slug: "solarian",  raidShort: "TK",  name: "High Astromancer Solarian" },
-  { slug: "kael",      raidShort: "TK",  name: "Kael'thas Sunstrider" },
+  { slug: "hydross",    raidShort: "SSC", name: "Hydross the Unstable",         portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74886.jpg" },
+  { slug: "lurker",     raidShort: "SSC", name: "The Lurker Below",             portrait: "https://wow.zamimg.com/uploads/screenshots/normal/68543.jpg" },
+  { slug: "morogrim",   raidShort: "SSC", name: "Morogrim Tidewalker",          portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74894.jpg" },
+  { slug: "fathom",     raidShort: "SSC", name: "Fathom-Lord Karathress",       portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74875.jpg" },
+  { slug: "leotheras",  raidShort: "SSC", name: "Leotheras the Blind",          portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74891.jpg" },
+  { slug: "vashj",      raidShort: "SSC", name: "Lady Vashj",                   portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74899.jpg" },
+  { slug: "alar",       raidShort: "TK",  name: "Al'ar",                        portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74822.jpg" },
+  { slug: "voidreaver", raidShort: "TK",  name: "Void Reaver",                  portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74900.jpg" },
+  { slug: "solarian",   raidShort: "TK",  name: "High Astromancer Solarian",    portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74896.jpg" },
+  { slug: "kael",       raidShort: "TK",  name: "Kael'thas Sunstrider",         portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74888.jpg" },
 ] as const;
 
 export type BossSlug = (typeof ASSIGNMENT_BOSSES)[number]["slug"];
+
+/**
+ * Soft-constraint hint for an AssignSection: which characters can
+ * "naturally" deliver this assignment? The picker uses this to show
+ * eligible characters first (under an "Eligible" header); non-eligible
+ * characters still appear below so admins can override. Auto-fill
+ * fills empty sections with the matching roster members.
+ */
+export type Eligibility = {
+  /** Class names — "Priest", "Warlock", etc. Matches any-spec of those classes. */
+  classes?: string[];
+  /** Role buckets. "tank" / "heal" match Character.role; "melee" / "ranged"
+   *  split the dps role by spec via specBucket(). */
+  roles?: Array<"tank" | "heal" | "melee" | "ranged">;
+};
 
 export type AssignSection = {
   /** Stable id within the sheet so renames/deletes don't reshuffle assignments. */
@@ -33,6 +49,8 @@ export type AssignSection = {
   title: string;
   /** Optional Wowhead icon slug (e.g. "spell_holy_powerinfusion") for the chip icon. */
   iconSlug?: string;
+  /** Optional soft-constraint hint for who can fill this slot. */
+  eligibility?: Eligibility;
   /** Character ids assigned to this section, in display order. */
   characterIds: number[];
 };
@@ -69,25 +87,25 @@ export function emptyAssignmentData(): AssignmentData {
  * The order roughly matches the source spreadsheet: raid-wide buffs
  * first, then druid utility, then warlock, then physical-DPS debuffs.
  */
-const BUFF_TEMPLATE: Array<{ title: string; iconSlug: string }> = [
-  { title: "Power Infusion · G1-3",         iconSlug: "spell_holy_powerinfusion" },
-  { title: "Power Infusion · G4-5",         iconSlug: "spell_holy_powerinfusion" },
-  { title: "Prayer of Fortitude · G1-5",    iconSlug: "spell_holy_prayeroffortitude" },
+const BUFF_TEMPLATE: Array<{ title: string; iconSlug: string; eligibility?: Eligibility }> = [
+  { title: "Power Infusion · G1-3",         iconSlug: "spell_holy_powerinfusion",          eligibility: { classes: ["Priest"] } },
+  { title: "Power Infusion · G4-5",         iconSlug: "spell_holy_powerinfusion",          eligibility: { classes: ["Priest"] } },
+  { title: "Prayer of Fortitude · G1-5",    iconSlug: "spell_holy_prayeroffortitude",      eligibility: { classes: ["Priest"] } },
   { title: "Greater Blessing · Pair 1",     iconSlug: "spell_magic_greaterblessingofkings" },
   { title: "Greater Blessing · Pair 2",     iconSlug: "spell_magic_greaterblessingofkings" },
   { title: "Greater Blessing · Pair 3",     iconSlug: "spell_magic_greaterblessingofkings" },
   { title: "Innervate · Pair 1",            iconSlug: "spell_nature_lightning" },
   { title: "Innervate · Pair 2",            iconSlug: "spell_nature_lightning" },
-  { title: "Tranquility",                   iconSlug: "spell_nature_tranquility" },
+  { title: "Tranquility",                   iconSlug: "spell_nature_tranquility",          eligibility: { classes: ["Druid"] } },
   { title: "Soulstone Order",               iconSlug: "spell_shadow_soulgem" },
-  { title: "Affliction Warlock (Debuffs)",  iconSlug: "spell_shadow_curseofachimonde" },
-  { title: "Curse of Recklessness",         iconSlug: "spell_shadow_unholystrength" },
-  { title: "Curse of the Elements",         iconSlug: "spell_shadow_chilltouch" },
-  { title: "Faerie Fire · #1",              iconSlug: "spell_nature_faeriefire" },
-  { title: "Faerie Fire · #2",              iconSlug: "spell_nature_faeriefire" },
-  { title: "Sunder Armor · #1",             iconSlug: "ability_warrior_sunder" },
-  { title: "Sunder Armor · #2",             iconSlug: "ability_warrior_sunder" },
-  { title: "Sunder Armor · #3",             iconSlug: "ability_warrior_sunder" },
+  { title: "Affliction Warlock (Debuffs)",  iconSlug: "spell_shadow_curseofachimonde",     eligibility: { classes: ["Warlock"] } },
+  { title: "Curse of Recklessness",         iconSlug: "spell_shadow_unholystrength",       eligibility: { classes: ["Warlock"] } },
+  { title: "Curse of the Elements",         iconSlug: "spell_shadow_chilltouch",           eligibility: { classes: ["Warlock"] } },
+  { title: "Faerie Fire · #1",              iconSlug: "spell_nature_faeriefire",           eligibility: { classes: ["Druid", "Hunter"] } },
+  { title: "Faerie Fire · #2",              iconSlug: "spell_nature_faeriefire",           eligibility: { classes: ["Druid", "Hunter"] } },
+  { title: "Sunder Armor · #1",             iconSlug: "ability_warrior_sunder",            eligibility: { classes: ["Warrior"] } },
+  { title: "Sunder Armor · #2",             iconSlug: "ability_warrior_sunder",            eligibility: { classes: ["Warrior"] } },
+  { title: "Sunder Armor · #3",             iconSlug: "ability_warrior_sunder",            eligibility: { classes: ["Warrior"] } },
 ];
 
 export function defaultBuffs(): AssignSection[] {
@@ -95,8 +113,35 @@ export function defaultBuffs(): AssignSection[] {
     id: newSectionId(),
     title: b.title,
     iconSlug: b.iconSlug,
+    eligibility: b.eligibility,
     characterIds: [],
   }));
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   ELIGIBILITY HELPERS
+   ──────────────────────────────────────────────────────────────────── */
+
+/** Lightweight character shape used by eligibility checks. */
+export type EligibleChar = { id: number; class: string; role: string; spec: string };
+
+const CASTER_SPEC_RX = /\b(Mage|Warlock|Priest|Hunter|Balance Druid|Elemental Shaman|Shadow Priest)\b/;
+
+export function isMeleeSpec(spec: string): boolean {
+  return !CASTER_SPEC_RX.test(spec);
+}
+
+export function matchesEligibility(c: EligibleChar, eligibility?: Eligibility): boolean {
+  if (!eligibility) return true;
+  const classOK = !eligibility.classes || eligibility.classes.includes(c.class);
+  const roleOK = !eligibility.roles || eligibility.roles.some(r => {
+    if (r === "tank") return c.role === "tank";
+    if (r === "heal") return c.role === "heal";
+    if (r === "melee") return c.role === "dps" && isMeleeSpec(c.spec);
+    if (r === "ranged") return c.role === "dps" && !isMeleeSpec(c.spec);
+    return false;
+  });
+  return classOK && roleOK;
 }
 
 /**
@@ -134,9 +179,24 @@ export function newSectionId(): string {
    BOSS TEMPLATES
    ──────────────────────────────────────────────────────────────────── */
 
+type SectionTemplate = { title: string; eligibility?: Eligibility };
 type BossTemplate = {
-  sections?: string[];
-  phases?: Array<{ label: string; sections: string[] }>;
+  sections?: SectionTemplate[];
+  phases?: Array<{ label: string; sections: SectionTemplate[] }>;
+};
+
+// Shortcuts to keep BOSS_TEMPLATES readable.
+const t = (title: string, eligibility?: Eligibility): SectionTemplate => ({ title, eligibility });
+const E: Record<string, Eligibility> = {
+  tank:    { roles: ["tank"] },
+  heal:    { roles: ["heal"] },
+  melee:   { roles: ["melee"] },
+  ranged:  { roles: ["ranged"] },
+  warlock: { classes: ["Warlock"] },
+  hunter:  { classes: ["Hunter"] },
+  druid:   { classes: ["Druid"] },
+  priest:  { classes: ["Priest"] },
+  paladin: { classes: ["Paladin"] },
 };
 
 /**
@@ -149,86 +209,86 @@ type BossTemplate = {
 const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
   hydross: {
     sections: [
-      "Frost MT",
-      "Nature MT",
-      "Add Tank",
-      "Tank Healers",
-      "Melee Group 1",
-      "Melee Group 2",
-      "Banish — Skull",
-      "Banish — Cross",
-      "Banish — Triangle",
-      "RDPS 1",
-      "RDPS 2",
-      "RDPS 3",
+      t("Frost MT", E.tank),
+      t("Nature MT", E.tank),
+      t("Add Tank", E.tank),
+      t("Tank Healers", E.heal),
+      t("Melee Group 1", E.melee),
+      t("Melee Group 2", E.melee),
+      t("Banish — Skull", E.warlock),
+      t("Banish — Cross", E.warlock),
+      t("Banish — Triangle", E.warlock),
+      t("RDPS 1", E.ranged),
+      t("RDPS 2", E.ranged),
+      t("RDPS 3", E.ranged),
     ],
   },
   lurker: {
     sections: [
-      "Main Tank",
-      "Ring Adds (Feral + ProtPal)",
-      "Spout Team A",
-      "Spout Team B",
-      "Spout Team C",
-      "Healer Stack 1",
-      "Healer Stack 2",
-      "Healer Stack 3",
+      t("Main Tank", E.tank),
+      t("Ring Adds (Feral + ProtPal)", E.tank),
+      t("Spout Team A"),
+      t("Spout Team B"),
+      t("Spout Team C"),
+      t("Healer Stack 1", E.heal),
+      t("Healer Stack 2", E.heal),
+      t("Healer Stack 3", E.heal),
     ],
   },
   morogrim: {
     sections: [
-      "Main Tank",
-      "Add Tank",
-      "Grave Healer",
-      "Hunter Slow Trap — N",
-      "Hunter Slow Trap — S",
-      "Hunter Slow Trap — C",
+      t("Main Tank", E.tank),
+      t("Add Tank", E.tank),
+      t("Grave Healer", E.heal),
+      t("Hunter Slow Trap — N", E.hunter),
+      t("Hunter Slow Trap — S", E.hunter),
+      t("Hunter Slow Trap — C", E.hunter),
     ],
   },
   fathom: {
     sections: [
-      "FL Tank",
-      "Tank Healer",
-      "Tidal & Shark Tank",
-      "LOS Tank",
-      "LOS Healer",
+      t("FL Tank", E.tank),
+      t("Tank Healer", E.heal),
+      t("Tidal & Shark Tank", E.tank),
+      t("LOS Tank", E.tank),
+      t("LOS Healer", E.heal),
     ],
   },
   leotheras: {
     sections: [
-      "Main Tank",
-      "Demon Tank",
-      "WW Threat Wipe",
+      t("Main Tank", E.tank),
+      t("Demon Tank", E.warlock),
+      t("WW Threat Wipe"),
     ],
   },
   vashj: {
     phases: [
       {
         label: "Phase 1",
-        sections: ["Main Tank", "Strider Kiter", "Elite Tanks", "Ball Dunker"],
+        sections: [t("Main Tank", E.tank), t("Strider Kiter", E.hunter), t("Elite Tanks", E.tank), t("Ball Dunker")],
       },
       {
         label: "Phase 2",
         sections: [
-          "West Zone (Decurse / Dispel)",
-          "North Zone (Decurse / Dispel)",
-          "East Zone (Decurse / Dispel)",
-          "South Zone (Decurse / Dispel)",
+          t("West Zone (Decurse / Dispel)"),
+          t("North Zone (Decurse / Dispel)"),
+          t("East Zone (Decurse / Dispel)"),
+          t("South Zone (Decurse / Dispel)"),
         ],
       },
       {
         label: "Phase 3",
         sections: [
-          "Main Tank",
-          "Tank Healers",
-          "Healer — North",
-          "Healer — South",
-          "Healer — East",
-          "Healer — West",
-          "Healer — Flex",
-          "Zone 1",
-          "Zone 2",
-          "Zone 3",
+          t("Main Tank", E.tank),
+          t("Tank Healers", E.heal),
+          t("Healer — North", E.heal),
+          t("Healer — South", E.heal),
+          t("Healer — East", E.heal),
+          t("Healer — West", E.heal),
+          t("Healer — Flex", E.heal),
+          t("Zone 1"),
+          t("Zone 2"),
+          t("Zone 3"),
         ],
       },
     ],
@@ -237,42 +297,42 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
     phases: [
       {
         label: "Phase 1",
-        sections: ["Main Tank", "OT (might be afk)", "Add Tank"],
+        sections: [t("Main Tank", E.tank), t("OT (might be afk)", E.tank), t("Add Tank", E.tank)],
       },
       {
         label: "Phase 2",
-        sections: ["Main Tank", "OT (taunt Melt Armor)", "Add Tank"],
+        sections: [t("Main Tank", E.tank), t("OT (taunt Melt Armor)", E.tank), t("Add Tank", E.tank)],
       },
     ],
   },
   voidreaver: {
-    sections: ["Main Tank", "Orb Eaters"],
+    sections: [t("Main Tank", E.tank), t("Orb Eaters")],
   },
   solarian: {
-    sections: ["Main Tank"],
+    sections: [t("Main Tank", E.tank)],
   },
   kael: {
     phases: [
       {
         label: "Phase 1",
-        sections: ["Sanguinar Tank", "Telonicus Tank", "Capernian Tank", "Conflag Soaker"],
+        sections: [t("Sanguinar Tank", E.tank), t("Telonicus Tank", E.tank), t("Capernian Tank", E.tank), t("Conflag Soaker")],
       },
       {
         label: "Phase 2",
-        sections: ["2H Axe Tank", "Longbow Tank", "Remaining Tanks (cluster)"],
+        sections: [t("2H Axe Tank", E.tank), t("Longbow Tank", E.tank), t("Remaining Tanks (cluster)", E.tank)],
       },
       {
         label: "Phase 3",
-        sections: ["Sanguinar Tank", "Telonicus Tank", "Capernian Tank", "Conflag Soaker"],
+        sections: [t("Sanguinar Tank", E.tank), t("Telonicus Tank", E.tank), t("Capernian Tank", E.tank), t("Conflag Soaker")],
       },
       {
         label: "Phase 4",
         sections: [
-          "Main Tank",
-          "Fireball Kick Order",
-          "Pyroblast Kicks",
-          "Phoenix Kiter #1",
-          "Phoenix Kiter #2",
+          t("Main Tank", E.tank),
+          t("Fireball Kick Order", E.melee),
+          t("Pyroblast Kicks", E.melee),
+          t("Phoenix Kiter #1", E.tank),
+          t("Phoenix Kiter #2", E.tank),
         ],
       },
       {
@@ -283,10 +343,11 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
   },
 };
 
-function makeSections(titles: string[]): AssignSection[] {
-  return titles.map(title => ({
+function makeSections(tpls: SectionTemplate[]): AssignSection[] {
+  return tpls.map(s => ({
     id: newSectionId(),
-    title,
+    title: s.title,
+    eligibility: s.eligibility,
     characterIds: [],
   }));
 }
@@ -326,6 +387,21 @@ export function defaultBossAssignment(slug: BossSlug): BossAssignment {
     };
   }
   return { sections: makeSections(tpl.sections ?? []) };
+}
+
+/**
+ * Auto-fill empty sections with eligible roster members. Used by the
+ * per-card "Suggest" button. Skips sections that already have any
+ * character (so admin edits never get overwritten) and sections
+ * without an eligibility hint (no signal to choose from).
+ */
+export function suggestFillSections(sections: AssignSection[], roster: EligibleChar[]): AssignSection[] {
+  return sections.map(s => {
+    if (s.characterIds.length > 0 || !s.eligibility) return s;
+    const eligible = roster.filter(c => matchesEligibility(c, s.eligibility));
+    if (eligible.length === 0) return s;
+    return { ...s, characterIds: eligible.map(c => c.id) };
+  });
 }
 
 /**

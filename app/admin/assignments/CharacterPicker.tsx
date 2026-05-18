@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Command } from "cmdk";
 import { CLASS_COLOR } from "@/lib/specs";
+import { matchesEligibility, type Eligibility } from "@/lib/assignments";
 import { ClassIcon } from "@/app/components/ClassIcon";
 import { Search } from "@/app/components/ui/Icon";
 import type { AssignableCharacter } from "./CharacterChip";
@@ -24,6 +25,7 @@ export function CharacterPicker({
   characters,
   scopeIds,
   excludeIds,
+  eligibility,
   onPick,
   onClose,
   anchorRef,
@@ -31,6 +33,9 @@ export function CharacterPicker({
   characters: AssignableCharacter[];
   scopeIds?: number[] | null;
   excludeIds?: Set<number>;
+  /** When set, eligible characters render under an "Eligible" header at
+   *  the top and non-eligible chars fall to an "Other" section below. */
+  eligibility?: Eligibility;
   onPick: (c: AssignableCharacter) => void;
   onClose: () => void;
   anchorRef: React.RefObject<HTMLElement>;
@@ -53,7 +58,7 @@ export function CharacterPicker({
     };
   }, [onClose, anchorRef]);
 
-  const filtered = useMemo(() => {
+  const { eligible, other } = useMemo(() => {
     let list = characters;
     if (scopeIds && scopeIds.length > 0) {
       const scope = new Set(scopeIds);
@@ -63,7 +68,7 @@ export function CharacterPicker({
       list = list.filter(c => !excludeIds.has(c.id));
     }
     // Sort: mains first (within their player group), then by name.
-    return [...list].sort((a, b) => {
+    const sorted = [...list].sort((a, b) => {
       const ap = a.playerName ?? a.name;
       const bp = b.playerName ?? b.name;
       const playerCmp = ap.localeCompare(bp);
@@ -71,7 +76,15 @@ export function CharacterPicker({
       if (a.isMain !== b.isMain) return a.isMain ? -1 : 1;
       return a.name.localeCompare(b.name);
     });
-  }, [characters, scopeIds, excludeIds]);
+    if (!eligibility) return { eligible: sorted, other: [] as AssignableCharacter[] };
+    const elig: AssignableCharacter[] = [];
+    const oth: AssignableCharacter[] = [];
+    for (const c of sorted) {
+      if (matchesEligibility(c, eligibility)) elig.push(c);
+      else oth.push(c);
+    }
+    return { eligible: elig, other: oth };
+  }, [characters, scopeIds, excludeIds, eligibility]);
 
   return (
     <div
@@ -92,30 +105,57 @@ export function CharacterPicker({
           />
         </div>
         <Command.List className="flex-1 overflow-y-auto p-1">
-          {filtered.length === 0 ? (
+          {eligible.length === 0 && other.length === 0 && (
             <Command.Empty className="px-2 py-3 text-center text-xs text-neutral-500">
               No matches
             </Command.Empty>
-          ) : filtered.map(c => (
-            <Command.Item
-              key={c.id}
-              value={`${c.name} ${c.class} ${c.spec} ${c.playerName ?? ""}`}
-              onSelect={() => onPick(c)}
-              className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-sm text-neutral-200 cursor-pointer data-[selected=true]:bg-vermillion-500/12 data-[selected=true]:text-vermillion-200"
-            >
-              {c.isMain && <span className="text-gold-300 text-[9px]" aria-hidden>★</span>}
-              <ClassIcon cls={c.class} size={12} />
-              <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }} className="font-medium">
-                {c.name}
-              </span>
-              <span className="text-neutral-500 text-[11px] flex-1 text-left truncate">
-                · {c.spec}
-                {c.playerName && c.playerName !== c.name ? ` · ${c.playerName}` : ""}
-              </span>
-            </Command.Item>
-          ))}
+          )}
+          {eligible.length > 0 && (
+            <Command.Group heading={eligibility ? "Eligible" : undefined} className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.12em] [&_[cmdk-group-heading]]:text-vermillion-300/90">
+              {eligible.map(c => (
+                <PickerItem key={c.id} character={c} onPick={onPick} />
+              ))}
+            </Command.Group>
+          )}
+          {other.length > 0 && (
+            <Command.Group heading="Other characters" className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1 [&_[cmdk-group-heading]]:mt-1 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.12em] [&_[cmdk-group-heading]]:text-neutral-500">
+              {other.map(c => (
+                <PickerItem key={c.id} character={c} onPick={onPick} dim />
+              ))}
+            </Command.Group>
+          )}
         </Command.List>
       </Command>
     </div>
+  );
+}
+
+function PickerItem({
+  character: c,
+  onPick,
+  dim,
+}: {
+  character: AssignableCharacter;
+  onPick: (c: AssignableCharacter) => void;
+  dim?: boolean;
+}) {
+  return (
+    <Command.Item
+      value={`${c.name} ${c.class} ${c.spec} ${c.playerName ?? ""}`}
+      onSelect={() => onPick(c)}
+      className={`flex items-center gap-2 px-2.5 py-1.5 rounded-md text-sm cursor-pointer data-[selected=true]:bg-vermillion-500/12 data-[selected=true]:text-vermillion-200 ${
+        dim ? "opacity-60 hover:opacity-100" : ""
+      }`}
+    >
+      {c.isMain && <span className="text-gold-300 text-[9px]" aria-hidden>★</span>}
+      <ClassIcon cls={c.class} size={12} />
+      <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }} className="font-medium">
+        {c.name}
+      </span>
+      <span className="text-neutral-500 text-[11px] flex-1 text-left truncate">
+        · {c.spec}
+        {c.playerName && c.playerName !== c.name ? ` · ${c.playerName}` : ""}
+      </span>
+    </Command.Item>
   );
 }

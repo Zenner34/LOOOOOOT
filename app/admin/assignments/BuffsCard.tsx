@@ -5,10 +5,11 @@ import { toast } from "sonner";
 import {
   defaultBuffs,
   newSectionId,
+  suggestFillSections,
   type AssignSection,
   type AssignmentData,
 } from "@/lib/assignments";
-import { Plus, X } from "@/app/components/ui/Icon";
+import { Plus, Sparkles, X } from "@/app/components/ui/Icon";
 import { CharacterChip, type AssignableCharacter } from "./CharacterChip";
 import { CharacterPicker } from "./CharacterPicker";
 
@@ -30,12 +31,14 @@ export function BuffsCard({
   setData,
   characters,
   teamRosterIds,
+  teamRosterChars,
   charsById,
 }: {
   data: AssignmentData;
   setData: (d: AssignmentData) => void;
   characters: AssignableCharacter[];
   teamRosterIds: number[];
+  teamRosterChars: AssignableCharacter[];
   charsById: Map<number, AssignableCharacter>;
 }) {
   function updateSections(next: AssignSection[]) {
@@ -63,14 +66,34 @@ export function BuffsCard({
     toast.success("Buffs reset to defaults.");
   }
 
+  function suggestFills() {
+    const next = suggestFillSections(data.buffs, teamRosterChars);
+    const filled = next.filter((s, i) => s.characterIds.length !== data.buffs[i].characterIds.length).length;
+    if (filled === 0) {
+      toast.message("Nothing to suggest — every eligible buff section is already filled.");
+      return;
+    }
+    updateSections(next);
+    toast.success(`Filled ${filled} buff section${filled === 1 ? "" : "s"} from team roster.`);
+  }
+
   return (
     <div className="panel p-3">
-      <div className="flex items-baseline justify-between mb-2">
+      <div className="flex items-baseline justify-between mb-2 gap-3 flex-wrap">
         <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90">
           Buffs & Assignments
         </div>
         <div className="flex items-center gap-3">
           <span className="text-[11px] text-neutral-500 tabular-nums">{data.buffs.length} sections</span>
+          <button
+            type="button"
+            onClick={suggestFills}
+            disabled={teamRosterIds.length === 0}
+            className="inline-flex items-center gap-1 text-[11px] text-amber-300 hover:text-amber-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
+            title="Auto-fill empty buff sections using the team's roster classes"
+          >
+            <Sparkles size={11} aria-hidden /> Suggest
+          </button>
           <button
             type="button"
             onClick={resetToDefaults}
@@ -226,6 +249,7 @@ function BuffRow({
               characters={characters}
               scopeIds={teamRosterIds.length > 0 ? teamRosterIds : null}
               excludeIds={excludeIds}
+              eligibility={section.eligibility}
               onPick={addChar}
               onClose={() => setPickerOpen(false)}
               anchorRef={addBtnRef}

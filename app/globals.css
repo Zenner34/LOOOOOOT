@@ -54,6 +54,11 @@ body {
 *::-webkit-scrollbar-thumb:hover { background: #3a4150; }
 
 @layer components {
+  /* Cinzel serif for raid-y headings (boss names, raid section titles). */
+  .font-display {
+    font-family: var(--font-cinzel), "Trajan Pro", Georgia, serif;
+  }
+
   .panel {
     @apply rounded-xl border border-white/5 bg-[var(--surface)] shadow-card;
   }
