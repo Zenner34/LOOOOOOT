@@ -208,8 +208,20 @@ const BUFF_TEMPLATE: BuffTpl[] = [
     fixedSlots: 2, slotEligibility: [{ classes: ["Shaman"] }, { roles: ["tank"] }] },
   { title: "Earth Shield · OT",                 iconSlug: "spell_nature_skinofearth",
     fixedSlots: 2, slotEligibility: [{ classes: ["Shaman"] }, { roles: ["tank"] }] },
-  { title: "Soulstones · Caster",               iconSlug: "spell_shadow_soulgem",                  eligibility: { classes: ["Warlock"] }, fixedSlots: 1 },
-  { title: "Soulstones · Targets",              iconSlug: "spell_shadow_soulgem",                  fixedSlots: 5 },
+  // Soulstones — each row pairs a Warlock caster with their target
+  // (any character; typically a healer in rezz-priority order). Five
+  // default rows mirror the source spreadsheet's priority list; admin
+  // can add more via the per-block + or delete unused ones.
+  { title: "Soulstones · #1",                   iconSlug: "spell_shadow_soulgem",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Warlock"] }, undefined] },
+  { title: "Soulstones · #2",                   iconSlug: "spell_shadow_soulgem",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Warlock"] }, undefined] },
+  { title: "Soulstones · #3",                   iconSlug: "spell_shadow_soulgem",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Warlock"] }, undefined] },
+  { title: "Soulstones · #4",                   iconSlug: "spell_shadow_soulgem",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Warlock"] }, undefined] },
+  { title: "Soulstones · #5",                   iconSlug: "spell_shadow_soulgem",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Warlock"] }, undefined] },
 
   // ── Warlock curses — single block, icon-as-row-label, 1 warlock per ──
   // Recklessness for physical raids, Elements for caster raids,
