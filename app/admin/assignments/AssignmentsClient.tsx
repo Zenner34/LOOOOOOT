@@ -22,6 +22,7 @@ import { BossCard } from "./BossCard";
 import { RosterSidebar } from "./RosterSidebar";
 import { TankHealersCard } from "./TankHealersCard";
 import { HighlightProvider, useHighlight } from "./HighlightContext";
+import { ViewModeProvider, useViewMode, EditOnly } from "./ViewModeContext";
 
 type Team = {
   id: number;
@@ -146,6 +147,7 @@ export default function AssignmentsClient({
   }));
 
   return (
+    <ViewModeProvider>
     <HighlightProvider>
       <div
         className="relative left-1/2 -translate-x-1/2 w-screen px-4 sm:px-6 -my-6 md:-my-8 py-6 md:py-8 min-h-screen"
@@ -179,6 +181,7 @@ export default function AssignmentsClient({
         </div>
       </div>
     </HighlightProvider>
+    </ViewModeProvider>
   );
 }
 
@@ -254,15 +257,17 @@ function AssignmentsBody({
                     {t.name}
                   </button>
                   {active && (
-                    <button
-                      type="button"
-                      onClick={() => setTeamModal({ team: t })}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-vermillion-200 transition"
-                      aria-label={`Edit ${t.name}`}
-                      title={`Edit ${t.name}`}
-                    >
-                      <Pencil size={11} aria-hidden />
-                    </button>
+                    <EditOnly>
+                      <button
+                        type="button"
+                        onClick={() => setTeamModal({ team: t })}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-vermillion-200 transition"
+                        aria-label={`Edit ${t.name}`}
+                        title={`Edit ${t.name}`}
+                      >
+                        <Pencil size={11} aria-hidden />
+                      </button>
+                    </EditOnly>
                   )}
                 </div>
               );
@@ -270,15 +275,18 @@ function AssignmentsBody({
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={() => setTeamModal("create")}
-          className="btn-ghost btn-xs inline-flex items-center gap-1"
-        >
-          <Plus size={12} aria-hidden /> New team
-        </button>
+        <EditOnly>
+          <button
+            type="button"
+            onClick={() => setTeamModal("create")}
+            className="btn-ghost btn-xs inline-flex items-center gap-1"
+          >
+            <Plus size={12} aria-hidden /> New team
+          </button>
+        </EditOnly>
 
         <div className="ml-auto inline-flex items-center gap-2 text-xs flex-wrap justify-end">
+          <ViewModeToggle />
           <SpotlightPicker
             characters={characters}
             teamRosterIds={teamRosterIds}
@@ -736,5 +744,36 @@ function SpotlightPicker({
         />
       )}
     </span>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────────── */
+
+/**
+ * Edit / Raider view toggle pill. When flipped to Raider view, every
+ * editing affordance on the page hides (Add buttons, Suggest, Reset,
+ * row delete, title rename, +team, team pencil). The toggle itself
+ * persists to localStorage via the ViewModeContext.
+ *
+ * Visible only to admins (the whole route is admin-gated) — when an
+ * admin clicks this they're previewing what a non-admin would see if
+ * the page were ever exposed read-only.
+ */
+function ViewModeToggle() {
+  const { readOnly, setReadOnly } = useViewMode();
+  return (
+    <button
+      type="button"
+      onClick={() => setReadOnly(!readOnly)}
+      title={readOnly ? "Switch to Edit mode" : "Preview what a raider would see"}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition min-h-[28px] ${
+        readOnly
+          ? "border-amber-400/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/15"
+          : "border-white/10 bg-[var(--surface)] text-neutral-200 hover:border-white/20 hover:bg-white/[0.03]"
+      }`}
+    >
+      <span aria-hidden className="inline-block w-2 h-2 rounded-full" style={{ background: readOnly ? "#d4af37" : "#4ade80" }} />
+      {readOnly ? "Raider view" : "Edit mode"}
+    </button>
   );
 }

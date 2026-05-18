@@ -2,6 +2,7 @@
 
 import { CLASS_COLOR, SPEC_ICON } from "@/lib/specs";
 import { useHighlight } from "./HighlightContext";
+import { useViewMode } from "./ViewModeContext";
 
 const SPEC_ICON_BASE = "https://wow.zamimg.com/images/wow/icons/medium/";
 
@@ -44,8 +45,11 @@ export function CharacterChip({
   inline?: boolean;
 }) {
   const { effectiveId, setHover } = useHighlight();
+  const { readOnly } = useViewMode();
   const highlighted = effectiveId === character.id;
   const dimmed = effectiveId !== null && effectiveId !== character.id;
+  // Suppress the remove × in read-only / raider view.
+  const showRemove = !!onRemove && !readOnly;
 
   const bg = CLASS_COLOR[character.class] ?? "#888";
   // All chips use near-black text for consistency, regardless of class.
@@ -87,11 +91,11 @@ export function CharacterChip({
         />
       )}
       <span className="truncate flex-1 text-center">{character.name}</span>
-      {onRemove && (
+      {showRemove && (
         <span
           role="button"
           aria-label="Remove from slot"
-          onClick={(e) => { e.stopPropagation(); onRemove(); }}
+          onClick={(e) => { e.stopPropagation(); onRemove?.(); }}
           className="opacity-0 group-hover:opacity-90 transition text-[10px] leading-none -mr-0.5 flex-shrink-0"
         >
           ×
@@ -104,6 +108,7 @@ export function CharacterChip({
 /**
  * Empty slot placeholder — soft green like the spreadsheet's blank rows.
  * Fills the slot width so it stacks consistently with CharacterChip.
+ * Hidden entirely when the page is in raider (read-only) view.
  */
 export function EmptySlot({
   onClick,
@@ -114,6 +119,8 @@ export function EmptySlot({
   label?: string;
   size?: "sm" | "md";
 }) {
+  const { readOnly } = useViewMode();
+  if (readOnly) return null;
   const pad = size === "sm" ? "px-2 py-1" : "px-2.5 py-[5px]";
   const txt = size === "sm" ? "text-[12px]" : "text-[13px]";
   return (

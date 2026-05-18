@@ -51,6 +51,17 @@ export type AssignSection = {
   iconSlug?: string;
   /** Optional soft-constraint hint for who can fill this slot. */
   eligibility?: Eligibility;
+  /** Per-slot eligibility override. Used for paired sections like
+   *  Innervate (Druid + Mage) and Blessing of Protection (Paladin +
+   *  Warlock). When set, slot N uses slotEligibility[N] in the picker
+   *  instead of the section-level `eligibility`. */
+  slotEligibility?: (Eligibility | undefined)[];
+  /** Fixed slot count — when set, the row renders exactly N slots
+   *  (chip or "add" per slot) regardless of how many characters are
+   *  currently assigned. Used for paired and ordered-list sections.
+   *  When undefined the row renders as growable: existing chips + 1
+   *  "add" affordance. */
+  fixedSlots?: number;
   /** How many slots auto-fill should populate when the section is empty.
    *  Defaults to 1 (single caster/target). Set higher for sections that
    *  naturally hold many chars (PoF · G1-5 = 3 priests; Tranq = every
@@ -148,31 +159,43 @@ export function emptyAssignmentData(): AssignmentData {
  * The order roughly matches the source spreadsheet: raid-wide buffs
  * first, then druid utility, then warlock, then physical-DPS debuffs.
  */
-type BuffTpl = { title: string; iconSlug: string; eligibility?: Eligibility; targetSlots?: number };
+type BuffTpl = {
+  title: string;
+  iconSlug: string;
+  eligibility?: Eligibility;
+  slotEligibility?: (Eligibility | undefined)[];
+  fixedSlots?: number;
+  targetSlots?: number;
+};
 
 const BUFF_TEMPLATE: BuffTpl[] = [
   // ── Raid-wide buffs (one per class group) ─────────────────────────────
-  { title: "Prayer of Fortitude · G1-5",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] }, targetSlots: 3 },
+  { title: "Prayer of Fortitude · G1-5",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] }, targetSlots: 3, fixedSlots: 3 },
   { title: "Arcane Brilliance · G1-5",          iconSlug: "spell_holy_arcaneintellect",            eligibility: { classes: ["Mage"] } },
   { title: "Gift of the Wild · G1-5",           iconSlug: "spell_nature_regeneration",             eligibility: { classes: ["Druid"] } },
 
   // ── Warlock soulstones ────────────────────────────────────────────────
   { title: "Soulstones · Caster",               iconSlug: "spell_shadow_soulgem",                  eligibility: { classes: ["Warlock"] } },
-  { title: "Soulstones · Targets",              iconSlug: "spell_shadow_soulgem" },
+  { title: "Soulstones · Targets",              iconSlug: "spell_shadow_soulgem",                  fixedSlots: 5 },
 
-  // ── Druid utility ─────────────────────────────────────────────────────
-  { title: "Innervate · Pair 1",                iconSlug: "spell_nature_lightning",                eligibility: { classes: ["Druid"] } },
-  { title: "Innervate · Pair 2",                iconSlug: "spell_nature_lightning",                eligibility: { classes: ["Druid"] } },
+  // ── Druid → Mage pairs (Innervate) ────────────────────────────────────
+  // Fixed-slot pairs: slot 0 = Druid caster, slot 1 = Mage target.
+  { title: "Innervate · Pair 1",                iconSlug: "spell_nature_lightning",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
+  { title: "Innervate · Pair 2",                iconSlug: "spell_nature_lightning",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
 
   // ── Shaman utility ────────────────────────────────────────────────────
   { title: "Earth Shield · MT",                 iconSlug: "spell_nature_skinofearth",              eligibility: { classes: ["Shaman"] } },
   { title: "Earth Shield · OT",                 iconSlug: "spell_nature_skinofearth",              eligibility: { classes: ["Shaman"] } },
 
-  // ── Paladin save / protection ─────────────────────────────────────────
-  // Eligibility omitted — admin picks the protection TARGET (typically
-  // a warlock about to soulfire, or a healer about to die).
-  { title: "Blessing of Protection · Target 1", iconSlug: "spell_holy_sealofprotection" },
-  { title: "Blessing of Protection · Target 2", iconSlug: "spell_holy_sealofprotection" },
+  // ── Paladin save (Blessing of Protection — Paladin + Warlock pair) ────
+  // Fixed-slot pairs: slot 0 = Paladin caster, slot 1 = Warlock target
+  // (typically a lock about to soulfire / Wretched Doom soak).
+  { title: "Blessing of Protection · Pair 1",   iconSlug: "spell_holy_sealofprotection",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Paladin"] }, { classes: ["Warlock"] }] },
+  { title: "Blessing of Protection · Pair 2",   iconSlug: "spell_holy_sealofprotection",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Paladin"] }, { classes: ["Warlock"] }] },
 
   // ── Greater Blessings (per blessing type) ─────────────────────────────
   // Each row lists the TARGETS receiving that blessing.
@@ -198,9 +221,9 @@ export const BUFF_TOOLTIPS: Record<string, string> = {
   "Arcane Brilliance":     "Mage raid buff — intellect to a class group.",
   "Gift of the Wild":      "Druid raid buff — all stats to a class group.",
   "Soulstones":            "Warlock pre-cast on a healer for emergency rez. List the caster + the rez priority order.",
-  "Innervate":             "Resto druid restores mana to a target — usually a mage early or a healer in long fights.",
+  "Innervate":             "Resto druid restores mana on a target — typically a mage. Slot 1 is the druid, slot 2 is the mage.",
   "Earth Shield":          "Resto shaman buff on the main tank. Heals when struck.",
-  "Blessing of Protection": "Paladin bubbles a target — usually a warlock — to drop aggro or clear bad physical debuffs.",
+  "Blessing of Protection": "Paladin bubbles a warlock about to soulfire / soak a Wretched Doom. Slot 1 paladin, slot 2 warlock.",
   "Greater Blessings":     "Paladin raid buffs by spec. Kings for tanks, Might for melee, Wisdom for casters/healers, Salvation for DPS.",
   "Paladin Seals":         "On-boss seals from paladins. Crusader for melee haste, Wisdom for mana return on hits, Light for incidental healing.",
 };
@@ -211,6 +234,8 @@ export function defaultBuffs(): AssignSection[] {
     title: b.title,
     iconSlug: b.iconSlug,
     eligibility: b.eligibility,
+    slotEligibility: b.slotEligibility,
+    fixedSlots: b.fixedSlots,
     targetSlots: b.targetSlots,
     characterIds: [],
   }));
@@ -508,7 +533,27 @@ export function suggestFillSections(sections: AssignSection[], roster: EligibleC
   for (const s of sections) for (const id of s.characterIds) used.add(id);
 
   return sections.map(s => {
-    if (s.characterIds.length > 0 || !s.eligibility) return s;
+    if (s.characterIds.length > 0) return s;
+    // Fixed-slot sections with per-slot eligibility: fill each slot
+    // independently with the first matching unused character.
+    if (s.slotEligibility?.length) {
+      const picks: number[] = [];
+      for (const elig of s.slotEligibility) {
+        if (!elig) { picks.push(0); continue; }
+        const pick = roster.find(c => matchesEligibility(c, elig) && !used.has(c.id));
+        if (pick) {
+          picks.push(pick.id);
+          used.add(pick.id);
+        } else {
+          picks.push(0);
+        }
+      }
+      // Trim trailing zero so the array doesn't carry empty pre-allocations.
+      while (picks.length > 0 && picks[picks.length - 1] === 0) picks.pop();
+      if (picks.length === 0) return s;
+      return { ...s, characterIds: picks };
+    }
+    if (!s.eligibility) return s;
     const target = s.targetSlots ?? 1;
     const eligible = roster.filter(c => matchesEligibility(c, s.eligibility) && !used.has(c.id));
     if (eligible.length === 0) return s;

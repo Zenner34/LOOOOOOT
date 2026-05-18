@@ -17,6 +17,7 @@ import {
 import { Plus, Sparkles, X } from "@/app/components/ui/Icon";
 import { CharacterChip, EmptySlot, type AssignableCharacter } from "./CharacterChip";
 import { CharacterPicker } from "./CharacterPicker";
+import { EditOnly, useViewMode } from "./ViewModeContext";
 
 const BOSS_INFO = Object.fromEntries(ASSIGNMENT_BOSSES.map(b => [b.slug, b])) as Record<BossSlug, (typeof ASSIGNMENT_BOSSES)[number]>;
 
@@ -134,23 +135,25 @@ export function BossCard({
             <span className="text-[10px] uppercase tracking-[0.18em] text-slate-400">
               {meta.raidShort === "SSC" ? "Serpentshrine Cavern" : "Tempest Keep — The Eye"}
             </span>
-            <button
-              type="button"
-              onClick={suggestFills}
-              disabled={teamRosterIds.length === 0}
-              className="inline-flex items-center gap-1 text-[11px] text-amber-300 hover:text-amber-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
-              title="Auto-fill empty sections from team roster roles"
-            >
-              <Sparkles size={11} aria-hidden /> Suggest
-            </button>
-            <button
-              type="button"
-              onClick={resetBoss}
-              className="text-[11px] text-neutral-500 hover:text-vermillion-200 transition whitespace-nowrap"
-              title="Restore canonical sections for this boss"
-            >
-              Reset
-            </button>
+            <EditOnly>
+              <button
+                type="button"
+                onClick={suggestFills}
+                disabled={teamRosterIds.length === 0}
+                className="inline-flex items-center gap-1 text-[11px] text-amber-300 hover:text-amber-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                title="Auto-fill empty sections from team roster roles"
+              >
+                <Sparkles size={11} aria-hidden /> Suggest
+              </button>
+              <button
+                type="button"
+                onClick={resetBoss}
+                className="text-[11px] text-neutral-500 hover:text-vermillion-200 transition whitespace-nowrap"
+                title="Restore canonical sections for this boss"
+              >
+                Reset
+              </button>
+            </EditOnly>
           </div>
         </div>
 
@@ -238,13 +241,15 @@ export function BossCard({
                     ))}
                   </div>
                 )}
-                <button
-                  type="button"
-                  onClick={addSection}
-                  className="mt-2 inline-flex items-center gap-1 text-xs text-vermillion-300 hover:text-vermillion-200 transition"
-                >
-                  <Plus size={12} aria-hidden /> Add section
-                </button>
+                <EditOnly>
+                  <button
+                    type="button"
+                    onClick={addSection}
+                    className="mt-2 inline-flex items-center gap-1 text-xs text-vermillion-300 hover:text-vermillion-200 transition"
+                  >
+                    <Plus size={12} aria-hidden /> Add section
+                  </button>
+                </EditOnly>
               </div>
 
               {/* Platform art panel */}
@@ -321,11 +326,12 @@ function AssignBox({
   }
 
   const excludeIds = useMemo(() => new Set(section.characterIds), [section.characterIds]);
+  const { readOnly } = useViewMode();
 
   return (
     <div className="group/box flex flex-col gap-px">
       {/* Header */}
-      {editingTitle ? (
+      {editingTitle && !readOnly ? (
         <input
           autoFocus
           value={titleDraft}
@@ -343,21 +349,23 @@ function AssignBox({
         <div className="relative">
           <button
             type="button"
-            onClick={() => { setTitleDraft(section.title); setEditingTitle(true); }}
-            className="w-full text-[11px] font-bold uppercase tracking-wider text-white text-center bg-[#1e3a5f] hover:bg-[#234876] transition border border-[#2c5494] px-2 py-1 truncate"
-            title="Click to rename"
+            onClick={() => { if (readOnly) return; setTitleDraft(section.title); setEditingTitle(true); }}
+            className={`w-full text-[11px] font-bold uppercase tracking-wider text-white text-center bg-[#1e3a5f] border border-[#2c5494] px-2 py-1 truncate ${readOnly ? "cursor-default" : "hover:bg-[#234876] transition"}`}
+            title={readOnly ? undefined : "Click to rename"}
             style={{ letterSpacing: "0.02em", textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
           >
             {section.title}
           </button>
-          <button
-            type="button"
-            onClick={onDelete}
-            className="absolute top-1/2 -translate-y-1/2 right-1 opacity-0 group-hover/box:opacity-100 transition text-white/70 hover:text-rose-300 p-0.5"
-            aria-label={`Delete section ${section.title}`}
-          >
-            <X size={10} aria-hidden />
-          </button>
+          {!readOnly && (
+            <button
+              type="button"
+              onClick={onDelete}
+              className="absolute top-1/2 -translate-y-1/2 right-1 opacity-0 group-hover/box:opacity-100 transition text-white/70 hover:text-rose-300 p-0.5"
+              aria-label={`Delete section ${section.title}`}
+            >
+              <X size={10} aria-hidden />
+            </button>
+          )}
         </div>
       )}
 
