@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   defaultTankAssignments,
+  tankMarkerIconUrl,
   tankMarkerLabel,
   type AssignmentData,
   type TankAssignment,
@@ -10,8 +11,6 @@ import {
 import { X } from "@/app/components/ui/Icon";
 import { CharacterChip, EmptySlot, type AssignableCharacter } from "./CharacterChip";
 import { CharacterPicker } from "./CharacterPicker";
-
-const ICON_BASE = "https://wow.zamimg.com/images/wow/icons/large/";
 
 const TANK_ELIG = { roles: ["tank"] as const } as any;
 const HEAL_ELIG = { roles: ["heal"] as const } as any;
@@ -126,16 +125,17 @@ function TankRow({
 
   return (
     <div className="grid grid-cols-[28px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-px items-stretch">
-      {/* Marker icon */}
+      {/* Marker icon — wikia raid-marker glyph */}
       <div className="flex items-center justify-center bg-[#1a1a1a] border border-black">
         <img
-          src={`${ICON_BASE}${row.iconSlug}.jpg`}
+          src={tankMarkerIconUrl(row.marker)}
           alt={tankMarkerLabel(row.marker)}
           title={tankMarkerLabel(row.marker)}
-          width={22}
-          height={22}
+          width={18}
+          height={18}
           loading="lazy"
-          className="rounded-sm"
+          className="pixelated"
+          style={{ imageRendering: "pixelated" }}
           onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
         />
       </div>

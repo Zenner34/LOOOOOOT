@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
+  BUFF_TOOLTIPS,
   defaultBuffs,
   newSectionId,
   suggestFillSections,
@@ -10,6 +11,7 @@ import {
   type AssignmentData,
 } from "@/lib/assignments";
 import { Plus, Sparkles, X } from "@/app/components/ui/Icon";
+import { Tooltip } from "@/app/components/ui/Tooltip";
 import { CharacterChip, EmptySlot, type AssignableCharacter } from "./CharacterChip";
 import { CharacterPicker } from "./CharacterPicker";
 
@@ -183,26 +185,38 @@ function BuffGroup({
   onAddSibling: () => void;
 }) {
   const iconSrc = iconSlug ? `${ICON_BASE}${iconSlug}.jpg` : null;
+  const tooltipText = BUFF_TOOLTIPS[heading];
+  const headerRow = (
+    <div className="flex items-center gap-2 cursor-help">
+      {iconSrc ? (
+        <img
+          src={iconSrc}
+          alt=""
+          width={22}
+          height={22}
+          className="border border-[#2e3a55] rounded-sm flex-shrink-0"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
+        />
+      ) : (
+        <span className="w-[22px] h-[22px] border border-dashed border-white/15 rounded-sm flex-shrink-0" aria-hidden />
+      )}
+      <span className="text-[11px] uppercase tracking-wider text-slate-300 truncate flex-1">{heading}</span>
+    </div>
+  );
   return (
     <div className="group/block flex flex-col gap-1 rounded-md border border-white/10 bg-black/15 p-2">
-      <div className="flex items-center gap-2">
-        {iconSrc ? (
-          <img
-            src={iconSrc}
-            alt=""
-            width={22}
-            height={22}
-            className="border border-[#2e3a55] rounded-sm flex-shrink-0"
-            onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
-          />
-        ) : (
-          <span className="w-[22px] h-[22px] border border-dashed border-white/15 rounded-sm flex-shrink-0" aria-hidden />
-        )}
-        <span className="text-[11px] uppercase tracking-wider text-slate-300 truncate flex-1">{heading}</span>
+      <div className="flex items-center gap-1">
+        <div className="flex-1 min-w-0">
+          {tooltipText ? (
+            <Tooltip content={tooltipText} side="top">
+              {headerRow}
+            </Tooltip>
+          ) : headerRow}
+        </div>
         <button
           type="button"
           onClick={onAddSibling}
-          className="opacity-0 group-hover/block:opacity-100 transition text-neutral-500 hover:text-vermillion-200 px-1 -mr-1"
+          className="opacity-0 group-hover/block:opacity-100 transition text-neutral-500 hover:text-vermillion-200 px-1 -mr-1 flex-shrink-0"
           aria-label={`Add row to ${heading}`}
           title={`Add another row to ${heading} (e.g. split G1-3 / G4-5)`}
         >

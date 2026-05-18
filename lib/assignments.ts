@@ -87,8 +87,10 @@ export type AssignmentData = {
 export type TankAssignment = {
   id: string;
   marker: TankMarker;
-  /** Wowhead icon slug for the marker. */
-  iconSlug: string;
+  /** Wowhead icon slug — kept for backwards compat with sheets created
+   *  before the wikia raid-marker icons landed. The TankHealersCard now
+   *  renders the wikia URL from TANK_MARKERS, ignoring this field. */
+  iconSlug?: string;
   /** Tank character id, or null when unfilled. */
   tankId: number | null;
   /** Healer character ids, in priority order. */
@@ -97,20 +99,24 @@ export type TankAssignment = {
 
 export type TankMarker = "skull" | "cross" | "square" | "moon" | "triangle" | "diamond";
 
-const TANK_MARKERS: Array<{ marker: TankMarker; iconSlug: string; label: string }> = [
-  { marker: "skull",    iconSlug: "inv_misc_head_skeleton_01",     label: "Skull" },
-  { marker: "cross",    iconSlug: "spell_shadow_demonicfortitude", label: "Cross" },
-  { marker: "square",   iconSlug: "inv_jewelcrafting_starofelune_01", label: "Square" },
-  { marker: "moon",     iconSlug: "spell_arcane_starfire",         label: "Moon" },
-  { marker: "triangle", iconSlug: "inv_misc_gem_emerald_02",       label: "Triangle" },
-  { marker: "diamond",  iconSlug: "inv_misc_gem_amethyst_02",      label: "Diamond" },
+/**
+ * The six raid markers we render in the Tanks & Tank Healers panel,
+ * in conventional kill-priority order. Icons sourced from the wowwiki
+ * wikia CDN — the official in-game raid-marker glyphs.
+ */
+const TANK_MARKERS: Array<{ marker: TankMarker; iconUrl: string; label: string }> = [
+  { marker: "skull",    iconUrl: "https://static.wikia.nocookie.net/wowwiki/images/7/73/IconSmall_RaidSkull.png/revision/latest?cb=20071030174221",    label: "Skull" },
+  { marker: "cross",    iconUrl: "https://static.wikia.nocookie.net/wowwiki/images/e/e0/IconSmall_RaidCross.png/revision/latest?cb=20071030173844",    label: "Cross" },
+  { marker: "square",   iconUrl: "https://static.wikia.nocookie.net/wowwiki/images/d/df/IconSmall_RaidSquare.png/revision/latest?cb=20071030174116",   label: "Square" },
+  { marker: "moon",     iconUrl: "https://static.wikia.nocookie.net/wowwiki/images/5/5e/IconSmall_RaidMoon.png/revision/latest?cb=20071030173751",     label: "Moon" },
+  { marker: "triangle", iconUrl: "https://static.wikia.nocookie.net/wowwiki/images/8/86/IconSmall_RaidTriangle.png/revision/latest?cb=20071030173731", label: "Triangle" },
+  { marker: "diamond",  iconUrl: "https://static.wikia.nocookie.net/wowwiki/images/2/2f/IconSmall_RaidDiamond.png/revision/latest?cb=20071030173555",  label: "Diamond" },
 ];
 
 export function defaultTankAssignments(): TankAssignment[] {
   return TANK_MARKERS.map(m => ({
     id: newSectionId(),
     marker: m.marker,
-    iconSlug: m.iconSlug,
     tankId: null,
     healerIds: [],
   }));
@@ -118,6 +124,10 @@ export function defaultTankAssignments(): TankAssignment[] {
 
 export function tankMarkerLabel(m: TankMarker): string {
   return TANK_MARKERS.find(x => x.marker === m)?.label ?? m;
+}
+
+export function tankMarkerIconUrl(m: TankMarker): string {
+  return TANK_MARKERS.find(x => x.marker === m)?.iconUrl ?? "";
 }
 
 export function emptyAssignmentData(): AssignmentData {
@@ -141,53 +151,59 @@ export function emptyAssignmentData(): AssignmentData {
 type BuffTpl = { title: string; iconSlug: string; eligibility?: Eligibility; targetSlots?: number };
 
 const BUFF_TEMPLATE: BuffTpl[] = [
-  // ── Raid-wide buffs (one caster per class group) ───────────────────────
+  // ── Raid-wide buffs (one per class group) ─────────────────────────────
   { title: "Prayer of Fortitude · G1-5",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] }, targetSlots: 3 },
-  { title: "Gift of the Wild · G1-5",           iconSlug: "spell_nature_regeneration",             eligibility: { classes: ["Druid"] } },
   { title: "Arcane Brilliance · G1-5",          iconSlug: "spell_holy_arcaneintellect",            eligibility: { classes: ["Mage"] } },
+  { title: "Gift of the Wild · G1-5",           iconSlug: "spell_nature_regeneration",             eligibility: { classes: ["Druid"] } },
 
-  // ── Power Infusion (Priest, per-group split) ──────────────────────────
-  { title: "Power Infusion · G1-3",             iconSlug: "spell_holy_powerinfusion",              eligibility: { classes: ["Priest"] } },
-  { title: "Power Infusion · G4-5",             iconSlug: "spell_holy_powerinfusion",              eligibility: { classes: ["Priest"] } },
-
-  // ── Greater Blessings (Paladin, one row per blessing type, one block) ──
-  // Eligibility intentionally omitted — admin lists the TARGETS, not the
-  // paladin caster, and target eligibility varies by blessing.
-  { title: "Greater Blessings · Kings",         iconSlug: "spell_magic_greaterblessingofkings" },
-  { title: "Greater Blessings · Might",         iconSlug: "spell_holy_greaterblessingofkings" },
-  { title: "Greater Blessings · Wisdom",        iconSlug: "spell_holy_greaterblessingofwisdom" },
-  { title: "Greater Blessings · Salvation",     iconSlug: "spell_holy_greaterblessingofsalvation" },
-  { title: "Greater Blessings · Sanctuary",     iconSlug: "spell_holy_greaterblessingofsanctuary" },
+  // ── Warlock soulstones ────────────────────────────────────────────────
+  { title: "Soulstones · Caster",               iconSlug: "spell_shadow_soulgem",                  eligibility: { classes: ["Warlock"] } },
+  { title: "Soulstones · Targets",              iconSlug: "spell_shadow_soulgem" },
 
   // ── Druid utility ─────────────────────────────────────────────────────
   { title: "Innervate · Pair 1",                iconSlug: "spell_nature_lightning",                eligibility: { classes: ["Druid"] } },
   { title: "Innervate · Pair 2",                iconSlug: "spell_nature_lightning",                eligibility: { classes: ["Druid"] } },
-  { title: "Tranquility",                       iconSlug: "spell_nature_tranquility",              eligibility: { classes: ["Druid"] }, targetSlots: 5 },
 
-  // ── Warrior shout ─────────────────────────────────────────────────────
-  { title: "Battle Shout · Melee",              iconSlug: "ability_warrior_battleshout",           eligibility: { classes: ["Warrior"] } },
+  // ── Shaman utility ────────────────────────────────────────────────────
+  { title: "Earth Shield · MT",                 iconSlug: "spell_nature_skinofearth",              eligibility: { classes: ["Shaman"] } },
+  { title: "Earth Shield · OT",                 iconSlug: "spell_nature_skinofearth",              eligibility: { classes: ["Shaman"] } },
 
-  // ── Warlock utility ───────────────────────────────────────────────────
-  { title: "Soulstones · Caster",               iconSlug: "spell_shadow_soulgem",                  eligibility: { classes: ["Warlock"] } },
-  { title: "Soulstones · Targets",              iconSlug: "spell_shadow_soulgem" },
-  { title: "Affliction Warlock (Debuffs)",      iconSlug: "spell_shadow_curseofachimonde",         eligibility: { classes: ["Warlock"] } },
+  // ── Paladin save / protection ─────────────────────────────────────────
+  // Eligibility omitted — admin picks the protection TARGET (typically
+  // a warlock about to soulfire, or a healer about to die).
+  { title: "Blessing of Protection · Target 1", iconSlug: "spell_holy_sealofprotection" },
+  { title: "Blessing of Protection · Target 2", iconSlug: "spell_holy_sealofprotection" },
 
-  // ── Hunter pull utility ───────────────────────────────────────────────
-  { title: "Misdirection · Pull",               iconSlug: "ability_hunter_misdirection",           eligibility: { classes: ["Hunter"] } },
+  // ── Greater Blessings (per blessing type) ─────────────────────────────
+  // Each row lists the TARGETS receiving that blessing.
+  { title: "Greater Blessings · Kings",         iconSlug: "spell_magic_greaterblessingofkings" },
+  { title: "Greater Blessings · Might",         iconSlug: "spell_holy_greaterblessingofkings" },
+  { title: "Greater Blessings · Wisdom",        iconSlug: "spell_holy_greaterblessingofwisdom" },
+  { title: "Greater Blessings · Salvation",     iconSlug: "spell_holy_greaterblessingofsalvation" },
 
-  // ── Curses (Warlock, one block) ───────────────────────────────────────
-  { title: "Curses · Recklessness",             iconSlug: "spell_shadow_unholystrength",           eligibility: { classes: ["Warlock"] } },
-  { title: "Curses · Elements",                 iconSlug: "spell_shadow_chilltouch",               eligibility: { classes: ["Warlock"] } },
-
-  // ── Faerie Fire (Druid / Hunter, one block) ───────────────────────────
-  { title: "Faerie Fire · #1",                  iconSlug: "spell_nature_faeriefire",               eligibility: { classes: ["Druid", "Hunter"] } },
-  { title: "Faerie Fire · #2",                  iconSlug: "spell_nature_faeriefire",               eligibility: { classes: ["Druid", "Hunter"] } },
-
-  // ── Sunder Armor (Warrior, one block) ─────────────────────────────────
-  { title: "Sunder Armor · #1",                 iconSlug: "ability_warrior_sunder",                eligibility: { classes: ["Warrior"] } },
-  { title: "Sunder Armor · #2",                 iconSlug: "ability_warrior_sunder",                eligibility: { classes: ["Warrior"] } },
-  { title: "Sunder Armor · #3",                 iconSlug: "ability_warrior_sunder",                eligibility: { classes: ["Warrior"] } },
+  // ── Paladin seals (on the boss) ───────────────────────────────────────
+  { title: "Paladin Seals · Crusader",          iconSlug: "spell_holy_holysmite",                  eligibility: { classes: ["Paladin"] } },
+  { title: "Paladin Seals · Wisdom",            iconSlug: "spell_holy_righteousnessaura",          eligibility: { classes: ["Paladin"] } },
+  { title: "Paladin Seals · Light",             iconSlug: "spell_holy_healingaura",                eligibility: { classes: ["Paladin"] } },
 ];
+
+/**
+ * Per-category tooltip descriptions. Surface as a hover-tooltip on the
+ * block header. Categories are matched on the prefix-before-"·" (or the
+ * whole title if there's no separator); admin-renamed categories just
+ * lose the tooltip.
+ */
+export const BUFF_TOOLTIPS: Record<string, string> = {
+  "Prayer of Fortitude":   "Priest raid buff — stamina to a class group.",
+  "Arcane Brilliance":     "Mage raid buff — intellect to a class group.",
+  "Gift of the Wild":      "Druid raid buff — all stats to a class group.",
+  "Soulstones":            "Warlock pre-cast on a healer for emergency rez. List the caster + the rez priority order.",
+  "Innervate":             "Resto druid restores mana to a target — usually a mage early or a healer in long fights.",
+  "Earth Shield":          "Resto shaman buff on the main tank. Heals when struck.",
+  "Blessing of Protection": "Paladin bubbles a target — usually a warlock — to drop aggro or clear bad physical debuffs.",
+  "Greater Blessings":     "Paladin raid buffs by spec. Kings for tanks, Might for melee, Wisdom for casters/healers, Salvation for DPS.",
+  "Paladin Seals":         "On-boss seals from paladins. Crusader for melee haste, Wisdom for mana return on hits, Light for incidental healing.",
+};
 
 export function defaultBuffs(): AssignSection[] {
   return BUFF_TEMPLATE.map(b => ({
