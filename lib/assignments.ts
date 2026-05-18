@@ -176,8 +176,8 @@ type BuffTpl = {
 const BUFF_TEMPLATE: BuffTpl[] = [
   // ═══ LEFT COLUMN — raid-wide one-per-class-group buffs ════════════════
   { title: "Prayer of Fortitude · G1-5",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] }, targetSlots: 3, fixedSlots: 3 },
-  { title: "Gift of the Wild · G1-5",           iconSlug: "spell_nature_regeneration",             eligibility: { classes: ["Druid"] } },
-  { title: "Arcane Brilliance · G1-5",          iconSlug: "spell_holy_arcaneintellect",            eligibility: { classes: ["Mage"] } },
+  { title: "Gift of the Wild · G1-5",           iconSlug: "spell_nature_regeneration",             eligibility: { classes: ["Druid"] }, fixedSlots: 1 },
+  { title: "Arcane Brilliance · G1-5",          iconSlug: "spell_holy_arcaneintellect",            eligibility: { classes: ["Mage"] }, fixedSlots: 1 },
 
   // ═══ MIDDLE COLUMN — all Paladin assignments ═════════════════════════
   // Each row uses rowIconSlug so the row label is the spell icon
@@ -202,9 +202,9 @@ const BUFF_TEMPLATE: BuffTpl[] = [
     fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
   { title: "Innervate · Pair 2",                iconSlug: "spell_nature_lightning",
     fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
-  { title: "Earth Shield · MT",                 iconSlug: "spell_nature_skinofearth",              eligibility: { classes: ["Shaman"] } },
-  { title: "Earth Shield · OT",                 iconSlug: "spell_nature_skinofearth",              eligibility: { classes: ["Shaman"] } },
-  { title: "Soulstones · Caster",               iconSlug: "spell_shadow_soulgem",                  eligibility: { classes: ["Warlock"] } },
+  { title: "Earth Shield · MT",                 iconSlug: "spell_nature_skinofearth",              eligibility: { classes: ["Shaman"] }, fixedSlots: 1 },
+  { title: "Earth Shield · OT",                 iconSlug: "spell_nature_skinofearth",              eligibility: { classes: ["Shaman"] }, fixedSlots: 1 },
+  { title: "Soulstones · Caster",               iconSlug: "spell_shadow_soulgem",                  eligibility: { classes: ["Warlock"] }, fixedSlots: 1 },
   { title: "Soulstones · Targets",              iconSlug: "spell_shadow_soulgem",                  fixedSlots: 5 },
 
   // ── Warlock curses — single block, icon-as-row-label, 1 warlock per ──
