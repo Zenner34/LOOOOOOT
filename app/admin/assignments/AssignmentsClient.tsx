@@ -16,6 +16,7 @@ import { EmptyState } from "@/app/components/ui/EmptyState";
 import { ChevronDown, Inbox, Plus, X } from "@/app/components/ui/Icon";
 import { CharacterChip, EmptySlot, type AssignableCharacter } from "./CharacterChip";
 import { CharacterPicker } from "./CharacterPicker";
+import { BuffsCard } from "./BuffsCard";
 
 type Team = {
   id: number;
@@ -202,6 +203,13 @@ export default function AssignmentsClient({
             charsById={charsById}
           />
           <RoleTallies roleCounts={roleCounts} />
+          <BuffsCard
+            data={data}
+            setData={setData}
+            characters={characters}
+            teamRosterIds={teamRosterIds}
+            charsById={charsById}
+          />
         </>
       )}
 

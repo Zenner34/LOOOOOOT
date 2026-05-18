@@ -31,6 +31,8 @@ export type AssignSection = {
   id: string;
   /** Display title. Admin-editable. */
   title: string;
+  /** Optional Wowhead icon slug (e.g. "spell_holy_powerinfusion") for the chip icon. */
+  iconSlug?: string;
   /** Character ids assigned to this section, in display order. */
   characterIds: number[];
 };
@@ -53,9 +55,48 @@ export type AssignmentData = {
 export function emptyAssignmentData(): AssignmentData {
   return {
     groups: { "1": [], "2": [], "3": [], "4": [], "5": [] },
-    buffs: [],
+    buffs: defaultBuffs(),
     bosses: {},
   };
+}
+
+/**
+ * Canonical buff / dispel sections, applied when a new AssignmentSheet
+ * is seeded. Each section starts empty (no character ids) and the admin
+ * fills it via the picker. Admin can rename, delete, add — these are
+ * defaults, not constraints.
+ *
+ * The order roughly matches the source spreadsheet: raid-wide buffs
+ * first, then druid utility, then warlock, then physical-DPS debuffs.
+ */
+const BUFF_TEMPLATE: Array<{ title: string; iconSlug: string }> = [
+  { title: "Power Infusion · G1-3",         iconSlug: "spell_holy_powerinfusion" },
+  { title: "Power Infusion · G4-5",         iconSlug: "spell_holy_powerinfusion" },
+  { title: "Prayer of Fortitude · G1-5",    iconSlug: "spell_holy_prayeroffortitude" },
+  { title: "Greater Blessing · Pair 1",     iconSlug: "spell_magic_greaterblessingofkings" },
+  { title: "Greater Blessing · Pair 2",     iconSlug: "spell_magic_greaterblessingofkings" },
+  { title: "Greater Blessing · Pair 3",     iconSlug: "spell_magic_greaterblessingofkings" },
+  { title: "Innervate · Pair 1",            iconSlug: "spell_nature_lightning" },
+  { title: "Innervate · Pair 2",            iconSlug: "spell_nature_lightning" },
+  { title: "Tranquility",                   iconSlug: "spell_nature_tranquility" },
+  { title: "Soulstone Order",               iconSlug: "spell_shadow_soulgem" },
+  { title: "Affliction Warlock (Debuffs)",  iconSlug: "spell_shadow_curseofachimonde" },
+  { title: "Curse of Recklessness",         iconSlug: "spell_shadow_unholystrength" },
+  { title: "Curse of the Elements",         iconSlug: "spell_shadow_chilltouch" },
+  { title: "Faerie Fire · #1",              iconSlug: "spell_nature_faeriefire" },
+  { title: "Faerie Fire · #2",              iconSlug: "spell_nature_faeriefire" },
+  { title: "Sunder Armor · #1",             iconSlug: "ability_warrior_sunder" },
+  { title: "Sunder Armor · #2",             iconSlug: "ability_warrior_sunder" },
+  { title: "Sunder Armor · #3",             iconSlug: "ability_warrior_sunder" },
+];
+
+export function defaultBuffs(): AssignSection[] {
+  return BUFF_TEMPLATE.map(b => ({
+    id: newSectionId(),
+    title: b.title,
+    iconSlug: b.iconSlug,
+    characterIds: [],
+  }));
 }
 
 /**
