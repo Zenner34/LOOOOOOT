@@ -14,12 +14,13 @@ import {
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { ChevronDown, Inbox, Plus, X } from "@/app/components/ui/Icon";
-import { ASSIGNMENT_BOSSES } from "@/lib/assignments";
+import { ASSIGNMENT_BOSSES, suggestFillSections, defaultTankAssignments } from "@/lib/assignments";
 import { CharacterChip, EmptySlot, type AssignableCharacter } from "./CharacterChip";
 import { CharacterPicker } from "./CharacterPicker";
 import { BuffsCard } from "./BuffsCard";
 import { BossCard } from "./BossCard";
 import { RosterSidebar } from "./RosterSidebar";
+import { TankHealersCard } from "./TankHealersCard";
 import { HighlightProvider, useHighlight } from "./HighlightContext";
 
 type Team = {
@@ -280,6 +281,15 @@ function AssignmentsBody({
           {/* CENTER — buffs + boss cards (col-8 on desktop) */}
           <section className="col-span-12 lg:col-span-8 space-y-4 min-w-0">
             <BuffsCard
+              data={data}
+              setData={setData}
+              characters={characters}
+              teamRosterIds={teamRosterIds}
+              teamRosterChars={teamRosterChars}
+              charsById={charsById}
+            />
+
+            <TankHealersCard
               data={data}
               setData={setData}
               characters={characters}

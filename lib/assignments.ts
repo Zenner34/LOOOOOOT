@@ -68,13 +68,59 @@ export type AssignmentData = {
   buffs: AssignSection[];
   /** Per-boss assignment sections, keyed by boss slug. */
   bosses: Partial<Record<BossSlug, BossAssignment>>;
+  /** Tanks → tank-healers mapping, marker-keyed. Optional for backwards
+   *  compatibility with sheets created before this feature. */
+  tankAssignments?: TankAssignment[];
 };
+
+/**
+ * One row in the Tanks & Tank Healers panel. Each row is keyed to a
+ * WoW raid marker (skull, cross, square, moon, triangle, diamond) and
+ * holds one tank id + up to N healer ids. Pickers are scoped by role
+ * — the tank slot only shows tanks, healer slots only show healers.
+ */
+export type TankAssignment = {
+  id: string;
+  marker: TankMarker;
+  /** Wowhead icon slug for the marker. */
+  iconSlug: string;
+  /** Tank character id, or null when unfilled. */
+  tankId: number | null;
+  /** Healer character ids, in priority order. */
+  healerIds: number[];
+};
+
+export type TankMarker = "skull" | "cross" | "square" | "moon" | "triangle" | "diamond";
+
+const TANK_MARKERS: Array<{ marker: TankMarker; iconSlug: string; label: string }> = [
+  { marker: "skull",    iconSlug: "inv_misc_head_skeleton_01",     label: "Skull" },
+  { marker: "cross",    iconSlug: "spell_shadow_demonicfortitude", label: "Cross" },
+  { marker: "square",   iconSlug: "inv_jewelcrafting_starofelune_01", label: "Square" },
+  { marker: "moon",     iconSlug: "spell_arcane_starfire",         label: "Moon" },
+  { marker: "triangle", iconSlug: "inv_misc_gem_emerald_02",       label: "Triangle" },
+  { marker: "diamond",  iconSlug: "inv_misc_gem_amethyst_02",      label: "Diamond" },
+];
+
+export function defaultTankAssignments(): TankAssignment[] {
+  return TANK_MARKERS.map(m => ({
+    id: newSectionId(),
+    marker: m.marker,
+    iconSlug: m.iconSlug,
+    tankId: null,
+    healerIds: [],
+  }));
+}
+
+export function tankMarkerLabel(m: TankMarker): string {
+  return TANK_MARKERS.find(x => x.marker === m)?.label ?? m;
+}
 
 export function emptyAssignmentData(): AssignmentData {
   return {
     groups: { "1": [], "2": [], "3": [], "4": [], "5": [] },
     buffs: defaultBuffs(),
     bosses: defaultBosses(),
+    tankAssignments: defaultTankAssignments(),
   };
 }
 
