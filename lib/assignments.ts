@@ -150,14 +150,14 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   { title: "Power Infusion · G1-3",             iconSlug: "spell_holy_powerinfusion",              eligibility: { classes: ["Priest"] } },
   { title: "Power Infusion · G4-5",             iconSlug: "spell_holy_powerinfusion",              eligibility: { classes: ["Priest"] } },
 
-  // ── Greater Blessings (Paladin, one row per blessing type) ────────────
+  // ── Greater Blessings (Paladin, one row per blessing type, one block) ──
   // Eligibility intentionally omitted — admin lists the TARGETS, not the
   // paladin caster, and target eligibility varies by blessing.
-  { title: "Greater Blessing of Kings",         iconSlug: "spell_magic_greaterblessingofkings" },
-  { title: "Greater Blessing of Might",         iconSlug: "spell_holy_greaterblessingofkings" },
-  { title: "Greater Blessing of Wisdom",        iconSlug: "spell_holy_greaterblessingofwisdom" },
-  { title: "Greater Blessing of Salvation",     iconSlug: "spell_holy_greaterblessingofsalvation" },
-  { title: "Greater Blessing of Sanctuary",     iconSlug: "spell_holy_greaterblessingofsanctuary" },
+  { title: "Greater Blessings · Kings",         iconSlug: "spell_magic_greaterblessingofkings" },
+  { title: "Greater Blessings · Might",         iconSlug: "spell_holy_greaterblessingofkings" },
+  { title: "Greater Blessings · Wisdom",        iconSlug: "spell_holy_greaterblessingofwisdom" },
+  { title: "Greater Blessings · Salvation",     iconSlug: "spell_holy_greaterblessingofsalvation" },
+  { title: "Greater Blessings · Sanctuary",     iconSlug: "spell_holy_greaterblessingofsanctuary" },
 
   // ── Druid utility ─────────────────────────────────────────────────────
   { title: "Innervate · Pair 1",                iconSlug: "spell_nature_lightning",                eligibility: { classes: ["Druid"] } },
@@ -168,22 +168,22 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   { title: "Battle Shout · Melee",              iconSlug: "ability_warrior_battleshout",           eligibility: { classes: ["Warrior"] } },
 
   // ── Warlock utility ───────────────────────────────────────────────────
-  { title: "Soulstone Caster",                  iconSlug: "spell_shadow_soulgem",                  eligibility: { classes: ["Warlock"] } },
-  { title: "Soulstone Order · Targets",         iconSlug: "spell_shadow_soulgem" },
+  { title: "Soulstones · Caster",               iconSlug: "spell_shadow_soulgem",                  eligibility: { classes: ["Warlock"] } },
+  { title: "Soulstones · Targets",              iconSlug: "spell_shadow_soulgem" },
   { title: "Affliction Warlock (Debuffs)",      iconSlug: "spell_shadow_curseofachimonde",         eligibility: { classes: ["Warlock"] } },
 
   // ── Hunter pull utility ───────────────────────────────────────────────
   { title: "Misdirection · Pull",               iconSlug: "ability_hunter_misdirection",           eligibility: { classes: ["Hunter"] } },
 
-  // ── Boss-side debuffs (Warlock) ───────────────────────────────────────
-  { title: "Curse of Recklessness",             iconSlug: "spell_shadow_unholystrength",           eligibility: { classes: ["Warlock"] } },
-  { title: "Curse of the Elements",             iconSlug: "spell_shadow_chilltouch",               eligibility: { classes: ["Warlock"] } },
+  // ── Curses (Warlock, one block) ───────────────────────────────────────
+  { title: "Curses · Recklessness",             iconSlug: "spell_shadow_unholystrength",           eligibility: { classes: ["Warlock"] } },
+  { title: "Curses · Elements",                 iconSlug: "spell_shadow_chilltouch",               eligibility: { classes: ["Warlock"] } },
 
-  // ── Boss-side debuffs (Druid / Hunter) ────────────────────────────────
+  // ── Faerie Fire (Druid / Hunter, one block) ───────────────────────────
   { title: "Faerie Fire · #1",                  iconSlug: "spell_nature_faeriefire",               eligibility: { classes: ["Druid", "Hunter"] } },
   { title: "Faerie Fire · #2",                  iconSlug: "spell_nature_faeriefire",               eligibility: { classes: ["Druid", "Hunter"] } },
 
-  // ── Boss-side debuffs (Warrior) ───────────────────────────────────────
+  // ── Sunder Armor (Warrior, one block) ─────────────────────────────────
   { title: "Sunder Armor · #1",                 iconSlug: "ability_warrior_sunder",                eligibility: { classes: ["Warrior"] } },
   { title: "Sunder Armor · #2",                 iconSlug: "ability_warrior_sunder",                eligibility: { classes: ["Warrior"] } },
   { title: "Sunder Armor · #3",                 iconSlug: "ability_warrior_sunder",                eligibility: { classes: ["Warrior"] } },

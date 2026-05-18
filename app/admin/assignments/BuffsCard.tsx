@@ -114,7 +114,7 @@ export function BuffsCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {grouped.map(g => (
           <BuffGroup
             key={g.key}
@@ -126,6 +126,24 @@ export function BuffsCard({
             charsById={charsById}
             onPatch={patchSection}
             onDelete={deleteSection}
+            onAddSibling={() => {
+              // Insert a fresh row right after the last sibling of this
+              // category, inheriting icon + eligibility so the picker
+              // already knows who's allowed in this slot.
+              const last = g.sections[g.sections.length - 1];
+              const insertAfter = data.buffs.findIndex(s => s.id === last.id);
+              const sibling: AssignSection = {
+                id: newSectionId(),
+                title: `${g.category} · `,
+                iconSlug: last.iconSlug,
+                eligibility: last.eligibility,
+                targetSlots: last.targetSlots,
+                characterIds: [],
+              };
+              const next = [...data.buffs];
+              next.splice(insertAfter + 1, 0, sibling);
+              updateSections(next);
+            }}
           />
         ))}
       </div>
@@ -135,7 +153,7 @@ export function BuffsCard({
         onClick={addSection}
         className="mt-3 inline-flex items-center gap-1 text-xs text-vermillion-300 hover:text-vermillion-200 transition"
       >
-        <Plus size={12} aria-hidden /> Add section
+        <Plus size={12} aria-hidden /> New buff category
       </button>
     </div>
   );
@@ -152,6 +170,7 @@ function BuffGroup({
   charsById,
   onPatch,
   onDelete,
+  onAddSibling,
 }: {
   heading: string;
   iconSlug?: string;
@@ -161,10 +180,11 @@ function BuffGroup({
   charsById: Map<number, AssignableCharacter>;
   onPatch: (id: string, patch: Partial<AssignSection>) => void;
   onDelete: (id: string) => void;
+  onAddSibling: () => void;
 }) {
   const iconSrc = iconSlug ? `${ICON_BASE}${iconSlug}.jpg` : null;
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="group/block flex flex-col gap-1 rounded-md border border-white/10 bg-black/15 p-2">
       <div className="flex items-center gap-2">
         {iconSrc ? (
           <img
@@ -178,19 +198,30 @@ function BuffGroup({
         ) : (
           <span className="w-[22px] h-[22px] border border-dashed border-white/15 rounded-sm flex-shrink-0" aria-hidden />
         )}
-        <span className="text-[11px] uppercase tracking-wider text-slate-400 truncate">{heading}</span>
+        <span className="text-[11px] uppercase tracking-wider text-slate-300 truncate flex-1">{heading}</span>
+        <button
+          type="button"
+          onClick={onAddSibling}
+          className="opacity-0 group-hover/block:opacity-100 transition text-neutral-500 hover:text-vermillion-200 px-1 -mr-1"
+          aria-label={`Add row to ${heading}`}
+          title={`Add another row to ${heading} (e.g. split G1-3 / G4-5)`}
+        >
+          <Plus size={12} aria-hidden />
+        </button>
       </div>
-      {sections.map(s => (
-        <BuffRow
-          key={s.id}
-          section={s}
-          characters={characters}
-          teamRosterIds={teamRosterIds}
-          charsById={charsById}
-          onPatch={patch => onPatch(s.id, patch)}
-          onDelete={() => onDelete(s.id)}
-        />
-      ))}
+      <div className="flex flex-col gap-px">
+        {sections.map(s => (
+          <BuffRow
+            key={s.id}
+            section={s}
+            characters={characters}
+            teamRosterIds={teamRosterIds}
+            charsById={charsById}
+            onPatch={patch => onPatch(s.id, patch)}
+            onDelete={() => onDelete(s.id)}
+          />
+        ))}
+      </div>
     </div>
   );
 }
