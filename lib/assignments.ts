@@ -214,7 +214,7 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   // dedup spreads multiple warlocks across the three curses.
   { title: "Curses · Recklessness",             iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_unholystrength",   eligibility: { classes: ["Warlock"] }, fixedSlots: 1 },
   { title: "Curses · Elements",                 iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_chilltouch",        eligibility: { classes: ["Warlock"] }, fixedSlots: 1 },
-  { title: "Curses · Malediction",              iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_blackplague",       eligibility: { classes: ["Warlock"] }, fixedSlots: 1 },
+  { title: "Curses · Malediction",              iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_curseofachimonde",  eligibility: { classes: ["Warlock"] }, fixedSlots: 1 },
 ];
 
 /**
