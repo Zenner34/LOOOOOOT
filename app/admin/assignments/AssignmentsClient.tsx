@@ -147,7 +147,7 @@ export default function AssignmentsClient({
   return (
     <HighlightProvider>
       <div
-        className="-mx-4 px-4 -my-4 py-4 min-h-screen"
+        className="relative left-1/2 -translate-x-1/2 w-screen px-4 sm:px-6 -my-6 md:-my-8 py-6 md:py-8 min-h-screen"
         style={{
           backgroundImage:
             "radial-gradient(ellipse 60% 40% at 20% 0%, rgba(80, 60, 160, .08), transparent 60%), " +
@@ -155,25 +155,27 @@ export default function AssignmentsClient({
             "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(212, 175, 55, .04), transparent 60%)",
         }}
       >
-        <AssignmentsBody
-          teams={teams}
-          selectedTeam={selectedTeam}
-          selectedTeamId={selectedTeamId}
-          sheet={sheet}
-          data={data}
-          setData={setData}
-          savingState={savingState}
-          setTeam={setTeam}
-          setWeek={setWeek}
-          createOpen={createOpen}
-          setCreateOpen={setCreateOpen}
-          characters={characters}
-          charsById={charsById}
-          teamRosterIds={teamRosterIds}
-          teamRosterChars={teamRosterChars}
-          roleCounts={roleCounts}
-          router={router}
-        />
+        <div className="mx-auto max-w-[1800px]">
+          <AssignmentsBody
+            teams={teams}
+            selectedTeam={selectedTeam}
+            selectedTeamId={selectedTeamId}
+            sheet={sheet}
+            data={data}
+            setData={setData}
+            savingState={savingState}
+            setTeam={setTeam}
+            setWeek={setWeek}
+            createOpen={createOpen}
+            setCreateOpen={setCreateOpen}
+            characters={characters}
+            charsById={charsById}
+            teamRosterIds={teamRosterIds}
+            teamRosterChars={teamRosterChars}
+            roleCounts={roleCounts}
+            router={router}
+          />
+        </div>
       </div>
     </HighlightProvider>
   );
