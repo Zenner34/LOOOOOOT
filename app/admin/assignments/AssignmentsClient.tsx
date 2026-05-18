@@ -13,7 +13,7 @@ import {
 } from "@/lib/assignments";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { EmptyState } from "@/app/components/ui/EmptyState";
-import { ChevronDown, Inbox, Plus, X } from "@/app/components/ui/Icon";
+import { ChevronDown, Inbox, Pencil, Plus, X } from "@/app/components/ui/Icon";
 import { ASSIGNMENT_BOSSES, suggestFillSections, defaultTankAssignments } from "@/lib/assignments";
 import { CharacterChip, EmptySlot, type AssignableCharacter } from "./CharacterChip";
 import { CharacterPicker } from "./CharacterPicker";
@@ -63,7 +63,8 @@ export default function AssignmentsClient({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [createOpen, setCreateOpen] = useState(false);
+  // null = closed; "create" = new-team modal; { team } = editing that team
+  const [teamModal, setTeamModal] = useState<null | "create" | { team: Team }>(null);
   const [data, setData] = useState<AssignmentData>(sheet?.data ?? emptyAssignmentData());
   const [savingState, setSavingState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const charsById = useMemo(() => new Map(characters.map(c => [c.id, c])), [characters]);
@@ -166,8 +167,8 @@ export default function AssignmentsClient({
             savingState={savingState}
             setTeam={setTeam}
             setWeek={setWeek}
-            createOpen={createOpen}
-            setCreateOpen={setCreateOpen}
+            teamModal={teamModal}
+            setTeamModal={setTeamModal}
             characters={characters}
             charsById={charsById}
             teamRosterIds={teamRosterIds}
@@ -191,8 +192,8 @@ function AssignmentsBody({
   savingState,
   setTeam,
   setWeek,
-  createOpen,
-  setCreateOpen,
+  teamModal,
+  setTeamModal,
   characters,
   charsById,
   teamRosterIds,
@@ -209,8 +210,8 @@ function AssignmentsBody({
   savingState: "idle" | "saving" | "saved" | "error";
   setTeam: (id: number) => void;
   setWeek: (iso: string) => void;
-  createOpen: boolean;
-  setCreateOpen: (open: boolean) => void;
+  teamModal: null | "create" | { team: Team };
+  setTeamModal: (m: null | "create" | { team: Team }) => void;
   characters: AssignableCharacter[];
   charsById: Map<number, AssignableCharacter>;
   teamRosterIds: number[];
@@ -235,23 +236,35 @@ function AssignmentsBody({
             {teams.map(t => {
               const active = t.id === selectedTeamId;
               return (
-                <button
-                  key={t.id}
-                  onClick={() => setTeam(t.id)}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-full transition flex items-center gap-1.5 ${
-                    active
-                      ? "bg-white/10 text-white shadow-inner"
-                      : "text-neutral-300 hover:text-white hover:bg-white/[0.04]"
-                  } ${!t.active ? "opacity-50" : ""}`}
-                  title={t.active ? t.name : `${t.name} (inactive)`}
-                >
-                  <span
-                    aria-hidden
-                    className="inline-block w-2 h-2 rounded-full"
-                    style={{ background: t.color }}
-                  />
-                  {t.name}
-                </button>
+                <div key={t.id} className="group/tab relative inline-flex items-center">
+                  <button
+                    onClick={() => setTeam(t.id)}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-full transition flex items-center gap-1.5 ${
+                      active
+                        ? "bg-white/10 text-white shadow-inner pr-7"
+                        : "text-neutral-300 hover:text-white hover:bg-white/[0.04]"
+                    } ${!t.active ? "opacity-50" : ""}`}
+                    title={t.active ? t.name : `${t.name} (inactive)`}
+                  >
+                    <span
+                      aria-hidden
+                      className="inline-block w-2 h-2 rounded-full"
+                      style={{ background: t.color }}
+                    />
+                    {t.name}
+                  </button>
+                  {active && (
+                    <button
+                      type="button"
+                      onClick={() => setTeamModal({ team: t })}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-vermillion-200 transition"
+                      aria-label={`Edit ${t.name}`}
+                      title={`Edit ${t.name}`}
+                    >
+                      <Pencil size={11} aria-hidden />
+                    </button>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -259,7 +272,7 @@ function AssignmentsBody({
 
         <button
           type="button"
-          onClick={() => setCreateOpen(true)}
+          onClick={() => setTeamModal("create")}
           className="btn-ghost btn-xs inline-flex items-center gap-1"
         >
           <Plus size={12} aria-hidden /> New team
@@ -354,12 +367,20 @@ function AssignmentsBody({
         </div>
       )}
 
-      {createOpen && (
-        <CreateTeamModal
-          onClose={() => setCreateOpen(false)}
-          onCreated={(team) => {
-            setCreateOpen(false);
+      {teamModal && (
+        <TeamModal
+          existing={teamModal === "create" ? null : teamModal.team}
+          onClose={() => setTeamModal(null)}
+          onSaved={(team) => {
+            setTeamModal(null);
             setTeam(team.id);
+            router.refresh();
+          }}
+          onDeleted={(deletedId) => {
+            setTeamModal(null);
+            // After delete, route to the next active team if any.
+            const fallback = teams.find(t => t.id !== deletedId && t.active) ?? teams.find(t => t.id !== deletedId);
+            if (fallback) setTeam(fallback.id);
             router.refresh();
           }}
         />
@@ -512,16 +533,28 @@ function RoleTallies({ roleCounts }: { roleCounts: Array<{ key: string; label: s
 
 /* ──────────────────────────────────────────────────────────────────── */
 
-function CreateTeamModal({
+/**
+ * Single modal that handles both creating a raid team and editing an
+ * existing one. Pass `existing` to open in edit mode — the modal
+ * pre-fills name/color, swaps the title bar, and surfaces a Delete
+ * button alongside Save.
+ */
+function TeamModal({
+  existing,
   onClose,
-  onCreated,
+  onSaved,
+  onDeleted,
 }: {
+  existing?: Team | null;
   onClose: () => void;
-  onCreated: (team: { id: number; name: string; color: string }) => void;
+  onSaved: (team: { id: number; name: string; color: string }) => void;
+  onDeleted?: (teamId: number) => void;
 }) {
-  const [name, setName] = useState("");
-  const [color, setColor] = useState("#1e3a5f");
+  const isEdit = !!existing;
+  const [name, setName] = useState(existing?.name ?? "");
+  const [color, setColor] = useState(existing?.color ?? "#1e3a5f");
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -538,33 +571,54 @@ function CreateTeamModal({
     if (!name.trim() || saving) return;
     setSaving(true);
     try {
-      const r = await fetch("/api/raid-teams", {
-        method: "POST",
+      const url = isEdit ? `/api/raid-teams/${existing!.id}` : "/api/raid-teams";
+      const method = isEdit ? "PATCH" : "POST";
+      const r = await fetch(url, {
+        method,
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ name: name.trim(), color }),
       });
       if (!r.ok) {
         const j = await r.json().catch(() => ({}));
-        toast.error(j.error || "Couldn't create team.");
+        toast.error(j.error || (isEdit ? "Couldn't save team." : "Couldn't create team."));
         return;
       }
       const team = await r.json();
-      toast.success(`Created ${team.name}.`);
-      onCreated(team);
+      toast.success(isEdit ? `Saved ${team.name}.` : `Created ${team.name}.`);
+      onSaved(team);
     } finally {
       setSaving(false);
     }
   }
 
+  async function deleteTeam() {
+    if (!isEdit || deleting) return;
+    if (!confirm(`Delete "${existing!.name}" and every weekly assignment sheet attached to it? This can't be undone.`)) return;
+    setDeleting(true);
+    try {
+      const r = await fetch(`/api/raid-teams/${existing!.id}`, { method: "DELETE" });
+      if (!r.ok) {
+        toast.error("Couldn't delete team.");
+        return;
+      }
+      toast.success(`Deleted ${existing!.name}.`);
+      onDeleted?.(existing!.id);
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Create raid team">
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={isEdit ? "Edit raid team" : "Create raid team"}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" onClick={onClose} />
       <div className="relative h-full flex items-center justify-center p-4 pointer-events-none">
         <div className="pointer-events-auto w-full max-w-sm rounded-xl border border-white/10 bg-[var(--surface)] shadow-2xl animate-fade-in">
           <div className="px-5 py-4 border-b border-white/[0.06] flex items-start justify-between gap-3">
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-1">New team</div>
-              <div className="font-semibold">Create a raid team</div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-1">
+                {isEdit ? "Edit team" : "New team"}
+              </div>
+              <div className="font-semibold">{isEdit ? existing!.name : "Create a raid team"}</div>
             </div>
             <button type="button" onClick={onClose} className="text-neutral-500 hover:text-neutral-200 p-1 -m-1" aria-label="Close">
               <X size={16} />
@@ -599,11 +653,23 @@ function CreateTeamModal({
               </div>
             </div>
           </div>
-          <div className="px-5 py-3 border-t border-white/[0.06] flex items-center justify-end gap-2">
-            <button type="button" onClick={onClose} className="btn-ghost">Cancel</button>
-            <button type="button" onClick={submit} disabled={!name.trim() || saving} className="btn">
-              {saving ? "Creating…" : "Create team"}
-            </button>
+          <div className="px-5 py-3 border-t border-white/[0.06] flex items-center justify-between gap-2">
+            {isEdit ? (
+              <button
+                type="button"
+                onClick={deleteTeam}
+                disabled={deleting}
+                className="text-sm text-rose-300 hover:text-rose-200 disabled:opacity-30 transition"
+              >
+                {deleting ? "Deleting…" : "Delete team"}
+              </button>
+            ) : <span />}
+            <div className="flex items-center gap-2">
+              <button type="button" onClick={onClose} className="btn-ghost">Cancel</button>
+              <button type="button" onClick={submit} disabled={!name.trim() || saving} className="btn">
+                {saving ? (isEdit ? "Saving…" : "Creating…") : (isEdit ? "Save" : "Create team")}
+              </button>
+            </div>
           </div>
         </div>
       </div>
