@@ -48,8 +48,8 @@ export function CharacterChip({
   const dimmed = effectiveId !== null && effectiveId !== character.id;
 
   const bg = CLASS_COLOR[character.class] ?? "#888";
-  const isDarkBg = character.class === "Shaman" || character.class === "Warlock";
-  const fg = isDarkBg ? "#fff" : "#1a1a1a";
+  // All chips use near-black text for consistency, regardless of class.
+  const fg = "#1a1a1a";
 
   const layoutCls = inline ? "inline-flex" : "flex w-full";
   const pad = size === "sm" ? "pl-1.5 pr-2 py-1" : "pl-2 pr-2.5 py-[5px]";
