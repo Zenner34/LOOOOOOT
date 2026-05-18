@@ -204,8 +204,10 @@ const BUFF_TEMPLATE: BuffTpl[] = [
     fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
   { title: "Innervate · Pair 2",                iconSlug: "spell_nature_lightning",
     fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
-  { title: "Earth Shield · MT",                 iconSlug: "spell_nature_skinofearth",              eligibility: { classes: ["Shaman"] }, fixedSlots: 1 },
-  { title: "Earth Shield · OT",                 iconSlug: "spell_nature_skinofearth",              eligibility: { classes: ["Shaman"] }, fixedSlots: 1 },
+  { title: "Earth Shield · MT",                 iconSlug: "spell_nature_skinofearth",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Shaman"] }, { roles: ["tank"] }] },
+  { title: "Earth Shield · OT",                 iconSlug: "spell_nature_skinofearth",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Shaman"] }, { roles: ["tank"] }] },
   { title: "Soulstones · Caster",               iconSlug: "spell_shadow_soulgem",                  eligibility: { classes: ["Warlock"] }, fixedSlots: 1 },
   { title: "Soulstones · Targets",              iconSlug: "spell_shadow_soulgem",                  fixedSlots: 5 },
 
