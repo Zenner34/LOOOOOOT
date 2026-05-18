@@ -78,16 +78,16 @@ export function CharacterPicker({
       ref={ref}
       role="dialog"
       aria-label="Pick a character"
-      className="absolute z-40 mt-1 w-72 rounded-xl border border-white/10 bg-[var(--surface-2)] shadow-2xl animate-fade-in overflow-hidden"
+      className="absolute z-40 mt-1 w-80 rounded-xl border border-white/10 bg-[var(--surface-2)] shadow-2xl animate-fade-in overflow-hidden"
     >
-      <Command shouldFilter={false} className="flex flex-col max-h-[320px]">
+      <Command className="flex flex-col max-h-[320px]">
         <div className="relative p-2 border-b border-white/5">
           <Search size={12} className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" aria-hidden />
           <Command.Input
             autoFocus
             value={query}
             onValueChange={setQuery}
-            placeholder="Search by character, player, class, spec…"
+            placeholder="Search character, player, class…"
             className="input pl-7 text-xs h-8 w-full"
           />
         </div>

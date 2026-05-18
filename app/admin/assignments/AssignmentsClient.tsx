@@ -276,8 +276,8 @@ function GroupSetup({
           const slots: Array<number | null> = [...filled];
           while (slots.length < 5) slots.push(null);
           return (
-            <div key={g} className="rounded-md border border-white/10 bg-black/20 overflow-hidden">
-              <div className="bg-[#1a1a1a] text-center text-xs font-semibold text-white py-1 border-b border-black">
+            <div key={g} className="rounded-md border border-white/10 bg-black/20">
+              <div className="bg-[#1a1a1a] text-center text-xs font-semibold text-white py-1 border-b border-black rounded-t-md">
                 Group {g}
               </div>
               <div className="p-1 flex flex-col gap-px">
