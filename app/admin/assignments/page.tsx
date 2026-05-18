@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { isAdmin } from "@/lib/auth";
 import {
@@ -16,7 +15,12 @@ export default async function AssignmentsPage({
 }: {
   searchParams: { team?: string; week?: string };
 }) {
-  if (!(await isAdmin())) redirect("/login?next=/admin/assignments");
+  // Page is viewable by anyone — admins get the editor, raiders are
+  // forced into the read-only Raider view (no toggle, no edit
+  // affordances). Mutations still go through admin-gated API routes,
+  // so a raider hitting the page can't change anything even if they
+  // tried via the network tab.
+  const admin = await isAdmin();
 
   const weekOf = searchParams.week
     ? mondayOfWeek(new Date(searchParams.week))
@@ -72,6 +76,7 @@ export default async function AssignmentsPage({
         playerName: c.player?.displayName ?? null,
       }))}
       players={players.map(p => ({ id: p.id, displayName: p.displayName }))}
+      admin={admin}
     />
   );
 }

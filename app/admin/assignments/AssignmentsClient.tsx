@@ -56,12 +56,14 @@ export default function AssignmentsClient({
   sheet,
   characters,
   players,
+  admin,
 }: {
   teams: Team[];
   selectedTeamId: number | null;
   sheet: Sheet | null;
   characters: AssignableCharacter[];
   players: Array<{ id: number; displayName: string }>;
+  admin: boolean;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -83,7 +85,7 @@ export default function AssignmentsClient({
   // pick / remove, we PUT the whole blob. The UI surfaces a small
   // "Saving… / Saved" indicator.
   useEffect(() => {
-    if (!sheet) return;
+    if (!sheet || !admin) return;
     if (JSON.stringify(data) === JSON.stringify(sheet.data)) {
       setSavingState("idle");
       return;
@@ -135,12 +137,12 @@ export default function AssignmentsClient({
   // pops them into PoF G1-5 / PI G4-5 if those rows are still blank.
   const rosterKey = teamRosterIds.join(",");
   useEffect(() => {
-    if (!sheet || teamRosterChars.length === 0) return;
+    if (!sheet || !admin || teamRosterChars.length === 0) return;
     const nextBuffs = suggestFillSections(data.buffs, teamRosterChars);
     const changed = nextBuffs.some((s, i) => s.characterIds.length !== data.buffs[i].characterIds.length);
     if (changed) setData({ ...data, buffs: nextBuffs });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rosterKey]);
+  }, [rosterKey, admin]);
 
   const roleCounts = ROLES.map(r => ({
     ...r,
@@ -148,7 +150,7 @@ export default function AssignmentsClient({
   }));
 
   return (
-    <ViewModeProvider>
+    <ViewModeProvider forceReadOnly={!admin}>
     <HighlightProvider>
       <div
         className="relative left-1/2 -translate-x-1/2 w-screen px-4 sm:px-6 -my-6 md:-my-8 py-6 md:py-8 min-h-screen"
@@ -761,7 +763,9 @@ function SpotlightPicker({
  * the page were ever exposed read-only.
  */
 function ViewModeToggle() {
-  const { readOnly, setReadOnly } = useViewMode();
+  const { readOnly, setReadOnly, forced } = useViewMode();
+  // Non-admins are pinned to raider view — no toggle, no preview.
+  if (forced) return null;
   return (
     <button
       type="button"

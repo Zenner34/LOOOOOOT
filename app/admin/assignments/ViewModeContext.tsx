@@ -17,20 +17,37 @@ const STORAGE_KEY = "assignments.viewMode";
 type ViewModeCtx = {
   readOnly: boolean;
   setReadOnly: (v: boolean) => void;
+  /** True when the page can't be edited at all (non-admin viewer).
+   *  In this state setReadOnly is a no-op and the toggle is hidden. */
+  forced: boolean;
 };
 
 const Ctx = createContext<ViewModeCtx | null>(null);
 
-export function ViewModeProvider({ children }: { children: ReactNode }) {
-  const [readOnly, setReadOnlyRaw] = useState(false);
+export function ViewModeProvider({
+  forceReadOnly = false,
+  children,
+}: {
+  /** Pin readOnly true and disable the toggle. Set for non-admins. */
+  forceReadOnly?: boolean;
+  children: ReactNode;
+}) {
+  // Non-admins are pinned to read-only; admins can toggle freely with
+  // their preference persisted to localStorage.
+  const [readOnly, setReadOnlyRaw] = useState(forceReadOnly);
 
   useEffect(() => {
+    if (forceReadOnly) {
+      setReadOnlyRaw(true);
+      return;
+    }
     try {
       if (window.localStorage.getItem(STORAGE_KEY) === "raider") setReadOnlyRaw(true);
     } catch {}
-  }, []);
+  }, [forceReadOnly]);
 
   function setReadOnly(v: boolean) {
+    if (forceReadOnly) return; // pinned for non-admins
     setReadOnlyRaw(v);
     try {
       if (v) window.localStorage.setItem(STORAGE_KEY, "raider");
@@ -38,11 +55,11 @@ export function ViewModeProvider({ children }: { children: ReactNode }) {
     } catch {}
   }
 
-  return <Ctx.Provider value={{ readOnly, setReadOnly }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ readOnly, setReadOnly, forced: forceReadOnly }}>{children}</Ctx.Provider>;
 }
 
 export function useViewMode(): ViewModeCtx {
-  return useContext(Ctx) ?? { readOnly: false, setReadOnly: () => {} };
+  return useContext(Ctx) ?? { readOnly: false, setReadOnly: () => {}, forced: false };
 }
 
 /** Conditional wrapper: renders children only when NOT in read-only mode. */
