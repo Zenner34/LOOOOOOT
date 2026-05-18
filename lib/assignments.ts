@@ -88,24 +88,52 @@ export function emptyAssignmentData(): AssignmentData {
  * first, then druid utility, then warlock, then physical-DPS debuffs.
  */
 const BUFF_TEMPLATE: Array<{ title: string; iconSlug: string; eligibility?: Eligibility }> = [
-  { title: "Power Infusion · G1-3",         iconSlug: "spell_holy_powerinfusion",          eligibility: { classes: ["Priest"] } },
-  { title: "Power Infusion · G4-5",         iconSlug: "spell_holy_powerinfusion",          eligibility: { classes: ["Priest"] } },
-  { title: "Prayer of Fortitude · G1-5",    iconSlug: "spell_holy_prayeroffortitude",      eligibility: { classes: ["Priest"] } },
-  { title: "Greater Blessing · Pair 1",     iconSlug: "spell_magic_greaterblessingofkings" },
-  { title: "Greater Blessing · Pair 2",     iconSlug: "spell_magic_greaterblessingofkings" },
-  { title: "Greater Blessing · Pair 3",     iconSlug: "spell_magic_greaterblessingofkings" },
-  { title: "Innervate · Pair 1",            iconSlug: "spell_nature_lightning" },
-  { title: "Innervate · Pair 2",            iconSlug: "spell_nature_lightning" },
-  { title: "Tranquility",                   iconSlug: "spell_nature_tranquility",          eligibility: { classes: ["Druid"] } },
-  { title: "Soulstone Order",               iconSlug: "spell_shadow_soulgem" },
-  { title: "Affliction Warlock (Debuffs)",  iconSlug: "spell_shadow_curseofachimonde",     eligibility: { classes: ["Warlock"] } },
-  { title: "Curse of Recklessness",         iconSlug: "spell_shadow_unholystrength",       eligibility: { classes: ["Warlock"] } },
-  { title: "Curse of the Elements",         iconSlug: "spell_shadow_chilltouch",           eligibility: { classes: ["Warlock"] } },
-  { title: "Faerie Fire · #1",              iconSlug: "spell_nature_faeriefire",           eligibility: { classes: ["Druid", "Hunter"] } },
-  { title: "Faerie Fire · #2",              iconSlug: "spell_nature_faeriefire",           eligibility: { classes: ["Druid", "Hunter"] } },
-  { title: "Sunder Armor · #1",             iconSlug: "ability_warrior_sunder",            eligibility: { classes: ["Warrior"] } },
-  { title: "Sunder Armor · #2",             iconSlug: "ability_warrior_sunder",            eligibility: { classes: ["Warrior"] } },
-  { title: "Sunder Armor · #3",             iconSlug: "ability_warrior_sunder",            eligibility: { classes: ["Warrior"] } },
+  // ── Raid-wide buffs (one caster per class group) ───────────────────────
+  { title: "Prayer of Fortitude · G1-5",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] } },
+  { title: "Gift of the Wild · G1-5",           iconSlug: "spell_nature_regeneration",             eligibility: { classes: ["Druid"] } },
+  { title: "Arcane Brilliance · G1-5",          iconSlug: "spell_holy_arcaneintellect",            eligibility: { classes: ["Mage"] } },
+
+  // ── Power Infusion (Priest, per-group split) ──────────────────────────
+  { title: "Power Infusion · G1-3",             iconSlug: "spell_holy_powerinfusion",              eligibility: { classes: ["Priest"] } },
+  { title: "Power Infusion · G4-5",             iconSlug: "spell_holy_powerinfusion",              eligibility: { classes: ["Priest"] } },
+
+  // ── Greater Blessings (Paladin, one row per blessing type) ────────────
+  // Eligibility intentionally omitted — admin lists the TARGETS, not the
+  // paladin caster, and target eligibility varies by blessing.
+  { title: "Greater Blessing of Kings",         iconSlug: "spell_magic_greaterblessingofkings" },
+  { title: "Greater Blessing of Might",         iconSlug: "spell_holy_greaterblessingofkings" },
+  { title: "Greater Blessing of Wisdom",        iconSlug: "spell_holy_greaterblessingofwisdom" },
+  { title: "Greater Blessing of Salvation",     iconSlug: "spell_holy_greaterblessingofsalvation" },
+  { title: "Greater Blessing of Sanctuary",     iconSlug: "spell_holy_greaterblessingofsanctuary" },
+
+  // ── Druid utility ─────────────────────────────────────────────────────
+  { title: "Innervate · Pair 1",                iconSlug: "spell_nature_lightning",                eligibility: { classes: ["Druid"] } },
+  { title: "Innervate · Pair 2",                iconSlug: "spell_nature_lightning",                eligibility: { classes: ["Druid"] } },
+  { title: "Tranquility",                       iconSlug: "spell_nature_tranquility",              eligibility: { classes: ["Druid"] } },
+
+  // ── Warrior shout ─────────────────────────────────────────────────────
+  { title: "Battle Shout · Melee",              iconSlug: "ability_warrior_battleshout",           eligibility: { classes: ["Warrior"] } },
+
+  // ── Warlock utility ───────────────────────────────────────────────────
+  { title: "Soulstone Caster",                  iconSlug: "spell_shadow_soulgem",                  eligibility: { classes: ["Warlock"] } },
+  { title: "Soulstone Order · Targets",         iconSlug: "spell_shadow_soulgem" },
+  { title: "Affliction Warlock (Debuffs)",      iconSlug: "spell_shadow_curseofachimonde",         eligibility: { classes: ["Warlock"] } },
+
+  // ── Hunter pull utility ───────────────────────────────────────────────
+  { title: "Misdirection · Pull",               iconSlug: "ability_hunter_misdirection",           eligibility: { classes: ["Hunter"] } },
+
+  // ── Boss-side debuffs (Warlock) ───────────────────────────────────────
+  { title: "Curse of Recklessness",             iconSlug: "spell_shadow_unholystrength",           eligibility: { classes: ["Warlock"] } },
+  { title: "Curse of the Elements",             iconSlug: "spell_shadow_chilltouch",               eligibility: { classes: ["Warlock"] } },
+
+  // ── Boss-side debuffs (Druid / Hunter) ────────────────────────────────
+  { title: "Faerie Fire · #1",                  iconSlug: "spell_nature_faeriefire",               eligibility: { classes: ["Druid", "Hunter"] } },
+  { title: "Faerie Fire · #2",                  iconSlug: "spell_nature_faeriefire",               eligibility: { classes: ["Druid", "Hunter"] } },
+
+  // ── Boss-side debuffs (Warrior) ───────────────────────────────────────
+  { title: "Sunder Armor · #1",                 iconSlug: "ability_warrior_sunder",                eligibility: { classes: ["Warrior"] } },
+  { title: "Sunder Armor · #2",                 iconSlug: "ability_warrior_sunder",                eligibility: { classes: ["Warrior"] } },
+  { title: "Sunder Armor · #3",                 iconSlug: "ability_warrior_sunder",                eligibility: { classes: ["Warrior"] } },
 ];
 
 export function defaultBuffs(): AssignSection[] {
