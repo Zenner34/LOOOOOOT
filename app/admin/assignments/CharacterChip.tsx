@@ -1,6 +1,7 @@
 "use client";
 
 import { CLASS_COLOR } from "@/lib/specs";
+import { useHighlight } from "./HighlightContext";
 
 export type AssignableCharacter = {
   id: number;
@@ -17,22 +18,27 @@ export type AssignableCharacter = {
  * Class-coloured chip used as the universal "this character is assigned
  * here" pill. The spreadsheet aesthetic: italic name + dark text on a
  * saturated class background. Optional `onRemove` shows an × button.
+ *
+ * Reads the HighlightContext: if any character is the effective focus,
+ * matching chips ring with amber, non-matching chips desaturate to
+ * make the focused character visually pop across every section.
+ * Hovering the chip itself sets the hover focus, mouseleave clears it.
  */
 export function CharacterChip({
   character,
   onRemove,
   onClick,
   small,
-  highlighted,
-  dimmed,
 }: {
   character: AssignableCharacter;
   onRemove?: () => void;
   onClick?: () => void;
   small?: boolean;
-  highlighted?: boolean;
-  dimmed?: boolean;
 }) {
+  const { effectiveId, setHover } = useHighlight();
+  const highlighted = effectiveId === character.id;
+  const dimmed = effectiveId !== null && effectiveId !== character.id;
+
   const bg = CLASS_COLOR[character.class] ?? "#888";
   // White text only on Shaman and Warlock (the two dark backgrounds);
   // every other class uses near-black text per TBC sheet convention.
@@ -44,6 +50,10 @@ export function CharacterChip({
     <button
       type="button"
       onClick={onClick}
+      onMouseEnter={() => setHover(character.id)}
+      onMouseLeave={() => setHover(null)}
+      onFocus={() => setHover(character.id)}
+      onBlur={() => setHover(null)}
       title={`${character.name} — ${character.spec} ${character.class}${character.playerName && character.playerName !== character.name ? ` · ${character.playerName}` : ""}${character.isMain ? " (main)" : " (alt)"}`}
       className={`group inline-flex items-center gap-1.5 italic font-semibold border border-black/40 rounded-[3px] ${padding} ${text} transition-all ${
         dimmed ? "grayscale opacity-50" : ""

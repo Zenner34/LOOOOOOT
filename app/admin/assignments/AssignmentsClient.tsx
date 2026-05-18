@@ -19,6 +19,7 @@ import { CharacterChip, EmptySlot, type AssignableCharacter } from "./CharacterC
 import { CharacterPicker } from "./CharacterPicker";
 import { BuffsCard } from "./BuffsCard";
 import { BossCard } from "./BossCard";
+import { HighlightProvider, useHighlight } from "./HighlightContext";
 
 type Team = {
   id: number;
@@ -129,6 +130,68 @@ export default function AssignmentsClient({
   }));
 
   return (
+    <HighlightProvider>
+      <AssignmentsBody
+        teams={teams}
+        selectedTeam={selectedTeam}
+        selectedTeamId={selectedTeamId}
+        sheet={sheet}
+        data={data}
+        setData={setData}
+        savingState={savingState}
+        setTeam={setTeam}
+        setWeek={setWeek}
+        createOpen={createOpen}
+        setCreateOpen={setCreateOpen}
+        characters={characters}
+        charsById={charsById}
+        teamRosterIds={teamRosterIds}
+        teamRosterChars={teamRosterChars}
+        roleCounts={roleCounts}
+        router={router}
+      />
+    </HighlightProvider>
+  );
+}
+
+function AssignmentsBody({
+  teams,
+  selectedTeam,
+  selectedTeamId,
+  sheet,
+  data,
+  setData,
+  savingState,
+  setTeam,
+  setWeek,
+  createOpen,
+  setCreateOpen,
+  characters,
+  charsById,
+  teamRosterIds,
+  teamRosterChars,
+  roleCounts,
+  router,
+}: {
+  teams: Team[];
+  selectedTeam: Team | null;
+  selectedTeamId: number | null;
+  sheet: Sheet | null;
+  data: AssignmentData;
+  setData: (d: AssignmentData) => void;
+  savingState: "idle" | "saving" | "saved" | "error";
+  setTeam: (id: number) => void;
+  setWeek: (iso: string) => void;
+  createOpen: boolean;
+  setCreateOpen: (open: boolean) => void;
+  characters: AssignableCharacter[];
+  charsById: Map<number, AssignableCharacter>;
+  teamRosterIds: number[];
+  teamRosterChars: AssignableCharacter[];
+  roleCounts: Array<{ key: string; label: string; chars: AssignableCharacter[] }>;
+  router: ReturnType<typeof useRouter>;
+}) {
+  return (
     <div className="space-y-5 animate-fade-in">
       <PageHeader
         eyebrow="Admin"
@@ -175,7 +238,11 @@ export default function AssignmentsClient({
           <Plus size={12} aria-hidden /> New team
         </button>
 
-        <div className="ml-auto inline-flex items-center gap-2 text-xs">
+        <div className="ml-auto inline-flex items-center gap-2 text-xs flex-wrap justify-end">
+          <SpotlightPicker
+            characters={characters}
+            teamRosterIds={teamRosterIds}
+          />
           <label className="text-neutral-500">Week of</label>
           <input
             type="date"
@@ -482,5 +549,67 @@ function CreateTeamModal({
         </div>
       </div>
     </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────────── */
+
+/**
+ * Top-bar "Spotlight" selector. Picks a character to lock the
+ * highlight on — locked id persists across reloads via localStorage
+ * inside the HighlightProvider. Once locked, every chip elsewhere on
+ * the page lights up amber for that character and dims for the rest,
+ * giving raiders the "show me everywhere I'm assigned" view.
+ *
+ * Scoped to the team's roster so the dropdown stays manageable; the
+ * search input lets you filter further.
+ */
+function SpotlightPicker({
+  characters,
+  teamRosterIds,
+}: {
+  characters: AssignableCharacter[];
+  teamRosterIds: number[];
+}) {
+  const { lockedId, setLocked } = useHighlight();
+  const [open, setOpen] = useState(false);
+  const anchorRef = useRef<HTMLButtonElement>(null);
+  const charsById = useMemo(() => new Map(characters.map(c => [c.id, c])), [characters]);
+  const locked = lockedId != null ? charsById.get(lockedId) ?? null : null;
+
+  return (
+    <span className="relative inline-flex items-center gap-1">
+      <button
+        ref={anchorRef}
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-[var(--surface)] px-3 py-1 text-xs text-neutral-200 hover:border-white/20 hover:bg-white/[0.03] transition min-h-[28px]"
+        title="Lock a character to spotlight every assignment they appear in"
+      >
+        <span aria-hidden className="inline-block w-2 h-2 rounded-full" style={{ background: locked ? CLASS_COLOR[locked.class] ?? "#888" : "#444" }} />
+        <span className="font-medium">
+          {locked ? `Spotlight: ${locked.name}` : "Spotlight someone"}
+        </span>
+      </button>
+      {locked && (
+        <button
+          type="button"
+          onClick={() => setLocked(null)}
+          className="text-neutral-500 hover:text-vermillion-200 transition text-xs"
+          title="Clear spotlight"
+        >
+          <X size={12} aria-hidden />
+        </button>
+      )}
+      {open && (
+        <CharacterPicker
+          characters={characters}
+          scopeIds={teamRosterIds.length > 0 ? teamRosterIds : null}
+          onPick={c => { setLocked(c.id); setOpen(false); }}
+          onClose={() => setOpen(false)}
+          anchorRef={anchorRef}
+        />
+      )}
+    </span>
   );
 }
