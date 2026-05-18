@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
+  BUFF_COLUMNS,
   BUFF_TOOLTIPS,
   defaultBuffs,
   newSectionId,
@@ -120,39 +121,55 @@ export function BuffsCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {grouped.map(g => (
-          <BuffGroup
-            key={g.key}
-            heading={g.category}
-            iconSlug={g.iconSlug}
-            sections={g.sections}
-            characters={characters}
-            teamRosterIds={teamRosterIds}
-            charsById={charsById}
-            onPatch={patchSection}
-            onDelete={deleteSection}
-            onAddSibling={() => {
-              // Insert a fresh row right after the last sibling of this
-              // category, inheriting icon + eligibility so the picker
-              // already knows who's allowed in this slot.
-              const last = g.sections[g.sections.length - 1];
-              const insertAfter = data.buffs.findIndex(s => s.id === last.id);
-              const sibling: AssignSection = {
-                id: newSectionId(),
-                title: `${g.category} · `,
-                iconSlug: last.iconSlug,
-                eligibility: last.eligibility,
-                targetSlots: last.targetSlots,
-                characterIds: [],
-              };
-              const next = [...data.buffs];
-              next.splice(insertAfter + 1, 0, sibling);
-              updateSections(next);
-            }}
-          />
-        ))}
-      </div>
+      {(() => {
+        // Split the category-grouped blocks into the three explicit
+        // columns defined by BUFF_COLUMNS. Categories without a
+        // column mapping fall into "right" as a sensible default.
+        const cols = { left: [] as typeof grouped, middle: [] as typeof grouped, right: [] as typeof grouped };
+        for (const g of grouped) {
+          const col = BUFF_COLUMNS[g.category] ?? "right";
+          cols[col].push(g);
+        }
+        function renderBlocks(list: typeof grouped) {
+          return list.map(g => (
+            <BuffGroup
+              key={g.key}
+              heading={g.category}
+              iconSlug={g.iconSlug}
+              sections={g.sections}
+              characters={characters}
+              teamRosterIds={teamRosterIds}
+              charsById={charsById}
+              onPatch={patchSection}
+              onDelete={deleteSection}
+              onAddSibling={() => {
+                const last = g.sections[g.sections.length - 1];
+                const insertAfter = data.buffs.findIndex(s => s.id === last.id);
+                const sibling: AssignSection = {
+                  id: newSectionId(),
+                  title: `${g.category} · `,
+                  iconSlug: last.iconSlug,
+                  eligibility: last.eligibility,
+                  slotEligibility: last.slotEligibility,
+                  fixedSlots: last.fixedSlots,
+                  targetSlots: last.targetSlots,
+                  characterIds: [],
+                };
+                const next = [...data.buffs];
+                next.splice(insertAfter + 1, 0, sibling);
+                updateSections(next);
+              }}
+            />
+          ));
+        }
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 items-start">
+            <div className="flex flex-col gap-3">{renderBlocks(cols.left)}</div>
+            <div className="flex flex-col gap-3">{renderBlocks(cols.middle)}</div>
+            <div className="flex flex-col gap-3">{renderBlocks(cols.right)}</div>
+          </div>
+        );
+      })()}
 
       <EditOnly>
         <button

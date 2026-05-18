@@ -169,46 +169,54 @@ type BuffTpl = {
 };
 
 const BUFF_TEMPLATE: BuffTpl[] = [
-  // ── Raid-wide buffs (one per class group) ─────────────────────────────
+  // ═══ LEFT COLUMN — raid-wide one-per-class-group buffs ════════════════
   { title: "Prayer of Fortitude · G1-5",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] }, targetSlots: 3, fixedSlots: 3 },
-  { title: "Arcane Brilliance · G1-5",          iconSlug: "spell_holy_arcaneintellect",            eligibility: { classes: ["Mage"] } },
   { title: "Gift of the Wild · G1-5",           iconSlug: "spell_nature_regeneration",             eligibility: { classes: ["Druid"] } },
+  { title: "Arcane Brilliance · G1-5",          iconSlug: "spell_holy_arcaneintellect",            eligibility: { classes: ["Mage"] } },
 
-  // ── Warlock soulstones ────────────────────────────────────────────────
-  { title: "Soulstones · Caster",               iconSlug: "spell_shadow_soulgem",                  eligibility: { classes: ["Warlock"] } },
-  { title: "Soulstones · Targets",              iconSlug: "spell_shadow_soulgem",                  fixedSlots: 5 },
-
-  // ── Druid → Mage pairs (Innervate) ────────────────────────────────────
-  // Fixed-slot pairs: slot 0 = Druid caster, slot 1 = Mage target.
-  { title: "Innervate · Pair 1",                iconSlug: "spell_nature_lightning",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
-  { title: "Innervate · Pair 2",                iconSlug: "spell_nature_lightning",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
-
-  // ── Shaman utility ────────────────────────────────────────────────────
-  { title: "Earth Shield · MT",                 iconSlug: "spell_nature_skinofearth",              eligibility: { classes: ["Shaman"] } },
-  { title: "Earth Shield · OT",                 iconSlug: "spell_nature_skinofearth",              eligibility: { classes: ["Shaman"] } },
-
-  // ── Paladin save (Blessing of Protection — Paladin + Warlock pair) ────
-  // Fixed-slot pairs: slot 0 = Paladin caster, slot 1 = Warlock target
-  // (typically a lock about to soulfire / Wretched Doom soak).
+  // ═══ MIDDLE COLUMN — all Paladin assignments ═════════════════════════
+  // Seals on the boss.
+  { title: "Paladin Seals · Crusader",          iconSlug: "spell_holy_holysmite",                  eligibility: { classes: ["Paladin"] } },
+  { title: "Paladin Seals · Wisdom",            iconSlug: "spell_holy_righteousnessaura",          eligibility: { classes: ["Paladin"] } },
+  { title: "Paladin Seals · Light",             iconSlug: "spell_holy_healingaura",                eligibility: { classes: ["Paladin"] } },
+  // Save / protection pairs (Paladin + Warlock).
   { title: "Blessing of Protection · Pair 1",   iconSlug: "spell_holy_sealofprotection",
     fixedSlots: 2, slotEligibility: [{ classes: ["Paladin"] }, { classes: ["Warlock"] }] },
   { title: "Blessing of Protection · Pair 2",   iconSlug: "spell_holy_sealofprotection",
     fixedSlots: 2, slotEligibility: [{ classes: ["Paladin"] }, { classes: ["Warlock"] }] },
+  // Greater Blessings — each row is the Paladin who casts that blessing.
+  { title: "Greater Blessings · Kings",         iconSlug: "spell_magic_greaterblessingofkings",    eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
+  { title: "Greater Blessings · Might",         iconSlug: "spell_holy_greaterblessingofkings",     eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
+  { title: "Greater Blessings · Wisdom",        iconSlug: "spell_holy_greaterblessingofwisdom",    eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
+  { title: "Greater Blessings · Salvation",     iconSlug: "spell_holy_greaterblessingofsalvation", eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
 
-  // ── Greater Blessings (per blessing type) ─────────────────────────────
-  // Each row lists the TARGETS receiving that blessing.
-  { title: "Greater Blessings · Kings",         iconSlug: "spell_magic_greaterblessingofkings" },
-  { title: "Greater Blessings · Might",         iconSlug: "spell_holy_greaterblessingofkings" },
-  { title: "Greater Blessings · Wisdom",        iconSlug: "spell_holy_greaterblessingofwisdom" },
-  { title: "Greater Blessings · Salvation",     iconSlug: "spell_holy_greaterblessingofsalvation" },
-
-  // ── Paladin seals (on the boss) ───────────────────────────────────────
-  { title: "Paladin Seals · Crusader",          iconSlug: "spell_holy_holysmite",                  eligibility: { classes: ["Paladin"] } },
-  { title: "Paladin Seals · Wisdom",            iconSlug: "spell_holy_righteousnessaura",          eligibility: { classes: ["Paladin"] } },
-  { title: "Paladin Seals · Light",             iconSlug: "spell_holy_healingaura",                eligibility: { classes: ["Paladin"] } },
+  // ═══ RIGHT COLUMN — druid + shaman + warlock utility ════════════════
+  { title: "Innervate · Pair 1",                iconSlug: "spell_nature_lightning",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
+  { title: "Innervate · Pair 2",                iconSlug: "spell_nature_lightning",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
+  { title: "Earth Shield · MT",                 iconSlug: "spell_nature_skinofearth",              eligibility: { classes: ["Shaman"] } },
+  { title: "Earth Shield · OT",                 iconSlug: "spell_nature_skinofearth",              eligibility: { classes: ["Shaman"] } },
+  { title: "Soulstones · Caster",               iconSlug: "spell_shadow_soulgem",                  eligibility: { classes: ["Warlock"] } },
+  { title: "Soulstones · Targets",              iconSlug: "spell_shadow_soulgem",                  fixedSlots: 5 },
 ];
+
+/**
+ * Which column each buff category lives in on the BuffsCard. Categories
+ * are matched on the title prefix-before-"·". Unknown categories fall
+ * into the right column.
+ */
+export const BUFF_COLUMNS: Record<string, "left" | "middle" | "right"> = {
+  "Prayer of Fortitude":    "left",
+  "Gift of the Wild":       "left",
+  "Arcane Brilliance":      "left",
+  "Paladin Seals":          "middle",
+  "Blessing of Protection": "middle",
+  "Greater Blessings":      "middle",
+  "Innervate":              "right",
+  "Earth Shield":           "right",
+  "Soulstones":             "right",
+};
 
 /**
  * Per-category tooltip descriptions. Surface as a hover-tooltip on the
