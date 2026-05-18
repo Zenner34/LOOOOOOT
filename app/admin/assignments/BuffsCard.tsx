@@ -86,7 +86,8 @@ export function BuffsCard({
 
   return (
     <div
-      className="rounded-lg border border-[#2a3650] p-3"
+      id="buffs"
+      className="rounded-lg border border-[#2a3650] p-3 scroll-mt-4"
       style={{ background: "linear-gradient(180deg, #1a2236, #111827)" }}
     >
       <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">

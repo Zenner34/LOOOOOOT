@@ -21,6 +21,7 @@ import { BuffsCard } from "./BuffsCard";
 import { BossCard } from "./BossCard";
 import { RosterSidebar } from "./RosterSidebar";
 import { TankHealersCard } from "./TankHealersCard";
+import { SectionNav } from "./SectionNav";
 import { HighlightProvider, useHighlight } from "./HighlightContext";
 import { ViewModeProvider, useViewMode, EditOnly } from "./ViewModeContext";
 
@@ -321,7 +322,7 @@ function AssignmentsBody({
               characters={characters}
               charsById={charsById}
             />
-            <RoleTallies roleCounts={roleCounts} />
+            <RosterSidebar teamRosterChars={teamRosterChars} />
           </aside>
 
           {/* CENTER — buffs + boss cards (col-8 on desktop) */}
@@ -370,7 +371,7 @@ function AssignmentsBody({
 
           {/* RIGHT rail — full team roster sliced four ways (col-2) */}
           <aside className="col-span-12 lg:col-span-2">
-            <RosterSidebar teamRosterChars={teamRosterChars} />
+            <SectionNav />
           </aside>
         </div>
       )}
