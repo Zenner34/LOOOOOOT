@@ -49,6 +49,10 @@ export type AssignSection = {
   title: string;
   /** Optional Wowhead icon slug (e.g. "spell_holy_powerinfusion") for the chip icon. */
   iconSlug?: string;
+  /** When set, the row label is rendered as this Wowhead icon instead
+   *  of the navy scope-text bar. Used for Curses where each row IS the
+   *  curse type (the icon names the curse, e.g. CoR / CoE / CoS / CoT). */
+  rowIconSlug?: string;
   /** Optional soft-constraint hint for who can fill this slot. */
   eligibility?: Eligibility;
   /** Per-slot eligibility override. Used for paired sections like
@@ -162,6 +166,7 @@ export function emptyAssignmentData(): AssignmentData {
 type BuffTpl = {
   title: string;
   iconSlug: string;
+  rowIconSlug?: string;
   eligibility?: Eligibility;
   slotEligibility?: (Eligibility | undefined)[];
   fixedSlots?: number;
@@ -199,23 +204,60 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   { title: "Earth Shield · OT",                 iconSlug: "spell_nature_skinofearth",              eligibility: { classes: ["Shaman"] } },
   { title: "Soulstones · Caster",               iconSlug: "spell_shadow_soulgem",                  eligibility: { classes: ["Warlock"] } },
   { title: "Soulstones · Targets",              iconSlug: "spell_shadow_soulgem",                  fixedSlots: 5 },
+
+  // ── Warlock curses — single block, icon-as-row-label ─────────────────
+  // Each row's curse is identified by its rowIconSlug (CoR / CoE / CoS
+  // / CoT). The picker filters to Warlocks; cross-section dedup spreads
+  // multiple warlocks across the 4 curses.
+  { title: "Curses · Recklessness",             iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_unholystrength",   eligibility: { classes: ["Warlock"] } },
+  { title: "Curses · Elements",                 iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_chilltouch",        eligibility: { classes: ["Warlock"] } },
+  { title: "Curses · Shadow",                   iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_blackplague",       eligibility: { classes: ["Warlock"] } },
+  { title: "Curses · Tongues",                  iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_curseoftounges",    eligibility: { classes: ["Warlock"] } },
 ];
 
 /**
  * Which column each buff category lives in on the BuffsCard. Categories
  * are matched on the title prefix-before-"·". Unknown categories fall
  * into the right column.
+ *
+ * Aliases (the lines marked "legacy") keep sheets created before the
+ * title-format refactor (e.g. "Greater Blessing of Kings" instead of
+ * "Greater Blessings · Kings") in the right column too — so an admin
+ * doesn't have to click "Reset to defaults" just to get blessings
+ * sorted into the middle column.
  */
 export const BUFF_COLUMNS: Record<string, "left" | "middle" | "right"> = {
-  "Prayer of Fortitude":    "left",
-  "Gift of the Wild":       "left",
-  "Arcane Brilliance":      "left",
-  "Paladin Seals":          "middle",
-  "Blessing of Protection": "middle",
-  "Greater Blessings":      "middle",
-  "Innervate":              "right",
-  "Earth Shield":           "right",
-  "Soulstones":             "right",
+  // LEFT — raid-wide buffs
+  "Prayer of Fortitude":           "left",
+  "Gift of the Wild":              "left",
+  "Arcane Brilliance":             "left",
+  "Power Infusion":                "left",      // legacy
+  "Mark of the Wild":              "left",      // legacy
+
+  // MIDDLE — every Paladin assignment
+  "Paladin Seals":                 "middle",
+  "Blessing of Protection":        "middle",
+  "Greater Blessings":             "middle",
+  "Greater Blessing of Kings":     "middle",    // legacy
+  "Greater Blessing of Might":     "middle",    // legacy
+  "Greater Blessing of Wisdom":    "middle",    // legacy
+  "Greater Blessing of Salvation": "middle",    // legacy
+  "Greater Blessing of Sanctuary": "middle",    // legacy
+  "Greater Blessing of Light":     "middle",    // legacy
+
+  // RIGHT — druid + shaman + warlock utility
+  "Innervate":                     "right",
+  "Earth Shield":                  "right",
+  "Soulstones":                    "right",
+  "Soulstone Caster":              "right",     // legacy
+  "Soulstone Order":               "right",     // legacy
+  "Tranquility":                   "right",     // legacy
+  "Curses":                        "right",
+  "Affliction Warlock (Debuffs)":  "right",     // legacy
+  "Misdirection":                  "right",     // legacy
+  "Faerie Fire":                   "right",     // legacy
+  "Sunder Armor":                  "right",     // legacy
+  "Battle Shout":                  "right",     // legacy
 };
 
 /**
@@ -234,6 +276,7 @@ export const BUFF_TOOLTIPS: Record<string, string> = {
   "Blessing of Protection": "Paladin bubbles a warlock about to soulfire / soak a Wretched Doom. Slot 1 paladin, slot 2 warlock.",
   "Greater Blessings":     "Paladin raid buffs by spec. Kings for tanks, Might for melee, Wisdom for casters/healers, Salvation for DPS.",
   "Paladin Seals":         "On-boss seals from paladins. Crusader for melee haste, Wisdom for mana return on hits, Light for incidental healing.",
+  "Curses":                "Warlock debuffs on the boss. Recklessness for physical raids, Elements for caster raids, Shadow / Tongues situational.",
 };
 
 export function defaultBuffs(): AssignSection[] {
@@ -241,6 +284,7 @@ export function defaultBuffs(): AssignSection[] {
     id: newSectionId(),
     title: b.title,
     iconSlug: b.iconSlug,
+    rowIconSlug: b.rowIconSlug,
     eligibility: b.eligibility,
     slotEligibility: b.slotEligibility,
     fixedSlots: b.fixedSlots,

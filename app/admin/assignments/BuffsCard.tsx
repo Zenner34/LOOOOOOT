@@ -149,6 +149,7 @@ export function BuffsCard({
                   id: newSectionId(),
                   title: `${g.category} · `,
                   iconSlug: last.iconSlug,
+                  rowIconSlug: last.rowIconSlug,
                   eligibility: last.eligibility,
                   slotEligibility: last.slotEligibility,
                   fixedSlots: last.fixedSlots,
@@ -294,11 +295,27 @@ function BuffRow({
 
   const scope = scopeOf(section.title);
   const isFixed = (section.fixedSlots ?? 0) > 0;
+  const rowIconSrc = section.rowIconSlug ? `${ICON_BASE}${section.rowIconSlug}.jpg` : null;
 
   return (
     <div className="group/row grid grid-cols-[56px_1fr_auto] gap-px items-stretch">
-      {/* Scope label (left) */}
-      {editingScope && !readOnly ? (
+      {/* Row label (left) — spell icon if rowIconSlug is set, else
+          navy scope-text bar (editable). */}
+      {rowIconSrc ? (
+        <div
+          className="flex items-center justify-center bg-[#1a2236] border border-[#2c5494]"
+          title={scope || section.title}
+        >
+          <img
+            src={rowIconSrc}
+            alt={scope || section.title}
+            width={22}
+            height={22}
+            className="rounded-sm"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
+          />
+        </div>
+      ) : editingScope && !readOnly ? (
         <input
           autoFocus
           value={scopeDraft}
