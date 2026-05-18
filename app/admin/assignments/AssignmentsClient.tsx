@@ -126,6 +126,19 @@ export default function AssignmentsClient({
     .map(id => charsById.get(id))
     .filter((c): c is AssignableCharacter => Boolean(c));
 
+  // Auto-fill empty buff sections whenever the team roster changes.
+  // suggestFillSections only touches empty + eligible sections, so admin
+  // edits are never overwritten — moving a Priest into Group 3 just
+  // pops them into PoF G1-5 / PI G4-5 if those rows are still blank.
+  const rosterKey = teamRosterIds.join(",");
+  useEffect(() => {
+    if (!sheet || teamRosterChars.length === 0) return;
+    const nextBuffs = suggestFillSections(data.buffs, teamRosterChars);
+    const changed = nextBuffs.some((s, i) => s.characterIds.length !== data.buffs[i].characterIds.length);
+    if (changed) setData({ ...data, buffs: nextBuffs });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rosterKey]);
+
   const roleCounts = ROLES.map(r => ({
     ...r,
     chars: teamRosterChars.filter(r.predicate),
@@ -133,25 +146,35 @@ export default function AssignmentsClient({
 
   return (
     <HighlightProvider>
-      <AssignmentsBody
-        teams={teams}
-        selectedTeam={selectedTeam}
-        selectedTeamId={selectedTeamId}
-        sheet={sheet}
-        data={data}
-        setData={setData}
-        savingState={savingState}
-        setTeam={setTeam}
-        setWeek={setWeek}
-        createOpen={createOpen}
-        setCreateOpen={setCreateOpen}
-        characters={characters}
-        charsById={charsById}
-        teamRosterIds={teamRosterIds}
-        teamRosterChars={teamRosterChars}
-        roleCounts={roleCounts}
-        router={router}
-      />
+      <div
+        className="-mx-4 px-4 -my-4 py-4 min-h-screen"
+        style={{
+          backgroundImage:
+            "radial-gradient(ellipse 60% 40% at 20% 0%, rgba(80, 60, 160, .08), transparent 60%), " +
+            "radial-gradient(ellipse 70% 50% at 100% 30%, rgba(20, 130, 200, .07), transparent 60%), " +
+            "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(212, 175, 55, .04), transparent 60%)",
+        }}
+      >
+        <AssignmentsBody
+          teams={teams}
+          selectedTeam={selectedTeam}
+          selectedTeamId={selectedTeamId}
+          sheet={sheet}
+          data={data}
+          setData={setData}
+          savingState={savingState}
+          setTeam={setTeam}
+          setWeek={setWeek}
+          createOpen={createOpen}
+          setCreateOpen={setCreateOpen}
+          characters={characters}
+          charsById={charsById}
+          teamRosterIds={teamRosterIds}
+          teamRosterChars={teamRosterChars}
+          roleCounts={roleCounts}
+          router={router}
+        />
+      </div>
     </HighlightProvider>
   );
 }

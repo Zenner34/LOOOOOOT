@@ -51,6 +51,11 @@ export type AssignSection = {
   iconSlug?: string;
   /** Optional soft-constraint hint for who can fill this slot. */
   eligibility?: Eligibility;
+  /** How many slots auto-fill should populate when the section is empty.
+   *  Defaults to 1 (single caster/target). Set higher for sections that
+   *  naturally hold many chars (PoF · G1-5 = 3 priests; Tranq = every
+   *  druid; etc.). */
+  targetSlots?: number;
   /** Character ids assigned to this section, in display order. */
   characterIds: number[];
 };
@@ -133,9 +138,11 @@ export function emptyAssignmentData(): AssignmentData {
  * The order roughly matches the source spreadsheet: raid-wide buffs
  * first, then druid utility, then warlock, then physical-DPS debuffs.
  */
-const BUFF_TEMPLATE: Array<{ title: string; iconSlug: string; eligibility?: Eligibility }> = [
+type BuffTpl = { title: string; iconSlug: string; eligibility?: Eligibility; targetSlots?: number };
+
+const BUFF_TEMPLATE: BuffTpl[] = [
   // ── Raid-wide buffs (one caster per class group) ───────────────────────
-  { title: "Prayer of Fortitude · G1-5",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] } },
+  { title: "Prayer of Fortitude · G1-5",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] }, targetSlots: 3 },
   { title: "Gift of the Wild · G1-5",           iconSlug: "spell_nature_regeneration",             eligibility: { classes: ["Druid"] } },
   { title: "Arcane Brilliance · G1-5",          iconSlug: "spell_holy_arcaneintellect",            eligibility: { classes: ["Mage"] } },
 
@@ -155,7 +162,7 @@ const BUFF_TEMPLATE: Array<{ title: string; iconSlug: string; eligibility?: Elig
   // ── Druid utility ─────────────────────────────────────────────────────
   { title: "Innervate · Pair 1",                iconSlug: "spell_nature_lightning",                eligibility: { classes: ["Druid"] } },
   { title: "Innervate · Pair 2",                iconSlug: "spell_nature_lightning",                eligibility: { classes: ["Druid"] } },
-  { title: "Tranquility",                       iconSlug: "spell_nature_tranquility",              eligibility: { classes: ["Druid"] } },
+  { title: "Tranquility",                       iconSlug: "spell_nature_tranquility",              eligibility: { classes: ["Druid"] }, targetSlots: 5 },
 
   // ── Warrior shout ─────────────────────────────────────────────────────
   { title: "Battle Shout · Melee",              iconSlug: "ability_warrior_battleshout",           eligibility: { classes: ["Warrior"] } },
@@ -188,6 +195,7 @@ export function defaultBuffs(): AssignSection[] {
     title: b.title,
     iconSlug: b.iconSlug,
     eligibility: b.eligibility,
+    targetSlots: b.targetSlots,
     characterIds: [],
   }));
 }
@@ -465,16 +473,32 @@ export function defaultBossAssignment(slug: BossSlug): BossAssignment {
 
 /**
  * Auto-fill empty sections with eligible roster members. Used by the
- * per-card "Suggest" button. Skips sections that already have any
- * character (so admin edits never get overwritten) and sections
- * without an eligibility hint (no signal to choose from).
+ * per-card "Suggest" button AND by the on-roster-change effect.
+ *
+ * Behaviour:
+ * - Sections that already have ANY characters are left untouched
+ *   (admin edits never get overwritten).
+ * - Sections without an eligibility hint stay empty (no signal to
+ *   choose from; admin fills GBs / soulstone targets manually).
+ * - `targetSlots` caps how many eligible chars get added per section
+ *   (defaults to 1). PoF · G1-5 uses 3, Tranq uses 5.
+ * - Characters already placed in OTHER sections of the same array are
+ *   skipped so multiple single-slot buffs split across raiders
+ *   (PI G1-3 grabs Priest A, PI G4-5 grabs Priest B). Roster order is
+ *   stable across renders so the suggestion stays deterministic.
  */
 export function suggestFillSections(sections: AssignSection[], roster: EligibleChar[]): AssignSection[] {
+  const used = new Set<number>();
+  for (const s of sections) for (const id of s.characterIds) used.add(id);
+
   return sections.map(s => {
     if (s.characterIds.length > 0 || !s.eligibility) return s;
-    const eligible = roster.filter(c => matchesEligibility(c, s.eligibility));
+    const target = s.targetSlots ?? 1;
+    const eligible = roster.filter(c => matchesEligibility(c, s.eligibility) && !used.has(c.id));
     if (eligible.length === 0) return s;
-    return { ...s, characterIds: eligible.map(c => c.id) };
+    const picks = eligible.slice(0, target).map(c => c.id);
+    picks.forEach(id => used.add(id));
+    return { ...s, characterIds: picks };
   });
 }
 

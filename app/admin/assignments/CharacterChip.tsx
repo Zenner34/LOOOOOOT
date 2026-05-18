@@ -52,9 +52,9 @@ export function CharacterChip({
   const fg = isDarkBg ? "#fff" : "#1a1a1a";
 
   const layoutCls = inline ? "inline-flex" : "flex w-full";
-  const pad = size === "sm" ? "pl-1 pr-2 py-[2px]" : "pl-1.5 pr-2 py-[3px]";
-  const txt = size === "sm" ? "text-[11px]" : "text-[12px]";
-  const iconSize = size === "sm" ? 14 : 16;
+  const pad = size === "sm" ? "pl-1.5 pr-2 py-1" : "pl-2 pr-2.5 py-[5px]";
+  const txt = size === "sm" ? "text-[12px]" : "text-[13px]";
+  const iconSize = size === "sm" ? 14 : 18;
   const iconKey = SPEC_ICON[character.spec];
   const iconSrc = iconKey ? `${SPEC_ICON_BASE}${iconKey}.jpg` : null;
 
@@ -114,8 +114,8 @@ export function EmptySlot({
   label?: string;
   size?: "sm" | "md";
 }) {
-  const pad = size === "sm" ? "px-2 py-[3px]" : "px-2 py-1";
-  const txt = size === "sm" ? "text-[11px]" : "text-[12px]";
+  const pad = size === "sm" ? "px-2 py-1" : "px-2.5 py-[5px]";
+  const txt = size === "sm" ? "text-[12px]" : "text-[13px]";
   return (
     <button
       type="button"

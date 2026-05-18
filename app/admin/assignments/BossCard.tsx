@@ -158,8 +158,11 @@ export function BossCard({
         <div className="grid grid-cols-12 gap-3">
           <div className="col-span-12 md:col-span-3">
             <div
-              className="aspect-[4/3] rounded-md border border-[#2e3a55] bg-[#0e1525] bg-cover bg-center"
-              style={meta.portrait ? { backgroundImage: `url(${meta.portrait})` } : undefined}
+              className="aspect-[4/3] rounded-md border border-[#2e3a55] bg-cover bg-center"
+              style={{
+                background: `url(${meta.portrait}) center/cover, linear-gradient(135deg, #0e1525, #1a2236)`,
+                backgroundBlendMode: "normal",
+              }}
               role="img"
               aria-label={`${meta.name} portrait`}
             />
