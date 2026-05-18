@@ -167,3 +167,45 @@ model LootAward {
   @@index([rosterId])
   @@index([raidNightId])
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Raid Assignments
+// ─────────────────────────────────────────────────────────────────────────
+// A RaidTeam is one weekly raid roster (e.g. "Sunday Main", "Wednesday
+// Alt Run"). Up to ~3 per week is the expected scale. The team itself is
+// long-lived (it carries an identity + accent colour); the actual roster
+// composition + boss assignments live in AssignmentSheet snapshots, one
+// per (team, week).
+model RaidTeam {
+  id        Int               @id @default(autoincrement())
+  name      String            @unique
+  color     String            @default("#1e3a5f")
+  active    Boolean           @default(true)
+  notes     String?
+  createdAt DateTime          @default(now())
+  sheets    AssignmentSheet[]
+}
+
+// One AssignmentSheet = one (team, weekOf) snapshot. The `data` JSON blob
+// holds the entire sheet body — groups, buffs, per-boss assignments —
+// so the schema stays flexible while the editor UX evolves. Shape is
+// documented in lib/assignments.ts.
+//   data = {
+//     groups:    { "1": [charId,...], "2": [...], "3": [...], "4": [...], "5": [...] }
+//     buffs:     { powerInfusion: { "G1-3": charId, "G4-5": charId }, fortitude: [...], ... }
+//     bosses:    { "hydross": { sections: [{ title, characterIds }, ...] }, ... }
+//   }
+model AssignmentSheet {
+  id        Int      @id @default(autoincrement())
+  teamId    Int
+  weekOf    DateTime
+  data      Json     @default("{}")
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  team      RaidTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, weekOf])
+  @@index([teamId])
+  @@index([weekOf])
+}
