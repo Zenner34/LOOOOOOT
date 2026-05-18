@@ -180,20 +180,22 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   { title: "Arcane Brilliance · G1-5",          iconSlug: "spell_holy_arcaneintellect",            eligibility: { classes: ["Mage"] } },
 
   // ═══ MIDDLE COLUMN — all Paladin assignments ═════════════════════════
+  // Each row uses rowIconSlug so the row label is the spell icon
+  // itself instead of a text scope. One paladin slot per row.
   // Seals on the boss.
-  { title: "Paladin Seals · Crusader",          iconSlug: "spell_holy_holysmite",                  eligibility: { classes: ["Paladin"] } },
-  { title: "Paladin Seals · Wisdom",            iconSlug: "spell_holy_righteousnessaura",          eligibility: { classes: ["Paladin"] } },
-  { title: "Paladin Seals · Light",             iconSlug: "spell_holy_healingaura",                eligibility: { classes: ["Paladin"] } },
+  { title: "Paladin Seals · Crusader",          iconSlug: "spell_holy_holysmite",                  rowIconSlug: "spell_holy_holysmite",               eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
+  { title: "Paladin Seals · Wisdom",            iconSlug: "spell_holy_holysmite",                  rowIconSlug: "spell_holy_righteousnessaura",       eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
+  { title: "Paladin Seals · Light",             iconSlug: "spell_holy_holysmite",                  rowIconSlug: "spell_holy_healingaura",             eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
   // Save / protection pairs (Paladin + Warlock).
-  { title: "Blessing of Protection · Pair 1",   iconSlug: "spell_holy_sealofprotection",
+  { title: "Blessing of Protection · Pair 1",   iconSlug: "spell_holy_sealofprotection",           rowIconSlug: "spell_holy_sealofprotection",
     fixedSlots: 2, slotEligibility: [{ classes: ["Paladin"] }, { classes: ["Warlock"] }] },
-  { title: "Blessing of Protection · Pair 2",   iconSlug: "spell_holy_sealofprotection",
+  { title: "Blessing of Protection · Pair 2",   iconSlug: "spell_holy_sealofprotection",           rowIconSlug: "spell_holy_sealofprotection",
     fixedSlots: 2, slotEligibility: [{ classes: ["Paladin"] }, { classes: ["Warlock"] }] },
   // Greater Blessings — each row is the Paladin who casts that blessing.
-  { title: "Greater Blessings · Kings",         iconSlug: "spell_magic_greaterblessingofkings",    eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
-  { title: "Greater Blessings · Might",         iconSlug: "spell_holy_greaterblessingofkings",     eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
-  { title: "Greater Blessings · Wisdom",        iconSlug: "spell_holy_greaterblessingofwisdom",    eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
-  { title: "Greater Blessings · Salvation",     iconSlug: "spell_holy_greaterblessingofsalvation", eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
+  { title: "Greater Blessings · Kings",         iconSlug: "spell_magic_greaterblessingofkings",    rowIconSlug: "spell_magic_greaterblessingofkings",    eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
+  { title: "Greater Blessings · Might",         iconSlug: "spell_magic_greaterblessingofkings",    rowIconSlug: "spell_holy_greaterblessingofkings",     eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
+  { title: "Greater Blessings · Wisdom",        iconSlug: "spell_magic_greaterblessingofkings",    rowIconSlug: "spell_holy_greaterblessingofwisdom",    eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
+  { title: "Greater Blessings · Salvation",     iconSlug: "spell_magic_greaterblessingofkings",    rowIconSlug: "spell_holy_greaterblessingofsalvation", eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
 
   // ═══ RIGHT COLUMN — druid + shaman + warlock utility ════════════════
   { title: "Innervate · Pair 1",                iconSlug: "spell_nature_lightning",
@@ -205,14 +207,14 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   { title: "Soulstones · Caster",               iconSlug: "spell_shadow_soulgem",                  eligibility: { classes: ["Warlock"] } },
   { title: "Soulstones · Targets",              iconSlug: "spell_shadow_soulgem",                  fixedSlots: 5 },
 
-  // ── Warlock curses — single block, icon-as-row-label ─────────────────
-  // Each row's curse is identified by its rowIconSlug (CoR / CoE / CoS
-  // / CoT). The picker filters to Warlocks; cross-section dedup spreads
-  // multiple warlocks across the 4 curses.
-  { title: "Curses · Recklessness",             iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_unholystrength",   eligibility: { classes: ["Warlock"] } },
-  { title: "Curses · Elements",                 iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_chilltouch",        eligibility: { classes: ["Warlock"] } },
-  { title: "Curses · Shadow",                   iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_blackplague",       eligibility: { classes: ["Warlock"] } },
-  { title: "Curses · Tongues",                  iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_curseoftounges",    eligibility: { classes: ["Warlock"] } },
+  // ── Warlock curses — single block, icon-as-row-label, 1 warlock per ──
+  // Recklessness for physical raids, Elements for caster raids,
+  // Malediction (CoE + Shadow vulnerability via the talent) for
+  // mixed-damage fights. Picker filters to Warlocks; cross-section
+  // dedup spreads multiple warlocks across the three curses.
+  { title: "Curses · Recklessness",             iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_unholystrength",   eligibility: { classes: ["Warlock"] }, fixedSlots: 1 },
+  { title: "Curses · Elements",                 iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_chilltouch",        eligibility: { classes: ["Warlock"] }, fixedSlots: 1 },
+  { title: "Curses · Malediction",              iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_blackplague",       eligibility: { classes: ["Warlock"] }, fixedSlots: 1 },
 ];
 
 /**
