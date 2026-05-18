@@ -15,37 +15,44 @@ export type AssignableCharacter = {
 };
 
 /**
- * Class-coloured chip used as the universal "this character is assigned
- * here" pill. The spreadsheet aesthetic: italic name + dark text on a
- * saturated class background. Optional `onRemove` shows an × button.
+ * Class-coloured chip — the universal "this character is assigned here"
+ * pill matching the source spreadsheet aesthetic. Italic centered name,
+ * dark text on saturated class background (white on Shaman/Warlock),
+ * 1px black border, hover-lift + brighten.
  *
- * Reads the HighlightContext: if any character is the effective focus,
- * matching chips ring with amber, non-matching chips desaturate to
- * make the focused character visually pop across every section.
- * Hovering the chip itself sets the hover focus, mouseleave clears it.
+ * Fills the parent slot's width by default (the way the mockup uses
+ * them — one chip per row, stacked vertically inside an AssignBox).
+ * Pass `inline` for compact pill behaviour where multiple chips share
+ * one row (currently unused but kept for future flexibility).
+ *
+ * Reads HighlightContext: hovering sets the hover focus; matching chips
+ * ring amber and non-matching desaturate.
  */
 export function CharacterChip({
   character,
   onRemove,
   onClick,
-  small,
+  size = "md",
+  inline,
 }: {
   character: AssignableCharacter;
   onRemove?: () => void;
   onClick?: () => void;
-  small?: boolean;
+  size?: "sm" | "md";
+  inline?: boolean;
 }) {
   const { effectiveId, setHover } = useHighlight();
   const highlighted = effectiveId === character.id;
   const dimmed = effectiveId !== null && effectiveId !== character.id;
 
   const bg = CLASS_COLOR[character.class] ?? "#888";
-  // White text only on Shaman and Warlock (the two dark backgrounds);
-  // every other class uses near-black text per TBC sheet convention.
-  const isDarkBg = character.class === "Shaman";
+  const isDarkBg = character.class === "Shaman" || character.class === "Warlock";
   const fg = isDarkBg ? "#fff" : "#1a1a1a";
-  const padding = small ? "px-1.5 py-0.5" : "px-2 py-1";
-  const text = small ? "text-[11px]" : "text-xs";
+
+  const layoutCls = inline ? "inline-flex" : "flex w-full";
+  const pad = size === "sm" ? "px-2 py-[3px]" : "px-2 py-1";
+  const txt = size === "sm" ? "text-[11px]" : "text-[12px]";
+
   return (
     <button
       type="button"
@@ -55,20 +62,20 @@ export function CharacterChip({
       onFocus={() => setHover(character.id)}
       onBlur={() => setHover(null)}
       title={`${character.name} — ${character.spec} ${character.class}${character.playerName && character.playerName !== character.name ? ` · ${character.playerName}` : ""}${character.isMain ? " (main)" : " (alt)"}`}
-      className={`group inline-flex items-center gap-1.5 italic font-semibold border border-black/40 rounded-[3px] ${padding} ${text} transition-all ${
-        dimmed ? "grayscale opacity-50" : ""
+      className={`group items-center justify-center gap-1 italic font-semibold border border-black/40 ${pad} ${txt} ${layoutCls} transition-all leading-snug select-none ${
+        dimmed ? "grayscale opacity-55 brightness-75" : ""
       } ${
-        highlighted ? "ring-2 ring-amber-300 ring-offset-1 ring-offset-[var(--bg)] shadow-[0_0_0_4px_rgba(212,175,55,0.18)]" : ""
-      } hover:-translate-y-px hover:brightness-110 hover:shadow-[0_4px_10px_rgba(0,0,0,0.4)]`}
+        highlighted ? "ring-2 ring-[#d4af37] ring-offset-1 ring-offset-[var(--bg)] shadow-[0_0_0_4px_rgba(212,175,55,0.22)]" : ""
+      } hover:-translate-y-px hover:brightness-110 hover:shadow-[0_4px_10px_rgba(0,0,0,0.45)]`}
       style={{ background: bg, color: fg }}
     >
-      <span className="truncate max-w-[120px]">{character.name}</span>
+      <span className="truncate">{character.name}</span>
       {onRemove && (
         <span
           role="button"
           aria-label="Remove from slot"
           onClick={(e) => { e.stopPropagation(); onRemove(); }}
-          className="opacity-0 group-hover:opacity-90 transition text-[10px] leading-none -mr-0.5"
+          className="opacity-0 group-hover:opacity-90 transition text-[10px] leading-none -mr-0.5 flex-shrink-0"
         >
           ×
         </span>
@@ -77,13 +84,26 @@ export function CharacterChip({
   );
 }
 
-/** Empty slot placeholder — soft green like the spreadsheet's blank rows. */
-export function EmptySlot({ onClick, label = "+ add", small }: { onClick: () => void; label?: string; small?: boolean }) {
+/**
+ * Empty slot placeholder — soft green like the spreadsheet's blank rows.
+ * Fills the slot width so it stacks consistently with CharacterChip.
+ */
+export function EmptySlot({
+  onClick,
+  label = "+ add",
+  size = "md",
+}: {
+  onClick: () => void;
+  label?: string;
+  size?: "sm" | "md";
+}) {
+  const pad = size === "sm" ? "px-2 py-[3px]" : "px-2 py-1";
+  const txt = size === "sm" ? "text-[11px]" : "text-[12px]";
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`w-full italic text-neutral-700 hover:text-vermillion-700 hover:bg-emerald-100 transition border border-emerald-200/40 rounded-[3px] ${small ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-1 text-xs"}`}
+      className={`flex w-full items-center justify-center italic text-neutral-700 hover:text-vermillion-700 hover:brightness-110 transition border border-emerald-900/40 leading-snug ${pad} ${txt}`}
       style={{ background: "#c4dd96" }}
     >
       {label}

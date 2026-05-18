@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import {
   ASSIGNMENT_BOSSES,
   VASHJ_P2_TIMELINE,
+  bossPlatformInfo,
   defaultBossAssignment,
   newSectionId,
   suggestFillSections,
@@ -14,21 +15,29 @@ import {
   type BossSlug,
 } from "@/lib/assignments";
 import { Plus, Sparkles, X } from "@/app/components/ui/Icon";
-import { CharacterChip, type AssignableCharacter } from "./CharacterChip";
+import { CharacterChip, EmptySlot, type AssignableCharacter } from "./CharacterChip";
 import { CharacterPicker } from "./CharacterPicker";
 
 const BOSS_INFO = Object.fromEntries(ASSIGNMENT_BOSSES.map(b => [b.slug, b])) as Record<BossSlug, (typeof ASSIGNMENT_BOSSES)[number]>;
 
 /**
- * One BossCard renders all assignment sections for a single boss. Single-
- * phase bosses (Hydross, Lurker, Morogrim, Fathom, Leotheras, Void Reaver,
- * Solarian) get a flat sections grid. Multi-phase bosses (Vashj, Al'ar,
- * Kael'thas) get a phase-tab strip and render only the active phase's
- * sections. Vashj's Phase 2 also renders a read-only cast timeline.
+ * BossCard layout follows the mockup:
  *
- * Sections are inline-editable: click the title to rename, click "add"
- * to open the team-scoped picker, "×" on a chip to remove. "Reset" at
- * the card header restores the canonical sections from the template.
+ *   ┌─────────────────────────────────────────────────────────────┐
+ *   │  Boss Name (Cinzel, amber)         SERPENTSHRINE CAVERN     │  header bar
+ *   ├──────────────┬──────────────────────────────────────────────┤
+ *   │              │  [phase tabs]                                │
+ *   │              │  ┌─ assignments ──────┐  ┌─ platform art ─┐  │
+ *   │  portrait    │  │  navy header       │  │ gradient panel │  │
+ *   │  (4:3)       │  │  Frost MT          │  │ strategy notes │  │
+ *   │              │  │  • Bake            │  │                │  │
+ *   │              │  │  • Cash            │  │                │  │
+ *   │              │  └────────────────────┘  └────────────────┘  │
+ *   └──────────────┴──────────────────────────────────────────────┘
+ *
+ * Portrait is 4:3 (col 3 / 12). Content area is 9 / 12, split into a
+ * 7-col assignment grid + a 5-col platform-art panel. Phase tabs sit
+ * above both. Vashj P2 also gets the 13-cell timeline above sections.
  */
 export function BossCard({
   slug,
@@ -48,13 +57,12 @@ export function BossCard({
   charsById: Map<number, AssignableCharacter>;
 }) {
   const meta = BOSS_INFO[slug];
-  // Fall back to the canonical template if this sheet predates the
-  // boss-templates rollout and has no entry yet for this boss.
   const bossData: BossAssignment = data.bosses[slug] ?? defaultBossAssignment(slug);
   const isMultiPhase = !!bossData.phases?.length;
   const [activePhaseIdx, setActivePhaseIdx] = useState(0);
   const activePhase = isMultiPhase ? bossData.phases![activePhaseIdx] : null;
   const activeSections = (activePhase?.sections ?? bossData.sections ?? []) as AssignSection[];
+  const platform = bossPlatformInfo(slug, activePhase?.label);
 
   function writeBoss(next: BossAssignment) {
     setData({ ...data, bosses: { ...data.bosses, [slug]: next } });
@@ -105,123 +113,155 @@ export function BossCard({
   }
 
   return (
-    <div className="rounded-lg border border-[#2e3a55] bg-gradient-to-b from-[#1a2236] to-[#111827] overflow-visible">
-      {/* Header — Cinzel boss name, navy-gradient label bar */}
-      <div className="flex items-baseline justify-between gap-2 px-4 py-3 border-b border-[#2e3a55]/70">
-        <div className="min-w-0">
-          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
-            {meta.raidShort === "SSC" ? "Serpentshrine Cavern" : "Tempest Keep — The Eye"}
-          </div>
-          <h3 className="font-display text-2xl text-amber-200 truncate" style={{ letterSpacing: "0.03em" }}>
+    <div
+      className="relative rounded-lg border border-[#2a3650] overflow-visible"
+      style={{ background: "linear-gradient(180deg, #131b2c, #0e1525)" }}
+    >
+      {/* Subtle gold sheen at the top, like the mockup .magic-frame::before */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 rounded-lg"
+        style={{ background: "linear-gradient(180deg, rgba(255,215,128,0.06), transparent 30%)" }}
+      />
+
+      <div className="relative p-4">
+        {/* Header: name + instance side-by-side */}
+        <div className="flex items-baseline justify-between gap-3 mb-3">
+          <h3 className="font-display text-2xl text-amber-200 truncate leading-none">
             {meta.name}
           </h3>
+          <div className="flex items-baseline gap-3 flex-shrink-0">
+            <span className="text-[10px] uppercase tracking-[0.18em] text-slate-400">
+              {meta.raidShort === "SSC" ? "Serpentshrine Cavern" : "Tempest Keep — The Eye"}
+            </span>
+            <button
+              type="button"
+              onClick={suggestFills}
+              disabled={teamRosterIds.length === 0}
+              className="inline-flex items-center gap-1 text-[11px] text-amber-300 hover:text-amber-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
+              title="Auto-fill empty sections from team roster roles"
+            >
+              <Sparkles size={11} aria-hidden /> Suggest
+            </button>
+            <button
+              type="button"
+              onClick={resetBoss}
+              className="text-[11px] text-neutral-500 hover:text-vermillion-200 transition whitespace-nowrap"
+              title="Restore canonical sections for this boss"
+            >
+              Reset
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <button
-            type="button"
-            onClick={suggestFills}
-            disabled={teamRosterIds.length === 0}
-            className="inline-flex items-center gap-1 text-[11px] text-amber-300 hover:text-amber-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
-            title="Auto-fill empty sections from team roster roles"
-          >
-            <Sparkles size={11} aria-hidden /> Suggest
-          </button>
-          <button
-            type="button"
-            onClick={resetBoss}
-            className="text-[11px] text-neutral-500 hover:text-vermillion-200 transition whitespace-nowrap"
-            title="Restore canonical sections for this boss"
-          >
-            Reset
-          </button>
-        </div>
-      </div>
 
-      {/* Body: portrait + content side-by-side */}
-      <div className="grid grid-cols-12 gap-4 p-4">
-        <div className="col-span-12 md:col-span-3">
-          <div
-            className="aspect-[4/3] rounded-md border border-[#2e3a55] bg-[#0e1525] bg-cover bg-center"
-            style={meta.portrait ? { backgroundImage: `url(${meta.portrait})` } : undefined}
-            role="img"
-            aria-label={`${meta.name} portrait`}
-          />
-        </div>
-        <div className="col-span-12 md:col-span-9 min-w-0">
-          {/* Phase tabs (multi-phase only) */}
-          {isMultiPhase && (
-            <div className="flex flex-wrap gap-1 mb-3">
-              {bossData.phases!.map((p, i) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setActivePhaseIdx(i)}
-                  className={`px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider rounded transition ${
-                    i === activePhaseIdx
-                      ? "bg-amber-500 text-black"
-                      : "bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08] hover:text-white"
-                  }`}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-          )}
+        {/* Body: portrait (3) + content (9) */}
+        <div className="grid grid-cols-12 gap-3">
+          <div className="col-span-12 md:col-span-3">
+            <div
+              className="aspect-[4/3] rounded-md border border-[#2e3a55] bg-[#0e1525] bg-cover bg-center"
+              style={meta.portrait ? { backgroundImage: `url(${meta.portrait})` } : undefined}
+              role="img"
+              aria-label={`${meta.name} portrait`}
+            />
+          </div>
 
-          {/* Vashj Phase 2 timeline */}
-          {slug === "vashj" && activePhase?.label === "Phase 2" && (
-            <div className="mb-3">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-1.5">
-                Phase 2 timeline
-              </div>
-              <div
-                className="grid gap-px text-center"
-                style={{ gridTemplateColumns: "repeat(13, minmax(0, 1fr))" }}
-              >
-                {VASHJ_P2_TIMELINE.map((c, i) => (
-                  <div
-                    key={i}
-                    className={`px-1.5 py-1.5 border rounded text-[10px] ${
-                      c.danger
-                        ? "bg-[#7a1f2c] border-[#c1394d] text-[#ffd6d6] font-bold"
-                        : c.scary
-                        ? "bg-[#4b2a44] border-[#7a3760] text-neutral-200"
-                        : "bg-[#1a2236] border-[#2e3a55] text-neutral-300"
+          <div className="col-span-12 md:col-span-9 min-w-0">
+            {/* Phase tabs */}
+            {isMultiPhase && (
+              <div className="flex flex-wrap gap-1 mb-3">
+                {bossData.phases!.map((p, i) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setActivePhaseIdx(i)}
+                    className={`px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider rounded transition ${
+                      i === activePhaseIdx
+                        ? "bg-amber-500 text-black"
+                        : "bg-white/[0.04] text-neutral-300 hover:bg-white/[0.08] hover:text-white"
                     }`}
                   >
-                    <div className="font-bold text-[10px] tabular-nums">{c.t}</div>
-                    <div className="text-[9px] opacity-90">{c.label}</div>
-                  </div>
+                    {p.label}
+                  </button>
                 ))}
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Sections grid */}
-          {activeSections.length === 0 ? (
-            <div className="text-[11px] text-neutral-500 italic">No sections in this phase.</div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
-              {activeSections.map(section => (
-                <SectionRow
-                  key={section.id}
-                  section={section}
-                  characters={characters}
-                  teamRosterIds={teamRosterIds}
-                  charsById={charsById}
-                  onPatch={patch => patchSection(section.id, patch)}
-                  onDelete={() => deleteSection(section.id)}
-                />
-              ))}
+            {/* Vashj Phase 2 timeline */}
+            {slug === "vashj" && activePhase?.label === "Phase 2" && (
+              <div className="mb-3">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-1.5">
+                  Phase 2 timeline
+                </div>
+                <div
+                  className="grid gap-px text-center"
+                  style={{ gridTemplateColumns: "repeat(13, minmax(0, 1fr))" }}
+                >
+                  {VASHJ_P2_TIMELINE.map((c, i) => (
+                    <div
+                      key={i}
+                      className={`px-1.5 py-1.5 border rounded ${
+                        c.danger
+                          ? "bg-[#7a1f2c] border-[#c1394d] text-[#ffd6d6] font-bold"
+                          : c.scary
+                          ? "bg-[#4b2a44] border-[#7a3760] text-neutral-200"
+                          : "bg-[#1a2236] border-[#2e3a55] text-neutral-300"
+                      }`}
+                    >
+                      <div className="font-bold text-[10px] tabular-nums leading-none mb-0.5">{c.t}</div>
+                      <div className="text-[9px] opacity-90 leading-tight">{c.label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Inner split: assignments (7) + platform art (5) */}
+            <div className="grid grid-cols-12 gap-3">
+              <div className="col-span-12 lg:col-span-7">
+                {activeSections.length === 0 ? (
+                  <div className="text-[11px] text-neutral-500 italic">No sections in this phase.</div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+                    {activeSections.map(section => (
+                      <AssignBox
+                        key={section.id}
+                        section={section}
+                        characters={characters}
+                        teamRosterIds={teamRosterIds}
+                        charsById={charsById}
+                        onPatch={patch => patchSection(section.id, patch)}
+                        onDelete={() => deleteSection(section.id)}
+                      />
+                    ))}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={addSection}
+                  className="mt-2 inline-flex items-center gap-1 text-xs text-vermillion-300 hover:text-vermillion-200 transition"
+                >
+                  <Plus size={12} aria-hidden /> Add section
+                </button>
+              </div>
+
+              {/* Platform art panel */}
+              <div className="col-span-12 lg:col-span-5">
+                <div
+                  className="aspect-[16/9] rounded-md border border-[#2e3a55] p-3 text-[11px] leading-snug text-slate-300"
+                  style={{ background: platform.gradient }}
+                >
+                  {platform.heading && (
+                    <div className="font-bold text-amber-100 mb-1.5">{platform.heading}</div>
+                  )}
+                  <ul className="space-y-1">
+                    {platform.notes.map((n, i) => (
+                      <li key={i}>{n}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
-          )}
-          <button
-            type="button"
-            onClick={addSection}
-            className="mt-3 inline-flex items-center gap-1 text-xs text-vermillion-300 hover:text-vermillion-200 transition"
-          >
-            <Plus size={12} aria-hidden /> Add section
-          </button>
+          </div>
         </div>
       </div>
     </div>
@@ -230,7 +270,16 @@ export function BossCard({
 
 /* ──────────────────────────────────────────────────────────────────── */
 
-function SectionRow({
+/**
+ * AssignBox — one section's chip stack inside a boss card. Navy header
+ * bar with the section title (click to rename), then a vertical stack
+ * of full-width character chips, then an "add" affordance.
+ *
+ * Matches the source spreadsheet's column-of-rows aesthetic: each chip
+ * is one row, centered italic name, class colour. Hovering the box
+ * reveals the delete × on the header.
+ */
+function AssignBox({
   section,
   characters,
   teamRosterIds,
@@ -271,79 +320,72 @@ function SectionRow({
   const excludeIds = useMemo(() => new Set(section.characterIds), [section.characterIds]);
 
   return (
-    <div className="group/row rounded-md border border-white/10 bg-black/20 p-2">
-      <div className="flex items-center gap-2 mb-1.5">
-        {/* Section title bar — navy header to match the sheet */}
-        {editingTitle ? (
-          <input
-            autoFocus
-            value={titleDraft}
-            onChange={e => setTitleDraft(e.target.value)}
-            onBlur={commitTitle}
-            onKeyDown={e => {
-              if (e.key === "Enter") commitTitle();
-              if (e.key === "Escape") { setEditingTitle(false); setTitleDraft(section.title); }
-            }}
-            className="input text-xs h-6 flex-1 px-1.5 py-0"
-            aria-label="Section title"
-          />
-        ) : (
+    <div className="group/box flex flex-col gap-px">
+      {/* Header */}
+      {editingTitle ? (
+        <input
+          autoFocus
+          value={titleDraft}
+          onChange={e => setTitleDraft(e.target.value)}
+          onBlur={commitTitle}
+          onKeyDown={e => {
+            if (e.key === "Enter") commitTitle();
+            if (e.key === "Escape") { setEditingTitle(false); setTitleDraft(section.title); }
+          }}
+          className="text-[11px] font-bold text-white text-center bg-[#1e3a5f] border border-[#2c5494] px-2 py-1 outline-none w-full"
+          aria-label="Section title"
+          style={{ letterSpacing: "0.02em" }}
+        />
+      ) : (
+        <div className="relative">
           <button
             type="button"
             onClick={() => { setTitleDraft(section.title); setEditingTitle(true); }}
-            className="flex-1 text-left text-[11px] font-semibold uppercase tracking-wider text-white bg-[#1e3a5f] hover:bg-[#234876] transition border border-[#2c5494] rounded px-2 py-1 truncate"
+            className="w-full text-[11px] font-bold uppercase tracking-wider text-white text-center bg-[#1e3a5f] hover:bg-[#234876] transition border border-[#2c5494] px-2 py-1 truncate"
             title="Click to rename"
+            style={{ letterSpacing: "0.02em", textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
           >
             {section.title}
           </button>
-        )}
-        <button
-          type="button"
-          onClick={onDelete}
-          className="opacity-0 group-hover/row:opacity-100 transition text-neutral-500 hover:text-rose-300 p-0.5 -m-0.5"
-          aria-label={`Delete section ${section.title}`}
-        >
-          <X size={12} aria-hidden />
-        </button>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-1">
-        {section.characterIds.map((id, idx) => {
-          const c = charsById.get(id);
-          if (!c) return null;
-          return (
-            <CharacterChip
-              key={`${id}:${idx}`}
-              character={c}
-              small
-              onRemove={() => removeChar(idx)}
-            />
-          );
-        })}
-        <span className="relative">
           <button
-            ref={addBtnRef}
             type="button"
-            onClick={() => setPickerOpen(true)}
-            className="inline-flex items-center gap-1 italic text-[11px] text-neutral-700 hover:text-vermillion-700 hover:bg-emerald-100 transition border border-emerald-200/40 rounded-[3px] px-1.5 py-0.5"
-            style={{ background: "#c4dd96" }}
-            title={teamRosterIds.length === 0 ? "Fill the team's groups first" : "Add character"}
+            onClick={onDelete}
+            className="absolute top-1/2 -translate-y-1/2 right-1 opacity-0 group-hover/box:opacity-100 transition text-white/70 hover:text-rose-300 p-0.5"
+            aria-label={`Delete section ${section.title}`}
           >
-            <Plus size={10} aria-hidden /> add
+            <X size={10} aria-hidden />
           </button>
-          {pickerOpen && (
-            <CharacterPicker
-              characters={characters}
-              scopeIds={teamRosterIds.length > 0 ? teamRosterIds : null}
-              excludeIds={excludeIds}
-              eligibility={section.eligibility}
-              onPick={addChar}
-              onClose={() => setPickerOpen(false)}
-              anchorRef={addBtnRef}
-            />
-          )}
-        </span>
-      </div>
+        </div>
+      )}
+
+      {/* Chip stack */}
+      {section.characterIds.map((id, idx) => {
+        const c = charsById.get(id);
+        if (!c) return null;
+        return (
+          <CharacterChip
+            key={`${id}:${idx}`}
+            character={c}
+            size="sm"
+            onRemove={() => removeChar(idx)}
+          />
+        );
+      })}
+
+      <span className="relative">
+        <EmptySlot onClick={() => setPickerOpen(true)} size="sm" />
+        {pickerOpen && (
+          <CharacterPicker
+            characters={characters}
+            scopeIds={teamRosterIds.length > 0 ? teamRosterIds : null}
+            excludeIds={excludeIds}
+            eligibility={section.eligibility}
+            onPick={addChar}
+            onClose={() => setPickerOpen(false)}
+            anchorRef={addBtnRef}
+          />
+        )}
+      </span>
     </div>
   );
 }

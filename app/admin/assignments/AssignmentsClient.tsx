@@ -19,6 +19,7 @@ import { CharacterChip, EmptySlot, type AssignableCharacter } from "./CharacterC
 import { CharacterPicker } from "./CharacterPicker";
 import { BuffsCard } from "./BuffsCard";
 import { BossCard } from "./BossCard";
+import { RosterSidebar } from "./RosterSidebar";
 import { HighlightProvider, useHighlight } from "./HighlightContext";
 
 type Team = {
@@ -255,7 +256,7 @@ function AssignmentsBody({
         </div>
       </div>
 
-      {/* Body */}
+      {/* Body — three-column grid matching the source mockup */}
       {!selectedTeam || !sheet ? (
         <EmptyState
           icon={Inbox}
@@ -264,44 +265,58 @@ function AssignmentsBody({
           variant="compact"
         />
       ) : (
-        <>
-          <GroupSetup
-            data={data}
-            setData={setData}
-            characters={characters}
-            charsById={charsById}
-          />
-          <RoleTallies roleCounts={roleCounts} />
-          <BuffsCard
-            data={data}
-            setData={setData}
-            characters={characters}
-            teamRosterIds={teamRosterIds}
-            teamRosterChars={teamRosterChars}
-            charsById={charsById}
-          />
+        <div className="grid grid-cols-12 gap-3">
+          {/* LEFT rail — group setup + role tallies (col-2 on desktop) */}
+          <aside className="col-span-12 lg:col-span-2 space-y-3">
+            <GroupSetup
+              data={data}
+              setData={setData}
+              characters={characters}
+              charsById={charsById}
+            />
+            <RoleTallies roleCounts={roleCounts} />
+          </aside>
 
-          {/* Per-boss assignments, grouped by raid. */}
-          {(["SSC", "TK"] as const).map(raidShort => (
-            <div key={raidShort} className="space-y-3">
-              <div className="font-display text-3xl text-amber-200 border-b border-amber-200/15 pb-2 mt-2" style={{ letterSpacing: "0.03em" }}>
-                {raidShort === "SSC" ? "Serpentshrine Cavern" : "Tempest Keep — The Eye"}
+          {/* CENTER — buffs + boss cards (col-8 on desktop) */}
+          <section className="col-span-12 lg:col-span-8 space-y-4 min-w-0">
+            <BuffsCard
+              data={data}
+              setData={setData}
+              characters={characters}
+              teamRosterIds={teamRosterIds}
+              teamRosterChars={teamRosterChars}
+              charsById={charsById}
+            />
+
+            {(["SSC", "TK"] as const).map(raidShort => (
+              <div key={raidShort} className="space-y-3">
+                <div
+                  className="font-display text-3xl text-amber-200 border-b border-slate-700 pb-2 mt-2"
+                  style={{ letterSpacing: "0.03em" }}
+                >
+                  {raidShort === "SSC" ? "Serpentshrine Cavern" : "Tempest Keep — The Eye"}
+                </div>
+                {ASSIGNMENT_BOSSES.filter(b => b.raidShort === raidShort).map(b => (
+                  <BossCard
+                    key={b.slug}
+                    slug={b.slug}
+                    data={data}
+                    setData={setData}
+                    characters={characters}
+                    teamRosterIds={teamRosterIds}
+                    teamRosterChars={teamRosterChars}
+                    charsById={charsById}
+                  />
+                ))}
               </div>
-              {ASSIGNMENT_BOSSES.filter(b => b.raidShort === raidShort).map(b => (
-                <BossCard
-                  key={b.slug}
-                  slug={b.slug}
-                  data={data}
-                  setData={setData}
-                  characters={characters}
-                  teamRosterIds={teamRosterIds}
-                  teamRosterChars={teamRosterChars}
-                  charsById={charsById}
-                />
-              ))}
-            </div>
-          ))}
-        </>
+            ))}
+          </section>
+
+          {/* RIGHT rail — full team roster sliced four ways (col-2) */}
+          <aside className="col-span-12 lg:col-span-2">
+            <RosterSidebar teamRosterChars={teamRosterChars} />
+          </aside>
+        </div>
       )}
 
       {createOpen && (
@@ -364,55 +379,60 @@ function GroupSetup({
   }
 
   return (
-    <div className="panel p-3">
-      <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-2">
+    <div
+      className="rounded-lg border border-[#2a3650] p-3"
+      style={{ background: "linear-gradient(180deg, #1a2236, #111827)" }}
+    >
+      <div
+        className="text-xs font-bold uppercase tracking-wider text-white text-center px-3 py-1 mb-2 border border-[#2c5494] rounded"
+        style={{ background: "linear-gradient(180deg, #234876, #1e3a5f)", textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
+      >
         Group Setup
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {(["1", "2", "3", "4", "5"] as const).map(g => {
           const filled = data.groups[g] ?? [];
-          // Render exactly 5 slots, padding with empties.
           const slots: Array<number | null> = [...filled];
           while (slots.length < 5) slots.push(null);
           return (
-            <div key={g} className="rounded-md border border-white/10 bg-black/20">
-              <div className="bg-[#1a1a1a] text-center text-xs font-semibold text-white py-1 border-b border-black rounded-t-md">
+            <div key={g} className="flex flex-col gap-px">
+              <div className="bg-[#1a1a1a] text-center text-[10px] font-bold uppercase tracking-wider text-white py-1 border border-black">
                 Group {g}
               </div>
-              <div className="p-1 flex flex-col gap-px">
-                {slots.map((charId, idx) => {
-                  const slotKey = `${g}:${idx}`;
-                  const char = charId ? charsById.get(charId) : null;
-                  return (
-                    <div
-                      key={slotKey}
-                      ref={el => { slotRefs.current[slotKey] = el; }}
-                      className="relative"
-                    >
-                      {char ? (
-                        <div className="w-full">
-                          <CharacterChip
-                            character={char}
-                            onRemove={() => removeFromSlot(g, idx)}
-                            onClick={() => setOpenSlot(prev => prev === slotKey ? null : slotKey)}
-                          />
-                        </div>
-                      ) : (
-                        <EmptySlot onClick={() => setOpenSlot(prev => prev === slotKey ? null : slotKey)} />
-                      )}
-                      {openSlot === slotKey && (
-                        <CharacterPicker
-                          characters={characters}
-                          excludeIds={allRosterIds}
-                          onPick={c => addToSlot(g, idx, c)}
-                          onClose={() => setOpenSlot(null)}
-                          anchorRef={{ current: slotRefs.current[slotKey] }}
-                        />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+              {slots.map((charId, idx) => {
+                const slotKey = `${g}:${idx}`;
+                const char = charId ? charsById.get(charId) : null;
+                return (
+                  <div
+                    key={slotKey}
+                    ref={el => { slotRefs.current[slotKey] = el; }}
+                    className="relative"
+                  >
+                    {char ? (
+                      <CharacterChip
+                        character={char}
+                        size="sm"
+                        onRemove={() => removeFromSlot(g, idx)}
+                        onClick={() => setOpenSlot(prev => prev === slotKey ? null : slotKey)}
+                      />
+                    ) : (
+                      <EmptySlot
+                        size="sm"
+                        onClick={() => setOpenSlot(prev => prev === slotKey ? null : slotKey)}
+                      />
+                    )}
+                    {openSlot === slotKey && (
+                      <CharacterPicker
+                        characters={characters}
+                        excludeIds={allRosterIds}
+                        onPick={c => addToSlot(g, idx, c)}
+                        onClose={() => setOpenSlot(null)}
+                        anchorRef={{ current: slotRefs.current[slotKey] }}
+                      />
+                    )}
+                  </div>
+                );
+              })}
             </div>
           );
         })}
@@ -426,26 +446,28 @@ function GroupSetup({
 function RoleTallies({ roleCounts }: { roleCounts: Array<{ key: string; label: string; chars: AssignableCharacter[] }> }) {
   const total = roleCounts.reduce((sum, r) => sum + r.chars.length, 0);
   return (
-    <div className="panel p-3">
-      <div className="flex items-baseline justify-between mb-2">
-        <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90">
-          Role roster
-        </div>
-        <div className="text-[11px] text-neutral-500 tabular-nums">{total} / 25</div>
+    <div
+      className="rounded-lg border border-[#2a3650] p-3"
+      style={{ background: "linear-gradient(180deg, #1a2236, #111827)" }}
+    >
+      <div
+        className="text-xs font-bold uppercase tracking-wider text-white text-center px-3 py-1 mb-1 border border-[#2c5494] rounded"
+        style={{ background: "linear-gradient(180deg, #234876, #1e3a5f)", textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
+      >
+        Gruul / Mag Roster
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+      <div className="text-center text-[10px] text-slate-400 mb-2 tabular-nums">{total} / 25</div>
+      <div className="grid grid-cols-2 gap-2">
         {roleCounts.map(r => (
-          <div key={r.key} className="rounded-md border border-white/10 bg-black/20 overflow-hidden">
-            <div className="bg-[#1a1a1a] text-center text-xs font-semibold text-white py-1 border-b border-black">
+          <div key={r.key} className="flex flex-col gap-px">
+            <div className="bg-[#1a1a1a] text-center text-[10px] font-bold uppercase tracking-wider text-white py-1 border border-black">
               {r.label} · {r.chars.length}
             </div>
-            <div className="p-1 flex flex-col gap-px">
-              {r.chars.length === 0 ? (
-                <div className="px-2 py-2 text-[11px] text-neutral-600 italic text-center">none</div>
-              ) : r.chars.map(c => (
-                <CharacterChip key={c.id} character={c} small />
-              ))}
-            </div>
+            {r.chars.length === 0 ? (
+              <div className="px-1 py-1 text-[10px] text-neutral-600 italic text-center">none</div>
+            ) : r.chars.map(c => (
+              <CharacterChip key={c.id} character={c} size="sm" />
+            ))}
           </div>
         ))}
       </div>

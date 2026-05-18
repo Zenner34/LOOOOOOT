@@ -425,3 +425,158 @@ export const VASHJ_P2_TIMELINE: Array<{ t: string; label: string; scary?: boolea
   { t: "225s", label: "Elite", scary: true },
   { t: "240s", label: "Strider", scary: true },
 ];
+
+/* ────────────────────────────────────────────────────────────────────
+   PLATFORM-ART STRATEGY NOTES
+   ──────────────────────────────────────────────────────────────────── */
+
+type PlatformInfo = {
+  /** CSS gradient string used as the platform-art panel background. */
+  gradient: string;
+  /** Strategy notes for single-phase bosses, or fallback if phaseNotes
+   *  is missing for the active phase. */
+  notes: string[];
+  /** Heading rendered above `notes`, optional. */
+  heading?: string;
+  /** Per-phase override for multi-phase bosses. Keyed by phase label
+   *  (matches BOSS_TEMPLATES). */
+  phaseNotes?: Record<string, { heading?: string; notes: string[] }>;
+};
+
+const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
+  hydross: {
+    gradient: "linear-gradient(135deg, #0d3b3a, #15487a)",
+    heading: "WATER PHASE → POISON PHASE",
+    notes: [
+      "Boss starts on south side.",
+      "Stream-change line in the middle splits Frost ↔ Nature.",
+    ],
+  },
+  lurker: {
+    gradient: "linear-gradient(135deg, #2a1f3a, #5a2e2a)",
+    notes: [
+      "Inner ring vs. outer ring positioning.",
+      "MT center on platform; A/B/C spout teams to corners.",
+    ],
+  },
+  morogrim: {
+    gradient: "linear-gradient(135deg, #15263d, #1d3e5e)",
+    notes: [
+      "Grave healer on NORTH; MT center.",
+      "Murloc waves rotate north → south.",
+    ],
+  },
+  fathom: {
+    gradient: "linear-gradient(135deg, #25241a, #4a3e1a)",
+    notes: [
+      "Raid stacks center. LOS tank pulls Tidalvess behind pillar.",
+      "Kill order: Caribdis → Sharkkis → Tidalvess → Fathom-Lord.",
+    ],
+  },
+  leotheras: {
+    gradient: "linear-gradient(135deg, #1a2e1f, #3c5a32)",
+    notes: [
+      "Warlock tanks demon on left wall. Hunter & raid spread.",
+      "Whirlwind = drop threat at 5 stacks.",
+    ],
+  },
+  vashj: {
+    gradient: "linear-gradient(135deg, #112a16, #1e4731)",
+    notes: ["See phase tabs above for per-phase notes."],
+    phaseNotes: {
+      "Phase 1": {
+        heading: "P1 — Run out ASAP with Static Charge",
+        notes: [
+          "Rogues cloak it.",
+          "Move boss to edge at 74% or on pull.",
+        ],
+      },
+      "Phase 2": {
+        heading: "P2 — Decurse / dispel zones",
+        notes: [
+          "Overlapping casts marked scary in the timeline above.",
+          "Triple-overlap at 180s is the make-or-break window.",
+        ],
+      },
+      "Phase 3": {
+        heading: "Orb throw map",
+        notes: [
+          "Catchers on outer ring.",
+          "Dunkers on inner ring at N/S/E/W generators.",
+        ],
+      },
+    },
+  },
+  alar: {
+    gradient: "linear-gradient(135deg, #3a1f1a, #6a2a1f)",
+    heading: "4 platforms",
+    notes: [
+      "Tank 2 stands 1 platform away.",
+      "Tank 3 stands across the room.",
+      "Melee jump down on flight.",
+      "Tank 1 & 2 swap on Melt Armor.",
+    ],
+  },
+  voidreaver: {
+    gradient: "linear-gradient(135deg, #2a1a3a, #4a2a6a)",
+    notes: [
+      "Spread 15y.",
+      "Orbs target random raid members — eat the orb if it lands.",
+    ],
+  },
+  solarian: {
+    gradient: "linear-gradient(135deg, #1a1a3a, #3a1a5a)",
+    notes: [
+      "Post-nerf Wrath = living bomb.",
+      "Get out and blow up at marked corners.",
+    ],
+  },
+  kael: {
+    gradient: "linear-gradient(135deg, #3a1a3a, #6a1a4a)",
+    notes: ["See phase tabs above for per-phase notes."],
+    phaseNotes: {
+      "Phase 1": {
+        heading: "Advisors",
+        notes: [
+          "Tank Sanguinar near pillar.",
+          "Soaker stands on Conflagration mark.",
+        ],
+      },
+      "Phase 2": {
+        heading: "Weapons",
+        notes: [
+          "Tank everything in cluster — except 2H Axe & Bow.",
+          "Kill order: Mace → Staff → Warp Slicer → Daggers → Shield → Bow → Axe.",
+        ],
+      },
+      "Phase 3": {
+        heading: "Advisors return",
+        notes: ["All 4 advisors return at once.", "Melee → Sanguinar then Telonicus; Ranged → Thaladred then Capernian."],
+      },
+      "Phase 4": {
+        heading: "Kael, but he flies",
+        notes: [
+          "Arcane Disruption every 20s — staff prevents.",
+          "MC dispelled by daggers; hunters wing-clip.",
+          "Shock Barrier: 80k shield, 10s.",
+        ],
+      },
+      "Phase 5": {
+        heading: "50% HP — full kit",
+        notes: [
+          "Gravity Lapse teleports + air.",
+          "Nether Beam — chain beam, spread out.",
+          "Nether Vapor: black clouds, -10% max HP per tick, move ASAP.",
+        ],
+      },
+    },
+  },
+};
+
+export function bossPlatformInfo(slug: BossSlug, phaseLabel?: string): { gradient: string; heading?: string; notes: string[] } {
+  const info = PLATFORM_INFO[slug];
+  if (phaseLabel && info.phaseNotes?.[phaseLabel]) {
+    return { gradient: info.gradient, ...info.phaseNotes[phaseLabel] };
+  }
+  return { gradient: info.gradient, heading: info.heading, notes: info.notes };
+}

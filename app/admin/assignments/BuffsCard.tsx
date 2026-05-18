@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   defaultBuffs,
@@ -10,21 +10,20 @@ import {
   type AssignmentData,
 } from "@/lib/assignments";
 import { Plus, Sparkles, X } from "@/app/components/ui/Icon";
-import { CharacterChip, type AssignableCharacter } from "./CharacterChip";
+import { CharacterChip, EmptySlot, type AssignableCharacter } from "./CharacterChip";
 import { CharacterPicker } from "./CharacterPicker";
 
 const ICON_BASE = "https://wow.zamimg.com/images/wow/icons/large/";
 
 /**
- * Buffs & Assignments card. Renders the buff/dispel sections (PI, Fort,
- * Blessings, Soulstones, etc.) as a grid of editable rows. Each row has
- * an icon, an inline-editable title, a horizontal chip strip, an Add
- * button (opens the team-scoped character picker), and a Delete button.
+ * Buffs & Assignments card — matches the mockup's 4-column grouped
+ * layout. Sections with a common title prefix collapse into one block
+ * with the icon + category at the top and `[scope]  [chip-or-add]`
+ * rows beneath. Title format: "Category · Scope" (e.g., "Power
+ * Infusion · G1-3"). Sections without a "·" render in a one-off block.
  *
- * Sections live in `data.buffs` as an array of {id, title, iconSlug,
- * characterIds}. New AssignmentSheets seed with the canonical 18-row
- * template (see lib/assignments.ts BUFF_TEMPLATE); admins can rename,
- * add, delete, or reset to defaults.
+ * Inline title edit, click-to-rename, hover-reveal delete; the cmdk
+ * picker filters by eligibility and is scoped to the team roster.
  */
 export function BuffsCard({
   data,
@@ -56,7 +55,7 @@ export function BuffsCard({
   function addSection() {
     updateSections([
       ...data.buffs,
-      { id: newSectionId(), title: "New buff", iconSlug: undefined, characterIds: [] },
+      { id: newSectionId(), title: "New buff · slot", iconSlug: undefined, characterIds: [] },
     ]);
   }
 
@@ -77,11 +76,22 @@ export function BuffsCard({
     toast.success(`Filled ${filled} buff section${filled === 1 ? "" : "s"} from team roster.`);
   }
 
+  // Group consecutive sections by category (title before " · "). Falls
+  // back to the full title when there's no separator. Groups preserve
+  // input order so admin edits don't reshuffle anything.
+  const grouped = useMemo(() => groupByCategory(data.buffs), [data.buffs]);
+
   return (
-    <div className="panel p-3">
-      <div className="flex items-baseline justify-between mb-2 gap-3 flex-wrap">
-        <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90">
-          Buffs & Assignments
+    <div
+      className="rounded-lg border border-[#2a3650] p-3"
+      style={{ background: "linear-gradient(180deg, #1a2236, #111827)" }}
+    >
+      <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
+        <div
+          className="text-xs font-bold uppercase tracking-wider text-white text-center px-3 py-1 border border-[#2c5494] rounded"
+          style={{ background: "linear-gradient(180deg, #234876, #1e3a5f)", textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
+        >
+          Buffs &amp; Assignments
         </div>
         <div className="flex items-center gap-3">
           <span className="text-[11px] text-neutral-500 tabular-nums">{data.buffs.length} sections</span>
@@ -104,16 +114,18 @@ export function BuffsCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
-        {data.buffs.map(section => (
-          <BuffRow
-            key={section.id}
-            section={section}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        {grouped.map(g => (
+          <BuffGroup
+            key={g.key}
+            heading={g.category}
+            iconSlug={g.iconSlug}
+            sections={g.sections}
             characters={characters}
             teamRosterIds={teamRosterIds}
             charsById={charsById}
-            onPatch={patch => patchSection(section.id, patch)}
-            onDelete={() => deleteSection(section.id)}
+            onPatch={patchSection}
+            onDelete={deleteSection}
           />
         ))}
       </div>
@@ -131,6 +143,58 @@ export function BuffsCard({
 
 /* ──────────────────────────────────────────────────────────────────── */
 
+function BuffGroup({
+  heading,
+  iconSlug,
+  sections,
+  characters,
+  teamRosterIds,
+  charsById,
+  onPatch,
+  onDelete,
+}: {
+  heading: string;
+  iconSlug?: string;
+  sections: AssignSection[];
+  characters: AssignableCharacter[];
+  teamRosterIds: number[];
+  charsById: Map<number, AssignableCharacter>;
+  onPatch: (id: string, patch: Partial<AssignSection>) => void;
+  onDelete: (id: string) => void;
+}) {
+  const iconSrc = iconSlug ? `${ICON_BASE}${iconSlug}.jpg` : null;
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center gap-2">
+        {iconSrc ? (
+          <img
+            src={iconSrc}
+            alt=""
+            width={22}
+            height={22}
+            className="border border-[#2e3a55] rounded-sm flex-shrink-0"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
+          />
+        ) : (
+          <span className="w-[22px] h-[22px] border border-dashed border-white/15 rounded-sm flex-shrink-0" aria-hidden />
+        )}
+        <span className="text-[11px] uppercase tracking-wider text-slate-400 truncate">{heading}</span>
+      </div>
+      {sections.map(s => (
+        <BuffRow
+          key={s.id}
+          section={s}
+          characters={characters}
+          teamRosterIds={teamRosterIds}
+          charsById={charsById}
+          onPatch={patch => onPatch(s.id, patch)}
+          onDelete={() => onDelete(s.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
 function BuffRow({
   section,
   characters,
@@ -147,15 +211,16 @@ function BuffRow({
   onDelete: () => void;
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [editingTitle, setEditingTitle] = useState(false);
-  const [titleDraft, setTitleDraft] = useState(section.title);
-  const addBtnRef = useRef<HTMLButtonElement>(null);
+  const [editingScope, setEditingScope] = useState(false);
+  const [scopeDraft, setScopeDraft] = useState(scopeOf(section.title));
+  const slotRef = useRef<HTMLDivElement>(null);
 
-  function commitTitle() {
-    const next = titleDraft.trim();
-    setEditingTitle(false);
-    if (next && next !== section.title) onPatch({ title: next });
-    else setTitleDraft(section.title);
+  function commitScope() {
+    setEditingScope(false);
+    const next = scopeDraft.trim();
+    const category = categoryOf(section.title);
+    const newTitle = next ? `${category} · ${next}` : category;
+    if (newTitle !== section.title) onPatch({ title: newTitle });
   }
 
   function addChar(c: AssignableCharacter) {
@@ -169,58 +234,39 @@ function BuffRow({
     onPatch({ characterIds: next });
   }
 
+  const scope = scopeOf(section.title);
   const excludeIds = new Set(section.characterIds);
-  const iconSrc = section.iconSlug ? `${ICON_BASE}${section.iconSlug}.jpg` : null;
 
   return (
-    <div className="group/row rounded-md border border-white/10 bg-black/20 p-2">
-      <div className="flex items-center gap-2 mb-1.5">
-        {iconSrc ? (
-          <img
-            src={iconSrc}
-            alt=""
-            width={20}
-            height={20}
-            className="rounded-sm ring-1 ring-white/10 flex-shrink-0"
-            onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
-          />
-        ) : (
-          <span className="w-5 h-5 rounded-sm border border-dashed border-white/20 flex-shrink-0" aria-hidden />
-        )}
-        {editingTitle ? (
-          <input
-            autoFocus
-            value={titleDraft}
-            onChange={e => setTitleDraft(e.target.value)}
-            onBlur={commitTitle}
-            onKeyDown={e => {
-              if (e.key === "Enter") commitTitle();
-              if (e.key === "Escape") { setEditingTitle(false); setTitleDraft(section.title); }
-            }}
-            className="input text-xs h-6 flex-1 px-1.5 py-0"
-            aria-label="Section title"
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => { setTitleDraft(section.title); setEditingTitle(true); }}
-            className="flex-1 text-left text-xs font-semibold text-neutral-100 hover:text-vermillion-200 transition truncate"
-            title="Click to rename"
-          >
-            {section.title}
-          </button>
-        )}
+    <div className="group/row grid grid-cols-[56px_1fr_auto] gap-px items-stretch">
+      {/* Scope label (left) */}
+      {editingScope ? (
+        <input
+          autoFocus
+          value={scopeDraft}
+          onChange={e => setScopeDraft(e.target.value)}
+          onBlur={commitScope}
+          onKeyDown={e => {
+            if (e.key === "Enter") commitScope();
+            if (e.key === "Escape") { setEditingScope(false); setScopeDraft(scope); }
+          }}
+          className="text-[10px] font-bold text-white text-center bg-[#1e3a5f] border border-[#2c5494] px-1 py-1 outline-none"
+          aria-label="Scope label"
+        />
+      ) : (
         <button
           type="button"
-          onClick={onDelete}
-          className="opacity-0 group-hover/row:opacity-100 transition text-neutral-500 hover:text-rose-300 p-0.5 -m-0.5"
-          aria-label={`Delete section ${section.title}`}
+          onClick={() => { setScopeDraft(scope); setEditingScope(true); }}
+          className="text-[10px] font-bold uppercase tracking-wider text-white text-center bg-[#1e3a5f] hover:bg-[#234876] transition border border-[#2c5494] px-1 py-1 truncate leading-tight"
+          title="Click to rename"
+          style={{ textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
         >
-          <X size={12} aria-hidden />
+          {scope || "—"}
         </button>
-      </div>
+      )}
 
-      <div className="flex flex-wrap items-center gap-1">
+      {/* Chip stack (middle) */}
+      <div ref={slotRef} className="relative flex flex-col gap-px min-w-0">
         {section.characterIds.map((id, idx) => {
           const c = charsById.get(id);
           if (!c) return null;
@@ -228,35 +274,60 @@ function BuffRow({
             <CharacterChip
               key={`${id}:${idx}`}
               character={c}
-              small
+              size="sm"
               onRemove={() => removeChar(idx)}
             />
           );
         })}
-        <span className="relative">
-          <button
-            ref={addBtnRef}
-            type="button"
-            onClick={() => setPickerOpen(true)}
-            className="inline-flex items-center gap-1 italic text-[11px] text-neutral-700 hover:text-vermillion-700 hover:bg-emerald-100 transition border border-emerald-200/40 rounded-[3px] px-1.5 py-0.5"
-            style={{ background: "#c4dd96" }}
-            title={teamRosterIds.length === 0 ? "Add a character to the team's groups first" : "Add character"}
-          >
-            <Plus size={10} aria-hidden /> add
-          </button>
-          {pickerOpen && (
-            <CharacterPicker
-              characters={characters}
-              scopeIds={teamRosterIds.length > 0 ? teamRosterIds : null}
-              excludeIds={excludeIds}
-              eligibility={section.eligibility}
-              onPick={addChar}
-              onClose={() => setPickerOpen(false)}
-              anchorRef={addBtnRef}
-            />
-          )}
-        </span>
+        <EmptySlot onClick={() => setPickerOpen(true)} size="sm" />
+        {pickerOpen && (
+          <CharacterPicker
+            characters={characters}
+            scopeIds={teamRosterIds.length > 0 ? teamRosterIds : null}
+            excludeIds={excludeIds}
+            eligibility={section.eligibility}
+            onPick={addChar}
+            onClose={() => setPickerOpen(false)}
+            anchorRef={slotRef as React.RefObject<HTMLElement>}
+          />
+        )}
       </div>
+
+      {/* Row delete (right, hover-revealed) */}
+      <button
+        type="button"
+        onClick={onDelete}
+        className="opacity-0 group-hover/row:opacity-100 transition text-neutral-500 hover:text-rose-300 px-1 self-center"
+        aria-label={`Delete ${section.title}`}
+      >
+        <X size={10} aria-hidden />
+      </button>
     </div>
   );
+}
+
+/* ──────────────────────────────────────────────────────────────────── */
+
+function categoryOf(title: string): string {
+  const i = title.indexOf("·");
+  return i === -1 ? title : title.slice(0, i).trim();
+}
+
+function scopeOf(title: string): string {
+  const i = title.indexOf("·");
+  return i === -1 ? "" : title.slice(i + 1).trim();
+}
+
+function groupByCategory(sections: AssignSection[]): Array<{ key: string; category: string; iconSlug?: string; sections: AssignSection[] }> {
+  const groups: Array<{ key: string; category: string; iconSlug?: string; sections: AssignSection[] }> = [];
+  for (const s of sections) {
+    const cat = categoryOf(s.title);
+    const last = groups[groups.length - 1];
+    if (last && last.category === cat) {
+      last.sections.push(s);
+    } else {
+      groups.push({ key: `${cat}-${groups.length}`, category: cat, iconSlug: s.iconSlug, sections: [s] });
+    }
+  }
+  return groups;
 }
