@@ -1,7 +1,9 @@
 "use client";
 
-import { CLASS_COLOR } from "@/lib/specs";
+import { CLASS_COLOR, SPEC_ICON } from "@/lib/specs";
 import { useHighlight } from "./HighlightContext";
+
+const SPEC_ICON_BASE = "https://wow.zamimg.com/images/wow/icons/medium/";
 
 export type AssignableCharacter = {
   id: number;
@@ -50,8 +52,11 @@ export function CharacterChip({
   const fg = isDarkBg ? "#fff" : "#1a1a1a";
 
   const layoutCls = inline ? "inline-flex" : "flex w-full";
-  const pad = size === "sm" ? "px-2 py-[3px]" : "px-2 py-1";
+  const pad = size === "sm" ? "pl-1 pr-2 py-[2px]" : "pl-1.5 pr-2 py-[3px]";
   const txt = size === "sm" ? "text-[11px]" : "text-[12px]";
+  const iconSize = size === "sm" ? 14 : 16;
+  const iconKey = SPEC_ICON[character.spec];
+  const iconSrc = iconKey ? `${SPEC_ICON_BASE}${iconKey}.jpg` : null;
 
   return (
     <button
@@ -62,14 +67,26 @@ export function CharacterChip({
       onFocus={() => setHover(character.id)}
       onBlur={() => setHover(null)}
       title={`${character.name} — ${character.spec} ${character.class}${character.playerName && character.playerName !== character.name ? ` · ${character.playerName}` : ""}${character.isMain ? " (main)" : " (alt)"}`}
-      className={`group items-center justify-center gap-1 italic font-semibold border border-black/40 ${pad} ${txt} ${layoutCls} transition-all leading-snug select-none ${
+      className={`group items-center justify-start gap-1 italic font-semibold border border-black/40 ${pad} ${txt} ${layoutCls} transition-all leading-snug select-none ${
         dimmed ? "grayscale opacity-55 brightness-75" : ""
       } ${
         highlighted ? "ring-2 ring-[#d4af37] ring-offset-1 ring-offset-[var(--bg)] shadow-[0_0_0_4px_rgba(212,175,55,0.22)]" : ""
       } hover:-translate-y-px hover:brightness-110 hover:shadow-[0_4px_10px_rgba(0,0,0,0.45)]`}
       style={{ background: bg, color: fg }}
     >
-      <span className="truncate">{character.name}</span>
+      {iconSrc && (
+        <img
+          src={iconSrc}
+          alt=""
+          width={iconSize}
+          height={iconSize}
+          loading="lazy"
+          className="rounded-[2px] ring-1 ring-black/40 flex-shrink-0"
+          style={{ width: iconSize, height: iconSize }}
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+        />
+      )}
+      <span className="truncate flex-1 text-center">{character.name}</span>
       {onRemove && (
         <span
           role="button"
