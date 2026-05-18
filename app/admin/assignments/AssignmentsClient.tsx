@@ -14,9 +14,11 @@ import {
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { ChevronDown, Inbox, Plus, X } from "@/app/components/ui/Icon";
+import { ASSIGNMENT_BOSSES } from "@/lib/assignments";
 import { CharacterChip, EmptySlot, type AssignableCharacter } from "./CharacterChip";
 import { CharacterPicker } from "./CharacterPicker";
 import { BuffsCard } from "./BuffsCard";
+import { BossCard } from "./BossCard";
 
 type Team = {
   id: number;
@@ -210,6 +212,26 @@ export default function AssignmentsClient({
             teamRosterIds={teamRosterIds}
             charsById={charsById}
           />
+
+          {/* Per-boss assignments, grouped by raid. */}
+          {(["SSC", "TK"] as const).map(raidShort => (
+            <div key={raidShort} className="space-y-3">
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200/80 border-b border-amber-200/15 pb-1">
+                {raidShort === "SSC" ? "Serpentshrine Cavern" : "Tempest Keep — The Eye"}
+              </div>
+              {ASSIGNMENT_BOSSES.filter(b => b.raidShort === raidShort).map(b => (
+                <BossCard
+                  key={b.slug}
+                  slug={b.slug}
+                  data={data}
+                  setData={setData}
+                  characters={characters}
+                  teamRosterIds={teamRosterIds}
+                  charsById={charsById}
+                />
+              ))}
+            </div>
+          ))}
         </>
       )}
 

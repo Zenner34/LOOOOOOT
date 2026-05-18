@@ -56,7 +56,7 @@ export function emptyAssignmentData(): AssignmentData {
   return {
     groups: { "1": [], "2": [], "3": [], "4": [], "5": [] },
     buffs: defaultBuffs(),
-    bosses: {},
+    bosses: defaultBosses(),
   };
 }
 
@@ -129,3 +129,223 @@ export function rosterCharacterIds(data: AssignmentData): number[] {
 export function newSectionId(): string {
   return Math.random().toString(36).slice(2, 9);
 }
+
+/* ────────────────────────────────────────────────────────────────────
+   BOSS TEMPLATES
+   ──────────────────────────────────────────────────────────────────── */
+
+type BossTemplate = {
+  sections?: string[];
+  phases?: Array<{ label: string; sections: string[] }>;
+};
+
+/**
+ * Canonical assignment sections per boss, distilled from the source
+ * spreadsheet's SSC/TK tab. New AssignmentSheets seed with these so the
+ * admin opens the editor and sees the right shape immediately. Every
+ * section starts with empty characterIds; admin renames / adds / deletes
+ * as strats evolve.
+ */
+const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
+  hydross: {
+    sections: [
+      "Frost MT",
+      "Nature MT",
+      "Add Tank",
+      "Tank Healers",
+      "Melee Group 1",
+      "Melee Group 2",
+      "Banish — Skull",
+      "Banish — Cross",
+      "Banish — Triangle",
+      "RDPS 1",
+      "RDPS 2",
+      "RDPS 3",
+    ],
+  },
+  lurker: {
+    sections: [
+      "Main Tank",
+      "Ring Adds (Feral + ProtPal)",
+      "Spout Team A",
+      "Spout Team B",
+      "Spout Team C",
+      "Healer Stack 1",
+      "Healer Stack 2",
+      "Healer Stack 3",
+    ],
+  },
+  morogrim: {
+    sections: [
+      "Main Tank",
+      "Add Tank",
+      "Grave Healer",
+      "Hunter Slow Trap — N",
+      "Hunter Slow Trap — S",
+      "Hunter Slow Trap — C",
+    ],
+  },
+  fathom: {
+    sections: [
+      "FL Tank",
+      "Tank Healer",
+      "Tidal & Shark Tank",
+      "LOS Tank",
+      "LOS Healer",
+    ],
+  },
+  leotheras: {
+    sections: [
+      "Main Tank",
+      "Demon Tank",
+      "WW Threat Wipe",
+    ],
+  },
+  vashj: {
+    phases: [
+      {
+        label: "Phase 1",
+        sections: ["Main Tank", "Strider Kiter", "Elite Tanks", "Ball Dunker"],
+      },
+      {
+        label: "Phase 2",
+        sections: [
+          "West Zone (Decurse / Dispel)",
+          "North Zone (Decurse / Dispel)",
+          "East Zone (Decurse / Dispel)",
+          "South Zone (Decurse / Dispel)",
+        ],
+      },
+      {
+        label: "Phase 3",
+        sections: [
+          "Main Tank",
+          "Tank Healers",
+          "Healer — North",
+          "Healer — South",
+          "Healer — East",
+          "Healer — West",
+          "Healer — Flex",
+          "Zone 1",
+          "Zone 2",
+          "Zone 3",
+        ],
+      },
+    ],
+  },
+  alar: {
+    phases: [
+      {
+        label: "Phase 1",
+        sections: ["Main Tank", "OT (might be afk)", "Add Tank"],
+      },
+      {
+        label: "Phase 2",
+        sections: ["Main Tank", "OT (taunt Melt Armor)", "Add Tank"],
+      },
+    ],
+  },
+  voidreaver: {
+    sections: ["Main Tank", "Orb Eaters"],
+  },
+  solarian: {
+    sections: ["Main Tank"],
+  },
+  kael: {
+    phases: [
+      {
+        label: "Phase 1",
+        sections: ["Sanguinar Tank", "Telonicus Tank", "Capernian Tank", "Conflag Soaker"],
+      },
+      {
+        label: "Phase 2",
+        sections: ["2H Axe Tank", "Longbow Tank", "Remaining Tanks (cluster)"],
+      },
+      {
+        label: "Phase 3",
+        sections: ["Sanguinar Tank", "Telonicus Tank", "Capernian Tank", "Conflag Soaker"],
+      },
+      {
+        label: "Phase 4",
+        sections: [
+          "Main Tank",
+          "Fireball Kick Order",
+          "Pyroblast Kicks",
+          "Phoenix Kiter #1",
+          "Phoenix Kiter #2",
+        ],
+      },
+      {
+        label: "Phase 5",
+        sections: [],
+      },
+    ],
+  },
+};
+
+function makeSections(titles: string[]): AssignSection[] {
+  return titles.map(title => ({
+    id: newSectionId(),
+    title,
+    characterIds: [],
+  }));
+}
+
+export function defaultBosses(): Partial<Record<BossSlug, BossAssignment>> {
+  const out: Partial<Record<BossSlug, BossAssignment>> = {};
+  for (const [slug, tpl] of Object.entries(BOSS_TEMPLATES) as [BossSlug, BossTemplate][]) {
+    if (tpl.sections) {
+      out[slug] = { sections: makeSections(tpl.sections) };
+    } else if (tpl.phases) {
+      out[slug] = {
+        phases: tpl.phases.map(p => ({
+          id: newSectionId(),
+          label: p.label,
+          sections: makeSections(p.sections),
+        })),
+      };
+    }
+  }
+  return out;
+}
+
+/**
+ * Pre-baked default content for one boss — used by the "Reset to
+ * defaults" button on each BossCard, and as the fallback shape when an
+ * old AssignmentSheet doesn't yet have an entry for the boss.
+ */
+export function defaultBossAssignment(slug: BossSlug): BossAssignment {
+  const tpl = BOSS_TEMPLATES[slug];
+  if (tpl.phases) {
+    return {
+      phases: tpl.phases.map(p => ({
+        id: newSectionId(),
+        label: p.label,
+        sections: makeSections(p.sections),
+      })),
+    };
+  }
+  return { sections: makeSections(tpl.sections ?? []) };
+}
+
+/**
+ * Lady Vashj's Phase 2 cast timeline — 13 cells, 0s to 240s. Cells
+ * marked "scary" highlight purple (two-cast overlaps); the 180s cell
+ * is "danger" (triple-overlap) and renders red. Pure display widget,
+ * not editable.
+ */
+export const VASHJ_P2_TIMELINE: Array<{ t: string; label: string; scary?: boolean; danger?: boolean }> = [
+  { t: "0s",   label: "Start" },
+  { t: "45s",  label: "Elite" },
+  { t: "50s",  label: "Tainted 1" },
+  { t: "60s",  label: "Strider" },
+  { t: "90s",  label: "Elite" },
+  { t: "100s", label: "Tainted 2", scary: true },
+  { t: "120s", label: "Strider" },
+  { t: "135s", label: "Elite" },
+  { t: "150s", label: "Tainted 3" },
+  { t: "180s", label: "DANGER", danger: true },
+  { t: "200s", label: "Tainted 4" },
+  { t: "225s", label: "Elite", scary: true },
+  { t: "240s", label: "Strider", scary: true },
+];
