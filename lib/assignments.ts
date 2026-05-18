@@ -116,16 +116,17 @@ export type TankMarker = "skull" | "cross" | "square" | "moon" | "triangle" | "d
 
 /**
  * The six raid markers we render in the Tanks & Tank Healers panel,
- * in conventional kill-priority order. Icons sourced from the wowwiki
- * wikia CDN — the official in-game raid-marker glyphs.
+ * in conventional kill-priority order. Rendered as Unicode glyphs in
+ * the official WoW raid-marker colours — no external CDN dependency,
+ * scales cleanly at any size.
  */
-const TANK_MARKERS: Array<{ marker: TankMarker; iconUrl: string; label: string }> = [
-  { marker: "skull",    iconUrl: "https://static.wikia.nocookie.net/wowwiki/images/7/73/IconSmall_RaidSkull.png/revision/latest?cb=20071030174221",    label: "Skull" },
-  { marker: "cross",    iconUrl: "https://static.wikia.nocookie.net/wowwiki/images/e/e0/IconSmall_RaidCross.png/revision/latest?cb=20071030173844",    label: "Cross" },
-  { marker: "square",   iconUrl: "https://static.wikia.nocookie.net/wowwiki/images/d/df/IconSmall_RaidSquare.png/revision/latest?cb=20071030174116",   label: "Square" },
-  { marker: "moon",     iconUrl: "https://static.wikia.nocookie.net/wowwiki/images/5/5e/IconSmall_RaidMoon.png/revision/latest?cb=20071030173751",     label: "Moon" },
-  { marker: "triangle", iconUrl: "https://static.wikia.nocookie.net/wowwiki/images/8/86/IconSmall_RaidTriangle.png/revision/latest?cb=20071030173731", label: "Triangle" },
-  { marker: "diamond",  iconUrl: "https://static.wikia.nocookie.net/wowwiki/images/2/2f/IconSmall_RaidDiamond.png/revision/latest?cb=20071030173555",  label: "Diamond" },
+const TANK_MARKERS: Array<{ marker: TankMarker; glyph: string; color: string; label: string }> = [
+  { marker: "skull",    glyph: "☠", color: "#f0f0f0", label: "Skull" },
+  { marker: "cross",    glyph: "✚", color: "#ef4444", label: "Cross" },
+  { marker: "square",   glyph: "■", color: "#3b82f6", label: "Square" },
+  { marker: "moon",     glyph: "☾", color: "#e5e7eb", label: "Moon" },
+  { marker: "triangle", glyph: "▲", color: "#22c55e", label: "Triangle" },
+  { marker: "diamond",  glyph: "◆", color: "#a78bfa", label: "Diamond" },
 ];
 
 export function defaultTankAssignments(): TankAssignment[] {
@@ -141,8 +142,9 @@ export function tankMarkerLabel(m: TankMarker): string {
   return TANK_MARKERS.find(x => x.marker === m)?.label ?? m;
 }
 
-export function tankMarkerIconUrl(m: TankMarker): string {
-  return TANK_MARKERS.find(x => x.marker === m)?.iconUrl ?? "";
+export function tankMarkerGlyph(m: TankMarker): { glyph: string; color: string } {
+  const found = TANK_MARKERS.find(x => x.marker === m);
+  return { glyph: found?.glyph ?? "•", color: found?.color ?? "#888" };
 }
 
 export function emptyAssignmentData(): AssignmentData {

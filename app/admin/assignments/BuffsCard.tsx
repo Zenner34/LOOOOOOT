@@ -377,9 +377,12 @@ function BuffRow({
 /* ──────────────────────────────────────────────────────────────────── */
 
 /**
- * Renders exactly `section.fixedSlots` rows. Each row is either a chip
- * (when characterIds[idx] is set) or an empty slot affordance, and
- * uses `slotEligibility[idx]` as the picker filter when set.
+ * Renders exactly `section.fixedSlots` rows. Paired sections (Innervate
+ * Druid + Mage, BoP Paladin + Warlock) detect via slotEligibility
+ * matching slot count and render the slots SIDE-BY-SIDE in a grid so
+ * the pair reads as one row. Other fixed sections (PoF 3 priests,
+ * Soulstone Targets 5 rezz order, single-paladin blessings) stack
+ * vertically.
  */
 function FixedSlotStack({
   section,
@@ -395,21 +398,34 @@ function FixedSlotStack({
   onPatch: (patch: Partial<AssignSection>) => void;
 }) {
   const slotCount = section.fixedSlots ?? 0;
-  return (
-    <>
-      {Array.from({ length: slotCount }, (_, idx) => (
-        <FixedSlot
-          key={idx}
-          idx={idx}
-          section={section}
-          characters={characters}
-          teamRosterIds={teamRosterIds}
-          charsById={charsById}
-          onPatch={onPatch}
-        />
-      ))}
-    </>
-  );
+  // Pair layout: explicit per-slot eligibility with matching length.
+  const horizontal =
+    slotCount > 1 &&
+    (section.slotEligibility?.length ?? 0) === slotCount;
+
+  const slots = Array.from({ length: slotCount }, (_, idx) => (
+    <FixedSlot
+      key={idx}
+      idx={idx}
+      section={section}
+      characters={characters}
+      teamRosterIds={teamRosterIds}
+      charsById={charsById}
+      onPatch={onPatch}
+    />
+  ));
+
+  if (horizontal) {
+    return (
+      <div
+        className="grid gap-px"
+        style={{ gridTemplateColumns: `repeat(${slotCount}, minmax(0, 1fr))` }}
+      >
+        {slots}
+      </div>
+    );
+  }
+  return <div className="flex flex-col gap-px">{slots}</div>;
 }
 
 function FixedSlot({

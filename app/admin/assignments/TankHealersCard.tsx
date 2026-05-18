@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   defaultTankAssignments,
-  tankMarkerIconUrl,
+  tankMarkerGlyph,
   tankMarkerLabel,
   type AssignmentData,
   type TankAssignment,
@@ -126,20 +126,19 @@ function TankRow({
 
   return (
     <div className="grid grid-cols-[28px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-px items-stretch">
-      {/* Marker icon — wikia raid-marker glyph */}
-      <div className="flex items-center justify-center bg-[#1a1a1a] border border-black">
-        <img
-          src={tankMarkerIconUrl(row.marker)}
-          alt={tankMarkerLabel(row.marker)}
-          title={tankMarkerLabel(row.marker)}
-          width={18}
-          height={18}
-          loading="lazy"
-          className="pixelated"
-          style={{ imageRendering: "pixelated" }}
-          onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
-        />
-      </div>
+      {/* Marker icon — Unicode glyph in raid-marker colour */}
+      {(() => {
+        const { glyph, color } = tankMarkerGlyph(row.marker);
+        return (
+          <div
+            className="flex items-center justify-center bg-[#1a1a1a] border border-black font-bold"
+            title={tankMarkerLabel(row.marker)}
+            style={{ color, fontSize: 16, lineHeight: 1 }}
+          >
+            {glyph}
+          </div>
+        );
+      })()}
 
       {/* Tank slot */}
       <TankSlot
