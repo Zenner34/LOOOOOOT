@@ -119,11 +119,11 @@ function StrategyImage({ src, alt }: { src: string; alt: string }) {
 function PortraitRow({ meta }: { meta: BossMeta }) {
   const [altErrored, setAltErrored] = useState(false);
   const showAlt = !!meta.portraitAlt && !altErrored;
-  // Portraits stack vertically inside their half-rail column —
-  // multi-form bosses (Hydross) get frost above nature instead of
-  // shrunk-down side-by-side thumbs.
   return (
-    <div className="flex flex-col gap-2">
+    <div
+      className="grid gap-2"
+      style={{ gridTemplateColumns: showAlt ? "repeat(2, minmax(0, 1fr))" : "1fr" }}
+    >
       <img
         src={meta.portrait}
         alt={`${meta.name} portrait`}
@@ -289,30 +289,41 @@ export function BossCard({
             width, since that made the maps overwhelming. */}
         {(() => {
           const useBottomBand = platform.strategyImages.length > 1 || platform.dpsPriorityImages.length > 0;
+          // Per-boss layout: most bosses split the rail-top horizontally
+          // (portrait | info). Hydross / Lurker / Al'ar keep the original
+          // stacked layout (portrait above info) — Hydross because both
+          // portraits read better at full-rail width, Lurker / Al'ar
+          // because their portrait crops aren't worth squeezing.
+          const stackedPortraitInfo = slug === "hydross" || slug === "lurker" || slug === "alar";
+          const notesPanel = (
+            <div
+              className="rounded-md border border-[#2e3a55] p-3 text-[11px] leading-snug text-slate-300"
+              style={{ background: platform.gradient }}
+            >
+              {platform.heading && (
+                <div className="font-bold text-amber-100 mb-1.5">{platform.heading}</div>
+              )}
+              <ul className="space-y-1">
+                {platform.notes.map((n, i) => (
+                  <li key={i}>{n}</li>
+                ))}
+              </ul>
+            </div>
+          );
           return (
         <div className="grid grid-cols-12 gap-3">
           <div className="col-span-12 md:col-span-5 space-y-3">
-            {/* Portrait on the left half of the rail, notes panel on
-                the right half. Multi-portrait bosses (Hydross) stack
-                their two portraits vertically inside the portrait
-                half — side-by-side at this width would be too small. */}
-            <div className="grid grid-cols-2 gap-3">
-              <PortraitRow meta={meta} />
-
-              <div
-                className="rounded-md border border-[#2e3a55] p-3 text-[11px] leading-snug text-slate-300"
-                style={{ background: platform.gradient }}
-              >
-                {platform.heading && (
-                  <div className="font-bold text-amber-100 mb-1.5">{platform.heading}</div>
-                )}
-                <ul className="space-y-1">
-                  {platform.notes.map((n, i) => (
-                    <li key={i}>{n}</li>
-                  ))}
-                </ul>
+            {stackedPortraitInfo ? (
+              <>
+                <PortraitRow meta={meta} />
+                {notesPanel}
+              </>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <PortraitRow meta={meta} />
+                {notesPanel}
               </div>
-            </div>
+            )}
 
             {/* Strategy image in the left rail for single-map phases.
                 Multi-image phases (Vashj P2) defer to the bottom band
