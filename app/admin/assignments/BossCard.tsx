@@ -119,6 +119,13 @@ function StrategyImage({ src, alt }: { src: string; alt: string }) {
 function PortraitRow({ meta }: { meta: BossMeta }) {
   const [altErrored, setAltErrored] = useState(false);
   const showAlt = !!meta.portraitAlt && !altErrored;
+  // Crop focus: most boss screenshots are full-body shots framed with
+  // a lot of empty space below the boss. Default `object-cover`
+  // centers the crop and chops the face off. Pin to top so the
+  // boss's face stays in frame. Hydross / Lurker / Al'ar are
+  // already-cropped portraits where centering reads correctly.
+  const cropTop = !["hydross", "lurker", "alar"].includes(meta.slug);
+  const cropClass = cropTop ? "object-top" : "object-center";
   return (
     <div
       className="grid gap-2"
@@ -129,7 +136,7 @@ function PortraitRow({ meta }: { meta: BossMeta }) {
         alt={`${meta.name} portrait`}
         loading="lazy"
         onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-        className="aspect-[16/9] w-full rounded-md border border-[#2e3a55] object-cover bg-[#0e1525]"
+        className={`aspect-[16/9] w-full rounded-md border border-[#2e3a55] object-cover ${cropClass} bg-[#0e1525]`}
       />
       {showAlt && (
         <img
@@ -137,7 +144,7 @@ function PortraitRow({ meta }: { meta: BossMeta }) {
           alt={`${meta.name} alternate portrait`}
           loading="lazy"
           onError={() => setAltErrored(true)}
-          className="aspect-[16/9] w-full rounded-md border border-[#2e3a55] object-cover bg-[#0e1525]"
+          className={`aspect-[16/9] w-full rounded-md border border-[#2e3a55] object-cover ${cropClass} bg-[#0e1525]`}
         />
       )}
     </div>
