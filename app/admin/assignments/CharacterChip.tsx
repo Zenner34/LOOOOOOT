@@ -50,6 +50,9 @@ export function CharacterChip({
   const dimmed = effectiveId !== null && effectiveId !== character.id;
   // Suppress the remove × in read-only / raider view.
   const showRemove = !!onRemove && !readOnly;
+  // Raider view: hover/highlight still works, but the chip is no longer a
+  // picker trigger — clicking shouldn't open the swap popover.
+  const handleClick = readOnly ? undefined : onClick;
 
   const bg = CLASS_COLOR[character.class] ?? "#888";
   // All chips use near-black text for consistency, regardless of class.
@@ -65,13 +68,15 @@ export function CharacterChip({
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={handleClick}
       onMouseEnter={() => setHover(character.id)}
       onMouseLeave={() => setHover(null)}
       onFocus={() => setHover(character.id)}
       onBlur={() => setHover(null)}
       title={`${character.name} — ${character.spec} ${character.class}${character.playerName && character.playerName !== character.name ? ` · ${character.playerName}` : ""}${character.isMain ? " (main)" : " (alt)"}`}
       className={`group items-center justify-start gap-1 italic font-semibold border border-black/40 ${pad} ${txt} ${layoutCls} transition-all leading-snug select-none ${
+        readOnly ? "cursor-default" : "cursor-pointer"
+      } ${
         dimmed ? "grayscale opacity-55 brightness-75" : ""
       } ${
         highlighted ? "ring-2 ring-[#d4af37] ring-offset-1 ring-offset-[var(--bg)] shadow-[0_0_0_4px_rgba(212,175,55,0.22)]" : ""
