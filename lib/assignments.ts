@@ -110,6 +110,11 @@ export type AssignSection = {
 export type SectionAddOn = {
   id: string;
   iconSlug: string;
+  /** Additional icons rendered to the right of `iconSlug` in front of
+   *  each slot. Used when a single character handles multiple duties
+   *  (e.g. Morogrim Add Tank hunters take Misdirect AND pop a Super
+   *  Sapper Charge — one row per hunter, two icons each). */
+  extraIcons?: string[];
   eligibility?: Eligibility;
   maxSlots: number;
   preferSpecs?: string[];
@@ -477,6 +482,7 @@ export function newSectionId(): string {
 
 type SectionAddOnTemplate = {
   iconSlug: string;
+  extraIcons?: string[];
   eligibility?: Eligibility;
   maxSlots: number;
   preferSpecs?: string[];
@@ -534,19 +540,22 @@ const ADDON_MD_BM_ONLY: SectionAddOnTemplate = {
   maxSlots: 2,
   preferSpecs: ["Beast Mastery"],
 };
-// Super Sapper Charge — Engineering consumable, anyone-with-Engineering
-// can use it. One slot, no eligibility filter; admin picks the right
-// engineer manually.
-const ADDON_SUPER_SAPPER: SectionAddOnTemplate = {
-  iconSlug: "inv_gizmo_supersappercharge",
-  maxSlots: 1,
+// Morogrim Add Tank: hunters do MD AND pop a Super Sapper Charge on
+// the add — same character, both duties. Modelled as one addOn with a
+// Sapper extraIcon so each slot row reads [MD][Sapper][Hunter].
+const ADDON_MD_BM_WITH_SAPPER: SectionAddOnTemplate = {
+  iconSlug: "ability_hunter_misdirection",
+  extraIcons: ["inv_gizmo_supersappercharge"],
+  eligibility: { classes: ["Hunter"] },
+  maxSlots: 2,
+  preferSpecs: ["Beast Mastery"],
 };
 
 // Pre-composed { addOns: [...] } extras so the BOSS_TEMPLATES entries
 // stay readable.
 const MISDIRECT_TWO = { addOns: [ADDON_MD_BM_AND_SUR] };
 const MISDIRECT_TWO_BM_ONLY = { addOns: [ADDON_MD_BM_ONLY] };
-const MISDIRECT_BM_PLUS_SAPPER = { addOns: [ADDON_MD_BM_ONLY, ADDON_SUPER_SAPPER] };
+const MISDIRECT_AND_SAPPER = { addOns: [ADDON_MD_BM_WITH_SAPPER] };
 
 /**
  * Canonical assignment sections per boss, distilled from the source
@@ -591,9 +600,9 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
   morogrim: {
     sections: [
       t("Main Tank", E.tank, MISDIRECT_TWO),
-      // Add Tank also takes a Super Sapper Charge sub-row — engineer
-      // nukes the spawned adds for the off-tank.
-      t("Add Tank",  E.tank, MISDIRECT_BM_PLUS_SAPPER),
+      // Add Tank hunters do MD AND pop Super Sapper Charge — one
+      // character per slot, both duties. Rendered as [MD][Sapper][name].
+      t("Add Tank",  E.tank, MISDIRECT_AND_SAPPER),
       t("Grave Healer", E.heal),
       // Slow-trap rotation lands on its own row below the tank row.
       t("Hunter Slow Trap — N", E.hunter, { breakBefore: true }),
@@ -712,6 +721,7 @@ function makeSections(tpls: SectionTemplate[]): AssignSection[] {
           addOns: s.addOns.map(a => ({
             id: newSectionId(),
             iconSlug: a.iconSlug,
+            ...(a.extraIcons?.length ? { extraIcons: [...a.extraIcons] } : {}),
             eligibility: a.eligibility,
             maxSlots: a.maxSlots,
             preferSpecs: a.preferSpecs,
@@ -811,13 +821,19 @@ export function removeDeprecatedBossSections(
 }
 
 /**
- * Additive migration for boss-side sections — when a section in the
- * BOSS_TEMPLATES gains `addOns` (e.g. Hydross MTs picking up Misdirect
- * sub-rows), attach those addOns to the matching section in existing
- * sheets so admins don't have to click "Reset to defaults". Match is by
- * section title; renamed sections quietly skip.
+ * Migrates boss section addOns toward the current template.
+ *   1. Appends any addOn whose iconSlug doesn't yet exist on the section
+ *      (so Hydross MTs picked up Misdirect rows automatically when we
+ *      introduced them).
+ *   2. Backfills missing `extraIcons` on an existing addOn — used when
+ *      we promote a sibling addOn's icon into the primary addOn's
+ *      icon strip (e.g. folding the standalone Sapper addOn into the
+ *      MD addOn's extraIcons).
+ *   3. Drops orphan addOns whose iconSlug is now an extraIcon of some
+ *      other addOn on the same section. Otherwise the page would carry
+ *      a now-redundant standalone row.
  *
- * Only ADDS missing addOns — never modifies existing addOn data.
+ * Match is by section title; renamed sections quietly skip.
  */
 export function mergeMissingBossAddOns(
   bosses: Partial<Record<BossSlug, BossAssignment>>,
@@ -825,22 +841,41 @@ export function mergeMissingBossAddOns(
   function attach(section: AssignSection, tpl: SectionTemplate | undefined): AssignSection {
     if (!tpl?.addOns?.length) return section;
     const existingIcons = new Set((section.addOns ?? []).map(a => a.iconSlug));
+
+    // 1. Add missing addOns from the template.
     const missing = tpl.addOns.filter(a => !existingIcons.has(a.iconSlug));
-    if (missing.length === 0) return section;
-    return {
-      ...section,
-      addOns: [
-        ...(section.addOns ?? []),
-        ...missing.map(a => ({
-          id: newSectionId(),
-          iconSlug: a.iconSlug,
-          eligibility: a.eligibility,
-          maxSlots: a.maxSlots,
-          preferSpecs: a.preferSpecs,
-          characterIds: [],
-        })),
-      ],
-    };
+    let nextAddOns: SectionAddOn[] = [
+      ...(section.addOns ?? []),
+      ...missing.map(a => ({
+        id: newSectionId(),
+        iconSlug: a.iconSlug,
+        ...(a.extraIcons?.length ? { extraIcons: [...a.extraIcons] } : {}),
+        eligibility: a.eligibility,
+        maxSlots: a.maxSlots,
+        preferSpecs: a.preferSpecs,
+        characterIds: [],
+      })),
+    ];
+
+    // 2. Backfill missing extraIcons on existing addOns.
+    const tplByIcon = new Map(tpl.addOns.map(a => [a.iconSlug, a] as const));
+    nextAddOns = nextAddOns.map(a => {
+      const t = tplByIcon.get(a.iconSlug);
+      if (!t?.extraIcons?.length) return a;
+      const have = new Set(a.extraIcons ?? []);
+      const add = t.extraIcons.filter(e => !have.has(e));
+      if (add.length === 0) return a;
+      return { ...a, extraIcons: [...(a.extraIcons ?? []), ...add] };
+    });
+
+    // 3. Drop standalone addOns whose iconSlug is now an extraIcon of a
+    //    sibling. Preserves character data if the orphan had any
+    //    assignments — but it's just discarded; the new addOn's slots
+    //    use the same hunter pool so the admin re-assigns once.
+    const allExtras = new Set(nextAddOns.flatMap(a => a.extraIcons ?? []));
+    nextAddOns = nextAddOns.filter(a => !allExtras.has(a.iconSlug));
+
+    return { ...section, addOns: nextAddOns };
   }
 
   const out: Partial<Record<BossSlug, BossAssignment>> = { ...bosses };

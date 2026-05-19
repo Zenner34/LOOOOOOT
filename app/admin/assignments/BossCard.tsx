@@ -584,25 +584,35 @@ function AddOnRow({
     onPatch({ ...addOn, characterIds: next });
   }
 
+  // Icon strip: primary slug + any extras. Each becomes a 22-px cell
+  // to the left of every slot row, mirroring the multi-duty visual
+  // ([MD][Sapper][Hunter] for Morogrim Add Tank).
+  const icons = [addOn.iconSlug, ...(addOn.extraIcons ?? [])];
+
   return (
     <div className="flex flex-col gap-px">
       {Array.from({ length: addOn.maxSlots }).map((_, idx) => (
         <div
           key={idx}
           className="grid gap-px"
-          style={{ gridTemplateColumns: "22px minmax(0, 1fr)" }}
+          style={{ gridTemplateColumns: `repeat(${icons.length}, 22px) minmax(0, 1fr)` }}
         >
-          <div className="flex items-center justify-center bg-[#1a1a1a] border border-black">
-            <img
-              src={`${SPEC_ICON_BASE}${addOn.iconSlug}.jpg`}
-              alt=""
-              width={18}
-              height={18}
-              loading="lazy"
-              className="rounded-[2px]"
-              onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-            />
-          </div>
+          {icons.map((slug, iconIdx) => (
+            <div
+              key={iconIdx}
+              className="flex items-center justify-center bg-[#1a1a1a] border border-black"
+            >
+              <img
+                src={`${SPEC_ICON_BASE}${slug}.jpg`}
+                alt=""
+                width={18}
+                height={18}
+                loading="lazy"
+                className="rounded-[2px]"
+                onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+              />
+            </div>
+          ))}
           <AddOnSlot
             char={addOn.characterIds[idx] ? charsById.get(addOn.characterIds[idx]) ?? null : null}
             eligibility={addOn.eligibility}
