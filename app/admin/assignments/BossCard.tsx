@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import {
   ASSIGNMENT_BOSSES,
@@ -34,10 +35,19 @@ const BOSS_INFO = Object.fromEntries(ASSIGNMENT_BOSSES.map(b => [b.slug, b])) as
  * thumbnail fits the left rail; clicking opens a centered overlay at
  * the image's natural size (capped to viewport). Closes via the close
  * button, the backdrop, or the Escape key.
+ *
+ * The overlay is rendered into a portal at document.body. The
+ * AssignmentsClient root uses a CSS transform (`-translate-x-1/2`),
+ * which scopes `position: fixed` to the parent rather than the
+ * viewport — without the portal the centered image would land
+ * somewhere down the long page, not in front of the user.
  */
 function StrategyImage({ src, alt }: { src: string; alt: string }) {
   const [open, setOpen] = useState(false);
   const [errored, setErrored] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -45,8 +55,6 @@ function StrategyImage({ src, alt }: { src: string; alt: string }) {
       if (e.key === "Escape") setOpen(false);
     }
     document.addEventListener("keydown", onKey);
-    // Lock body scroll while open so the page doesn't shift behind the
-    // overlay on browsers that don't auto-suppress it.
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
@@ -56,6 +64,34 @@ function StrategyImage({ src, alt }: { src: string; alt: string }) {
   }, [open]);
 
   if (errored) return null;
+
+  const overlay = open && mounted ? (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8 animate-fade-in"
+      role="dialog"
+      aria-modal="true"
+      aria-label={alt}
+    >
+      <div
+        className="absolute inset-0 bg-black/85 backdrop-blur-sm"
+        onClick={() => setOpen(false)}
+      />
+      <img
+        src={src}
+        alt={alt}
+        className="relative max-w-full max-h-full rounded-md shadow-2xl border border-white/10 cursor-zoom-out"
+        onClick={() => setOpen(false)}
+      />
+      <button
+        type="button"
+        onClick={() => setOpen(false)}
+        aria-label="Close"
+        className="absolute top-3 right-3 sm:top-5 sm:right-5 p-2 rounded-full bg-black/60 text-white/80 hover:text-white hover:bg-black/80 transition"
+      >
+        <X size={18} aria-hidden />
+      </button>
+    </div>
+  ) : null;
 
   return (
     <>
@@ -74,34 +110,7 @@ function StrategyImage({ src, alt }: { src: string; alt: string }) {
           className="w-full rounded-md border border-[#2e3a55] transition group-hover/strategy:border-amber-400/60 group-hover/strategy:shadow-[0_0_0_2px_rgba(212,175,55,0.15)]"
         />
       </button>
-
-      {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 animate-fade-in"
-          role="dialog"
-          aria-modal="true"
-          aria-label={alt}
-        >
-          <div
-            className="absolute inset-0 bg-black/85 backdrop-blur-sm"
-            onClick={() => setOpen(false)}
-          />
-          <img
-            src={src}
-            alt={alt}
-            className="relative max-w-full max-h-full rounded-md shadow-2xl border border-white/10 cursor-zoom-out"
-            onClick={() => setOpen(false)}
-          />
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            aria-label="Close"
-            className="absolute top-3 right-3 sm:top-5 sm:right-5 p-2 rounded-full bg-black/60 text-white/80 hover:text-white hover:bg-black/80 transition"
-          >
-            <X size={18} aria-hidden />
-          </button>
-        </div>
-      )}
+      {overlay && createPortal(overlay, document.body)}
     </>
   );
 }
