@@ -47,6 +47,10 @@
     "icon": "inv_axe_83",
     "id": 38237
   },
+  "Badge of Justice": {
+    "icon": "spell_holy_championsbond",
+    "id": 29434
+  },
   "Band of Al'ar": {
     "icon": "inv_jewelry_ring_61",
     "id": 29922
@@ -691,6 +695,54 @@
     "icon": "inv_shoulder_22",
     "id": 30250
   },
+  "Pattern: Belt of Blasting": {
+    "icon": "inv_scroll_05",
+    "id": 30280
+  },
+  "Pattern: Belt of Deep Shadow": {
+    "icon": "inv_scroll_05",
+    "id": 30302
+  },
+  "Pattern: Belt of Natural Power": {
+    "icon": "inv_scroll_05",
+    "id": 30301
+  },
+  "Pattern: Belt of the Black Eagle": {
+    "icon": "inv_scroll_05",
+    "id": 30303
+  },
+  "Pattern: Belt of the Long Road": {
+    "icon": "inv_scroll_05",
+    "id": 30281
+  },
+  "Pattern: Boots of Blasting": {
+    "icon": "inv_scroll_05",
+    "id": 30282
+  },
+  "Pattern: Boots of Natural Grace": {
+    "icon": "inv_scroll_05",
+    "id": 30305
+  },
+  "Pattern: Boots of Utter Darkness": {
+    "icon": "inv_scroll_05",
+    "id": 30306
+  },
+  "Pattern: Boots of the Crimson Hawk": {
+    "icon": "inv_scroll_05",
+    "id": 30307
+  },
+  "Pattern: Boots of the Long Road": {
+    "icon": "inv_scroll_05",
+    "id": 30283
+  },
+  "Pattern: Hurricane Boots": {
+    "icon": "inv_scroll_05",
+    "id": 30308
+  },
+  "Pattern: Monsoon Belt": {
+    "icon": "inv_scroll_05",
+    "id": 30304
+  },
   "Pendant of the Perilous": {
     "icon": "inv_jewelry_necklace_ahnqiraj_01",
     "id": 30022
@@ -706,6 +758,22 @@
   "Pillar of Ferocity": {
     "icon": "inv_staff_60",
     "id": 30883
+  },
+  "Plans: Belt of the Guardian": {
+    "icon": "inv_scroll_05",
+    "id": 30321
+  },
+  "Plans: Boots of the Protector": {
+    "icon": "inv_scroll_05",
+    "id": 30323
+  },
+  "Plans: Red Belt of Battle": {
+    "icon": "inv_scroll_05",
+    "id": 30322
+  },
+  "Plans: Red Havoc Boots": {
+    "icon": "inv_scroll_05",
+    "id": 30324
   },
   "Prism of Inner Calm": {
     "icon": "inv_misc_gem_diamond_07",

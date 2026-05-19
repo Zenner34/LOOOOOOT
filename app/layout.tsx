@@ -7,6 +7,7 @@ import NavBar from "./components/NavBar";
 import MobileTabBar from "./components/MobileTabBar";
 import CommandPalette from "./components/CommandPalette";
 import Footer from "./components/Footer";
+import WowheadRefresh from "./components/WowheadRefresh";
 import { TooltipProvider } from "./components/ui/Tooltip";
 
 const inter = Inter({
@@ -52,6 +53,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className="font-sans">
         <TooltipProvider delayDuration={200} skipDelayDuration={300}>
+          <WowheadRefresh />
           <NavBar admin={admin} />
           <main className="mx-auto max-w-7xl px-4 py-6 md:py-8">{children}</main>
           <Footer />
