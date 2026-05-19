@@ -659,7 +659,14 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
     phases: [
       {
         label: "Phase 1",
-        sections: [t("Main Tank", E.tank), t("Strider Kiter", E.hunter), t("Elite Tanks", E.tank), t("Ball Dunker")],
+        sections: [
+          // MT holds Vashj; standard MD pair (BM + Survival) funnels
+          // threat through Cleanse / Shock dispel windows.
+          t("Main Tank",    E.tank,   MISDIRECT_TWO),
+          t("Strider Kiter", E.hunter),
+          t("Elite Tanks",  E.tank),
+          t("Ball Dunker"),
+        ],
       },
       {
         label: "Phase 2",
