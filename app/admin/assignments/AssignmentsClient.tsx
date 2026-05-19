@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
 import {
   emptyAssignmentData,
+  mergeMissingBossAddOns,
   mergeMissingBuffBlocks,
   mondayOfWeek,
   weekOfLabel,
@@ -59,7 +60,11 @@ function isCasterSpec(spec: string): boolean {
  */
 function hydrateSheetData(data: AssignmentData | null | undefined): AssignmentData {
   const base = data ?? emptyAssignmentData();
-  return { ...base, buffs: mergeMissingBuffBlocks(base.buffs) };
+  return {
+    ...base,
+    buffs: mergeMissingBuffBlocks(base.buffs),
+    bosses: mergeMissingBossAddOns(base.bosses),
+  };
 }
 
 export default function AssignmentsClient({

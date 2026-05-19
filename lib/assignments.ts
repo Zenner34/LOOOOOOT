@@ -12,6 +12,17 @@
  * are resolved from the Boss table at render time. Portrait URLs are
  * zamimg screenshots — same ones used in the mockup.
  */
+export type BossMeta = {
+  readonly slug: string;
+  readonly raidShort: "SSC" | "TK";
+  readonly name: string;
+  readonly portrait: string;
+  /** Optional second portrait rendered side-by-side with `portrait` in
+   *  the left column. Used for bosses with multiple forms (Hydross
+   *  Frost ↔ Nature). When omitted, only `portrait` renders. */
+  readonly portraitAlt?: string;
+};
+
 export const ASSIGNMENT_BOSSES = [
   { slug: "hydross",    raidShort: "SSC", name: "Hydross the Unstable",         portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74886.jpg" },
   { slug: "lurker",     raidShort: "SSC", name: "The Lurker Below",             portrait: "https://wow.zamimg.com/uploads/screenshots/normal/68543.jpg" },
@@ -23,7 +34,7 @@ export const ASSIGNMENT_BOSSES = [
   { slug: "voidreaver", raidShort: "TK",  name: "Void Reaver",                  portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74900.jpg" },
   { slug: "solarian",   raidShort: "TK",  name: "High Astromancer Solarian",    portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74896.jpg" },
   { slug: "kael",       raidShort: "TK",  name: "Kael'thas Sunstrider",         portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74888.jpg" },
-] as const;
+] as const satisfies readonly BossMeta[];
 
 export type BossSlug = (typeof ASSIGNMENT_BOSSES)[number]["slug"];
 
@@ -72,6 +83,26 @@ export type AssignSection = {
    *  druid; etc.). */
   targetSlots?: number;
   /** Character ids assigned to this section, in display order. */
+  characterIds: number[];
+  /** Optional icon-labelled sub-rows that render *inside* this section
+   *  below the main chip list. Each addOn is one horizontal row:
+   *  [iconSlug cell | maxSlots chip/empty cells]. Used for Hydross
+   *  Misdirects (Hunter sub-rows under each MT). */
+  addOns?: SectionAddOn[];
+};
+
+/**
+ * One addOn row attached under a parent AssignSection. Renders an
+ * icon-on-left + N chip slots. Auto-fill respects `preferSpecs[i]`
+ * when populating slot `i` (case-insensitive substring match against
+ * Character.spec, e.g. "Beast Mastery" → "Beast Mastery Hunter").
+ */
+export type SectionAddOn = {
+  id: string;
+  iconSlug: string;
+  eligibility?: Eligibility;
+  maxSlots: number;
+  preferSpecs?: string[];
   characterIds: number[];
 };
 
@@ -434,14 +465,25 @@ export function newSectionId(): string {
    BOSS TEMPLATES
    ──────────────────────────────────────────────────────────────────── */
 
-type SectionTemplate = { title: string; eligibility?: Eligibility };
+type SectionAddOnTemplate = {
+  iconSlug: string;
+  eligibility?: Eligibility;
+  maxSlots: number;
+  preferSpecs?: string[];
+};
+type SectionTemplate = {
+  title: string;
+  eligibility?: Eligibility;
+  addOns?: SectionAddOnTemplate[];
+};
 type BossTemplate = {
   sections?: SectionTemplate[];
   phases?: Array<{ label: string; sections: SectionTemplate[] }>;
 };
 
 // Shortcuts to keep BOSS_TEMPLATES readable.
-const t = (title: string, eligibility?: Eligibility): SectionTemplate => ({ title, eligibility });
+const t = (title: string, eligibility?: Eligibility, extra?: { addOns?: SectionAddOnTemplate[] }): SectionTemplate =>
+  ({ title, eligibility, ...extra });
 const E: Record<string, Eligibility> = {
   tank:    { roles: ["tank"] },
   heal:    { roles: ["heal"] },
@@ -464,8 +506,24 @@ const E: Record<string, Eligibility> = {
 const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
   hydross: {
     sections: [
-      t("Frost MT", E.tank),
-      t("Nature MT", E.tank),
+      // Tanks. Frost MT and Nature MT each get up to 2 Hunter misdirect
+      // sub-rows. Add Tank gets no misdirect (movement / add control).
+      t("Frost MT", E.tank, {
+        addOns: [{
+          iconSlug: "ability_hunter_misdirection",
+          eligibility: { classes: ["Hunter"] },
+          maxSlots: 2,
+          preferSpecs: ["Beast Mastery", "Survival"],
+        }],
+      }),
+      t("Nature MT", E.tank, {
+        addOns: [{
+          iconSlug: "ability_hunter_misdirection",
+          eligibility: { classes: ["Hunter"] },
+          maxSlots: 2,
+          preferSpecs: ["Beast Mastery"],
+        }],
+      }),
       t("Add Tank", E.tank),
       t("Tank Healers", E.heal),
       t("Melee Group 1", E.melee),
@@ -604,6 +662,18 @@ function makeSections(tpls: SectionTemplate[]): AssignSection[] {
     title: s.title,
     eligibility: s.eligibility,
     characterIds: [],
+    ...(s.addOns?.length
+      ? {
+          addOns: s.addOns.map(a => ({
+            id: newSectionId(),
+            iconSlug: a.iconSlug,
+            eligibility: a.eligibility,
+            maxSlots: a.maxSlots,
+            preferSpecs: a.preferSpecs,
+            characterIds: [],
+          })),
+        }
+      : {}),
   }));
 }
 
@@ -645,6 +715,67 @@ export function defaultBossAssignment(slug: BossSlug): BossAssignment {
 }
 
 /**
+ * Additive migration for boss-side sections — when a section in the
+ * BOSS_TEMPLATES gains `addOns` (e.g. Hydross MTs picking up Misdirect
+ * sub-rows), attach those addOns to the matching section in existing
+ * sheets so admins don't have to click "Reset to defaults". Match is by
+ * section title; renamed sections quietly skip.
+ *
+ * Only ADDS missing addOns — never modifies existing addOn data.
+ */
+export function mergeMissingBossAddOns(
+  bosses: Partial<Record<BossSlug, BossAssignment>>,
+): Partial<Record<BossSlug, BossAssignment>> {
+  function attach(section: AssignSection, tpl: SectionTemplate | undefined): AssignSection {
+    if (!tpl?.addOns?.length) return section;
+    const existingIcons = new Set((section.addOns ?? []).map(a => a.iconSlug));
+    const missing = tpl.addOns.filter(a => !existingIcons.has(a.iconSlug));
+    if (missing.length === 0) return section;
+    return {
+      ...section,
+      addOns: [
+        ...(section.addOns ?? []),
+        ...missing.map(a => ({
+          id: newSectionId(),
+          iconSlug: a.iconSlug,
+          eligibility: a.eligibility,
+          maxSlots: a.maxSlots,
+          preferSpecs: a.preferSpecs,
+          characterIds: [],
+        })),
+      ],
+    };
+  }
+
+  const out: Partial<Record<BossSlug, BossAssignment>> = { ...bosses };
+  for (const [slug, tpl] of Object.entries(BOSS_TEMPLATES) as [BossSlug, BossTemplate][]) {
+    const current = out[slug];
+    if (!current) continue;
+    if (tpl.sections && current.sections) {
+      const tplByTitle = new Map(tpl.sections.map(s => [s.title, s] as const));
+      out[slug] = {
+        ...current,
+        sections: current.sections.map(s => attach(s, tplByTitle.get(s.title))),
+      };
+    } else if (tpl.phases && current.phases) {
+      out[slug] = {
+        ...current,
+        phases: current.phases.map(phase => {
+          const tplPhase = tpl.phases!.find(p => p.label === phase.label);
+          if (!tplPhase) return phase;
+          const tplByTitle = new Map(tplPhase.sections.map(s => [s.title, s] as const));
+          return {
+            ...phase,
+            sections: phase.sections.map(s => attach(s, tplByTitle.get(s.title))),
+          };
+        }),
+      };
+    }
+  }
+  return out;
+}
+
+/**
  * Auto-fill empty sections with eligible roster members. Used by the
  * per-card "Suggest" button AND by the on-roster-change effect.
  *
@@ -662,12 +793,13 @@ export function defaultBossAssignment(slug: BossSlug): BossAssignment {
  */
 export function suggestFillSections(sections: AssignSection[], roster: EligibleChar[]): AssignSection[] {
   const used = new Set<number>();
-  for (const s of sections) for (const id of s.characterIds) used.add(id);
+  for (const s of sections) {
+    for (const id of s.characterIds) used.add(id);
+    for (const a of s.addOns ?? []) for (const id of a.characterIds) used.add(id);
+  }
 
-  return sections.map(s => {
+  function fillMain(s: AssignSection): AssignSection {
     if (s.characterIds.length > 0) return s;
-    // Fixed-slot sections with per-slot eligibility: fill each slot
-    // independently with the first matching unused character.
     if (s.slotEligibility?.length) {
       const picks: number[] = [];
       for (const elig of s.slotEligibility) {
@@ -680,19 +812,45 @@ export function suggestFillSections(sections: AssignSection[], roster: EligibleC
           picks.push(0);
         }
       }
-      // Trim trailing zero so the array doesn't carry empty pre-allocations.
       while (picks.length > 0 && picks[picks.length - 1] === 0) picks.pop();
       if (picks.length === 0) return s;
       return { ...s, characterIds: picks };
     }
     if (!s.eligibility) return s;
     const target = s.targetSlots ?? 1;
-    const eligible = roster.filter(c => matchesEligibility(c, s.eligibility) && !used.has(c.id));
+    const eligible = roster.filter(c => matchesEligibility(c, s.eligibility!) && !used.has(c.id));
     if (eligible.length === 0) return s;
     const picks = eligible.slice(0, target).map(c => c.id);
     picks.forEach(id => used.add(id));
     return { ...s, characterIds: picks };
-  });
+  }
+
+  function fillAddOns(s: AssignSection): AssignSection {
+    if (!s.addOns?.length) return s;
+    let changed = false;
+    const next = s.addOns.map(a => {
+      if (a.characterIds.length > 0) return a;
+      const picks: number[] = [];
+      for (let i = 0; i < a.maxSlots; i++) {
+        const pool = roster.filter(c =>
+          !used.has(c.id) && (!a.eligibility || matchesEligibility(c, a.eligibility)),
+        );
+        if (pool.length === 0) break;
+        const preferred = a.preferSpecs?.[i];
+        const pick = preferred
+          ? (pool.find(c => c.spec.toLowerCase().includes(preferred.toLowerCase())) ?? pool[0])
+          : pool[0];
+        picks.push(pick.id);
+        used.add(pick.id);
+      }
+      if (picks.length === 0) return a;
+      changed = true;
+      return { ...a, characterIds: picks };
+    });
+    return changed ? { ...s, addOns: next } : s;
+  }
+
+  return sections.map(s => fillAddOns(fillMain(s)));
 }
 
 /**
@@ -732,6 +890,11 @@ type PlatformInfo = {
   /** Per-phase override for multi-phase bosses. Keyed by phase label
    *  (matches BOSS_TEMPLATES). */
   phaseNotes?: Record<string, { heading?: string; notes: string[] }>;
+  /** Optional path to a placement-diagram image rendered below the
+   *  notes panel. Typically `/strategy/<slug>.png` from /public. When
+   *  the file is absent the image just doesn't render (no broken-image
+   *  icon — handled by BossCard's onError fallback). */
+  strategyImage?: string;
 };
 
 const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
@@ -742,6 +905,7 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
       "Boss starts on south side.",
       "Stream-change line in the middle splits Frost ↔ Nature.",
     ],
+    strategyImage: "/strategy/hydross.png",
   },
   lurker: {
     gradient: "linear-gradient(135deg, #2a1f3a, #5a2e2a)",
@@ -864,10 +1028,10 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
   },
 };
 
-export function bossPlatformInfo(slug: BossSlug, phaseLabel?: string): { gradient: string; heading?: string; notes: string[] } {
+export function bossPlatformInfo(slug: BossSlug, phaseLabel?: string): { gradient: string; heading?: string; notes: string[]; strategyImage?: string } {
   const info = PLATFORM_INFO[slug];
   if (phaseLabel && info.phaseNotes?.[phaseLabel]) {
-    return { gradient: info.gradient, ...info.phaseNotes[phaseLabel] };
+    return { gradient: info.gradient, ...info.phaseNotes[phaseLabel], strategyImage: info.strategyImage };
   }
-  return { gradient: info.gradient, heading: info.heading, notes: info.notes };
+  return { gradient: info.gradient, heading: info.heading, notes: info.notes, strategyImage: info.strategyImage };
 }

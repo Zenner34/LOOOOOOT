@@ -12,14 +12,16 @@ import {
   type AssignSection,
   type AssignmentData,
   type BossAssignment,
+  type BossMeta,
   type BossSlug,
+  type SectionAddOn,
 } from "@/lib/assignments";
 import { Plus, Sparkles, X } from "@/app/components/ui/Icon";
 import { CharacterChip, EmptySlot, type AssignableCharacter } from "./CharacterChip";
 import { CharacterPicker } from "./CharacterPicker";
 import { EditOnly, useViewMode } from "./ViewModeContext";
 
-const BOSS_INFO = Object.fromEntries(ASSIGNMENT_BOSSES.map(b => [b.slug, b])) as Record<BossSlug, (typeof ASSIGNMENT_BOSSES)[number]>;
+const BOSS_INFO = Object.fromEntries(ASSIGNMENT_BOSSES.map(b => [b.slug, b])) as Record<BossSlug, BossMeta>;
 
 /**
  * BossCard layout follows the mockup:
@@ -158,21 +160,59 @@ export function BossCard({
           </div>
         </div>
 
-        {/* Body: portrait (3) + content (9) */}
+        {/* Body: left rail (4) — portraits + notes + strategy diagram —
+            then content (8) — phase tabs + assignments grid. */}
         <div className="grid grid-cols-12 gap-3">
-          <div className="col-span-12 md:col-span-3">
+          <div className="col-span-12 md:col-span-4 space-y-3">
+            <div className="grid gap-2" style={{ gridTemplateColumns: meta.portraitAlt ? "repeat(2, minmax(0, 1fr))" : "1fr" }}>
+              <div
+                className="aspect-[4/3] rounded-md border border-[#2e3a55] bg-cover bg-center"
+                style={{
+                  background: `url(${meta.portrait}) center/cover, linear-gradient(135deg, #0e1525, #1a2236)`,
+                  backgroundBlendMode: "normal",
+                }}
+                role="img"
+                aria-label={`${meta.name} portrait`}
+              />
+              {meta.portraitAlt && (
+                <div
+                  className="aspect-[4/3] rounded-md border border-[#2e3a55] bg-cover bg-center"
+                  style={{
+                    background: `url(${meta.portraitAlt}) center/cover, linear-gradient(135deg, #0e1525, #1a2236)`,
+                    backgroundBlendMode: "normal",
+                  }}
+                  role="img"
+                  aria-label={`${meta.name} alternate portrait`}
+                />
+              )}
+            </div>
+
             <div
-              className="aspect-[4/3] rounded-md border border-[#2e3a55] bg-cover bg-center"
-              style={{
-                background: `url(${meta.portrait}) center/cover, linear-gradient(135deg, #0e1525, #1a2236)`,
-                backgroundBlendMode: "normal",
-              }}
-              role="img"
-              aria-label={`${meta.name} portrait`}
-            />
+              className="rounded-md border border-[#2e3a55] p-3 text-[11px] leading-snug text-slate-300"
+              style={{ background: platform.gradient }}
+            >
+              {platform.heading && (
+                <div className="font-bold text-amber-100 mb-1.5">{platform.heading}</div>
+              )}
+              <ul className="space-y-1">
+                {platform.notes.map((n, i) => (
+                  <li key={i}>{n}</li>
+                ))}
+              </ul>
+            </div>
+
+            {platform.strategyImage && (
+              <img
+                src={platform.strategyImage}
+                alt={`${meta.name} placement diagram`}
+                loading="lazy"
+                onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                className="w-full rounded-md border border-[#2e3a55]"
+              />
+            )}
           </div>
 
-          <div className="col-span-12 md:col-span-9 min-w-0">
+          <div className="col-span-12 md:col-span-8 min-w-0">
             {/* Phase tabs */}
             {isMultiPhase && (
               <div className="flex flex-wrap gap-1 mb-3">
@@ -222,54 +262,34 @@ export function BossCard({
               </div>
             )}
 
-            {/* Inner split: assignments (7) + platform art (5) */}
-            <div className="grid grid-cols-12 gap-3">
-              <div className="col-span-12 lg:col-span-7">
-                {activeSections.length === 0 ? (
-                  <div className="text-[11px] text-neutral-500 italic">No sections in this phase.</div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
-                    {activeSections.map(section => (
-                      <AssignBox
-                        key={section.id}
-                        section={section}
-                        characters={characters}
-                        teamRosterIds={teamRosterIds}
-                        charsById={charsById}
-                        onPatch={patch => patchSection(section.id, patch)}
-                        onDelete={() => deleteSection(section.id)}
-                      />
-                    ))}
-                  </div>
-                )}
-                <EditOnly>
-                  <button
-                    type="button"
-                    onClick={addSection}
-                    className="mt-2 inline-flex items-center gap-1 text-xs text-vermillion-300 hover:text-vermillion-200 transition"
-                  >
-                    <Plus size={12} aria-hidden /> Add section
-                  </button>
-                </EditOnly>
+            {/* Assignments grid — fills the right column now that the
+                platform-art panel has moved to the left rail. */}
+            {activeSections.length === 0 ? (
+              <div className="text-[11px] text-neutral-500 italic">No sections in this phase.</div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {activeSections.map(section => (
+                  <AssignBox
+                    key={section.id}
+                    section={section}
+                    characters={characters}
+                    teamRosterIds={teamRosterIds}
+                    charsById={charsById}
+                    onPatch={patch => patchSection(section.id, patch)}
+                    onDelete={() => deleteSection(section.id)}
+                  />
+                ))}
               </div>
-
-              {/* Platform art panel */}
-              <div className="col-span-12 lg:col-span-5">
-                <div
-                  className="aspect-[16/9] rounded-md border border-[#2e3a55] p-3 text-[11px] leading-snug text-slate-300"
-                  style={{ background: platform.gradient }}
-                >
-                  {platform.heading && (
-                    <div className="font-bold text-amber-100 mb-1.5">{platform.heading}</div>
-                  )}
-                  <ul className="space-y-1">
-                    {platform.notes.map((n, i) => (
-                      <li key={i}>{n}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
+            )}
+            <EditOnly>
+              <button
+                type="button"
+                onClick={addSection}
+                className="mt-2 inline-flex items-center gap-1 text-xs text-vermillion-300 hover:text-vermillion-200 transition"
+              >
+                <Plus size={12} aria-hidden /> Add section
+              </button>
+            </EditOnly>
           </div>
         </div>
       </div>
@@ -398,6 +418,124 @@ function AssignBox({
           />
         )}
       </span>
+
+      {/* AddOn sub-rows (e.g. Hydross Misdirects under each MT). */}
+      {section.addOns?.map((addOn, addOnIdx) => (
+        <AddOnRow
+          key={addOn.id}
+          addOn={addOn}
+          characters={characters}
+          teamRosterIds={teamRosterIds}
+          charsById={charsById}
+          onPatch={next => {
+            const nextAddOns = (section.addOns ?? []).map((a, i) => (i === addOnIdx ? next : a));
+            onPatch({ addOns: nextAddOns });
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────────── */
+
+const SPEC_ICON_BASE = "https://wow.zamimg.com/images/wow/icons/medium/";
+
+/**
+ * One add-on row attached under an AssignBox. Layout mirrors the
+ * BuffsCard's Curses/Debuffs rows: [icon cell | N slot cells] in a CSS
+ * grid. Slots are CharacterChip / EmptySlot at size="sm" with the same
+ * readOnly + EditOnly gating as the rest of the page.
+ */
+function AddOnRow({
+  addOn,
+  characters,
+  teamRosterIds,
+  charsById,
+  onPatch,
+}: {
+  addOn: SectionAddOn;
+  characters: AssignableCharacter[];
+  teamRosterIds: number[];
+  charsById: Map<number, AssignableCharacter>;
+  onPatch: (next: SectionAddOn) => void;
+}) {
+  function setSlot(idx: number, id: number | null) {
+    const next = [...addOn.characterIds];
+    while (next.length <= idx) next.push(0);
+    next[idx] = id ?? 0;
+    while (next.length > 0 && next[next.length - 1] === 0) next.pop();
+    onPatch({ ...addOn, characterIds: next });
+  }
+
+  return (
+    <div
+      className="grid gap-px"
+      style={{ gridTemplateColumns: `22px repeat(${addOn.maxSlots}, minmax(0, 1fr))` }}
+    >
+      <div
+        className="flex items-center justify-center bg-[#1a1a1a] border border-black"
+        title="Misdirect"
+      >
+        <img
+          src={`${SPEC_ICON_BASE}${addOn.iconSlug}.jpg`}
+          alt=""
+          width={18}
+          height={18}
+          loading="lazy"
+          className="rounded-[2px]"
+          onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+        />
+      </div>
+      {Array.from({ length: addOn.maxSlots }).map((_, idx) => (
+        <AddOnSlot
+          key={idx}
+          char={addOn.characterIds[idx] ? charsById.get(addOn.characterIds[idx]) ?? null : null}
+          eligibility={addOn.eligibility}
+          characters={characters}
+          teamRosterIds={teamRosterIds}
+          onPick={c => setSlot(idx, c.id)}
+          onRemove={() => setSlot(idx, null)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function AddOnSlot({
+  char,
+  eligibility,
+  characters,
+  teamRosterIds,
+  onPick,
+  onRemove,
+}: {
+  char: AssignableCharacter | null;
+  eligibility?: SectionAddOn["eligibility"];
+  characters: AssignableCharacter[];
+  teamRosterIds: number[];
+  onPick: (c: AssignableCharacter) => void;
+  onRemove: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  return (
+    <div ref={ref} className="relative">
+      {char ? (
+        <CharacterChip character={char} size="sm" onRemove={onRemove} onClick={() => setOpen(o => !o)} />
+      ) : (
+        <EmptySlot size="sm" onClick={() => setOpen(o => !o)} />
+      )}
+      {open && (
+        <CharacterPicker
+          characters={characters}
+          scopeIds={teamRosterIds.length > 0 ? teamRosterIds : null}
+          eligibility={eligibility}
+          onPick={c => { onPick(c); setOpen(false); }}
+          onClose={() => setOpen(false)}
+          anchorRef={ref as React.RefObject<HTMLElement>}
+        />
+      )}
     </div>
   );
 }
