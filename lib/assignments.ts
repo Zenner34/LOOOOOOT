@@ -23,13 +23,17 @@ export type BossMeta = {
   readonly portraitAlt?: string;
 };
 
+// Local boss imagery lives under /public/bosses/. Spaces and apostrophes
+// in filenames get URL-encoded so the paths are valid for <img src>.
+// TK boss portraits/strategy images fall back to the prior zamimg URLs
+// until those files are uploaded — onError-hide handles missing files.
 export const ASSIGNMENT_BOSSES = [
-  { slug: "hydross",    raidShort: "SSC", name: "Hydross the Unstable",         portrait: "/bosses/hydross/frost.png", portraitAlt: "/bosses/hydross/nature.png" },
-  { slug: "lurker",     raidShort: "SSC", name: "The Lurker Below",             portrait: "https://wow.zamimg.com/uploads/screenshots/normal/68543.jpg" },
-  { slug: "morogrim",   raidShort: "SSC", name: "Morogrim Tidewalker",          portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74894.jpg" },
-  { slug: "fathom",     raidShort: "SSC", name: "Fathom-Lord Karathress",       portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74875.jpg" },
-  { slug: "leotheras",  raidShort: "SSC", name: "Leotheras the Blind",          portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74891.jpg" },
-  { slug: "vashj",      raidShort: "SSC", name: "Lady Vashj",                   portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74899.jpg" },
+  { slug: "hydross",    raidShort: "SSC", name: "Hydross the Unstable",         portrait: "/bosses/Hydross%20Frost.jpg",   portraitAlt: "/bosses/Hydross%20Nature.jpg" },
+  { slug: "lurker",     raidShort: "SSC", name: "The Lurker Below",             portrait: "/bosses/Lurker%20Below.jpg" },
+  { slug: "morogrim",   raidShort: "SSC", name: "Morogrim Tidewalker",          portrait: "/bosses/Morogrim.png" },
+  { slug: "fathom",     raidShort: "SSC", name: "Fathom-Lord Karathress",       portrait: "/bosses/Fathom%20Lord.png" },
+  { slug: "leotheras",  raidShort: "SSC", name: "Leotheras the Blind",          portrait: "/bosses/Leo.png" },
+  { slug: "vashj",      raidShort: "SSC", name: "Lady Vashj",                   portrait: "/bosses/Lady%20Vashj.png" },
   { slug: "alar",       raidShort: "TK",  name: "Al'ar",                        portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74822.jpg" },
   { slug: "voidreaver", raidShort: "TK",  name: "Void Reaver",                  portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74900.jpg" },
   { slug: "solarian",   raidShort: "TK",  name: "High Astromancer Solarian",    portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74896.jpg" },
@@ -888,12 +892,14 @@ type PlatformInfo = {
   /** Heading rendered above `notes`, optional. */
   heading?: string;
   /** Per-phase override for multi-phase bosses. Keyed by phase label
-   *  (matches BOSS_TEMPLATES). */
-  phaseNotes?: Record<string, { heading?: string; notes: string[] }>;
+   *  (matches BOSS_TEMPLATES). Each phase may override the heading,
+   *  the notes, and/or the strategyImage. */
+  phaseNotes?: Record<string, { heading?: string; notes: string[]; strategyImage?: string }>;
   /** Optional path to a placement-diagram image rendered below the
-   *  notes panel. Typically `/strategy/<slug>.png` from /public. When
-   *  the file is absent the image just doesn't render (no broken-image
-   *  icon — handled by BossCard's onError fallback). */
+   *  notes panel. Falls back to phaseNotes[phase].strategyImage for the
+   *  active phase if set; otherwise this top-level value is used. When
+   *  the file is absent the image hides silently via BossCard's
+   *  onError fallback — no broken-image icon. */
   strategyImage?: string;
 };
 
@@ -905,7 +911,7 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
       "Boss starts on south side.",
       "Stream-change line in the middle splits Frost ↔ Nature.",
     ],
-    strategyImage: "/bosses/hydross/strategy.png",
+    strategyImage: "/bosses/Hydross%20Boss%20Fight.png",
   },
   lurker: {
     gradient: "linear-gradient(135deg, #2a1f3a, #5a2e2a)",
@@ -913,6 +919,7 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
       "Inner ring vs. outer ring positioning.",
       "MT center on platform; A/B/C spout teams to corners.",
     ],
+    strategyImage: "/bosses/Lurker%20Below%20Boss%20Fight.png",
   },
   morogrim: {
     gradient: "linear-gradient(135deg, #15263d, #1d3e5e)",
@@ -920,6 +927,7 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
       "Grave healer on NORTH; MT center.",
       "Murloc waves rotate north → south.",
     ],
+    strategyImage: "/bosses/Morogrim%20Boss%20Fight.png",
   },
   fathom: {
     gradient: "linear-gradient(135deg, #25241a, #4a3e1a)",
@@ -927,6 +935,7 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
       "Raid stacks center. LOS tank pulls Tidalvess behind pillar.",
       "Kill order: Caribdis → Sharkkis → Tidalvess → Fathom-Lord.",
     ],
+    strategyImage: "/bosses/Fathom%20Lord%20Boss%20Fight.png",
   },
   leotheras: {
     gradient: "linear-gradient(135deg, #1a2e1f, #3c5a32)",
@@ -934,6 +943,7 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
       "Warlock tanks demon on left wall. Hunter & raid spread.",
       "Whirlwind = drop threat at 5 stacks.",
     ],
+    strategyImage: "/bosses/Leo%20Boss%20Fight.png",
   },
   vashj: {
     gradient: "linear-gradient(135deg, #112a16, #1e4731)",
@@ -945,6 +955,7 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
           "Rogues cloak it.",
           "Move boss to edge at 74% or on pull.",
         ],
+        strategyImage: "/bosses/Lady%20Vashj%20Boss%20Fight%20P1.png",
       },
       "Phase 2": {
         heading: "P2 — Decurse / dispel zones",
@@ -952,6 +963,7 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
           "Overlapping casts marked scary in the timeline above.",
           "Triple-overlap at 180s is the make-or-break window.",
         ],
+        strategyImage: "/bosses/Lady%20Vashj%20Boss%20Fight%20P2.png",
       },
       "Phase 3": {
         heading: "Orb throw map",
@@ -959,6 +971,7 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
           "Catchers on outer ring.",
           "Dunkers on inner ring at N/S/E/W generators.",
         ],
+        strategyImage: "/bosses/Lady%20Vashj%20Boss%20Fight%20P3.png",
       },
     },
   },
@@ -1030,8 +1043,14 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
 
 export function bossPlatformInfo(slug: BossSlug, phaseLabel?: string): { gradient: string; heading?: string; notes: string[]; strategyImage?: string } {
   const info = PLATFORM_INFO[slug];
-  if (phaseLabel && info.phaseNotes?.[phaseLabel]) {
-    return { gradient: info.gradient, ...info.phaseNotes[phaseLabel], strategyImage: info.strategyImage };
+  const phase = phaseLabel ? info.phaseNotes?.[phaseLabel] : undefined;
+  if (phase) {
+    return {
+      gradient: info.gradient,
+      heading: phase.heading,
+      notes: phase.notes,
+      strategyImage: phase.strategyImage ?? info.strategyImage,
+    };
   }
   return { gradient: info.gradient, heading: info.heading, notes: info.notes, strategyImage: info.strategyImage };
 }

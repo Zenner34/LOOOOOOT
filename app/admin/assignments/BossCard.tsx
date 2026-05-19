@@ -24,6 +24,40 @@ import { EditOnly, useViewMode } from "./ViewModeContext";
 const BOSS_INFO = Object.fromEntries(ASSIGNMENT_BOSSES.map(b => [b.slug, b])) as Record<BossSlug, BossMeta>;
 
 /**
+ * Portrait row above the platform-info panel. Renders one or two
+ * boss portraits side-by-side. If `portraitAlt` is set but its file
+ * is missing/404s, the grid collapses back to a single column so
+ * there's no awkward empty cell.
+ */
+function PortraitRow({ meta }: { meta: BossMeta }) {
+  const [altErrored, setAltErrored] = useState(false);
+  const showAlt = !!meta.portraitAlt && !altErrored;
+  return (
+    <div
+      className="grid gap-2"
+      style={{ gridTemplateColumns: showAlt ? "repeat(2, minmax(0, 1fr))" : "1fr" }}
+    >
+      <img
+        src={meta.portrait}
+        alt={`${meta.name} portrait`}
+        loading="lazy"
+        onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+        className="aspect-[4/3] w-full rounded-md border border-[#2e3a55] object-cover bg-[#0e1525]"
+      />
+      {showAlt && (
+        <img
+          src={meta.portraitAlt}
+          alt={`${meta.name} alternate portrait`}
+          loading="lazy"
+          onError={() => setAltErrored(true)}
+          className="aspect-[4/3] w-full rounded-md border border-[#2e3a55] object-cover bg-[#0e1525]"
+        />
+      )}
+    </div>
+  );
+}
+
+/**
  * BossCard layout follows the mockup:
  *
  *   ┌─────────────────────────────────────────────────────────────┐
@@ -164,28 +198,7 @@ export function BossCard({
             then content (8) — phase tabs + assignments grid. */}
         <div className="grid grid-cols-12 gap-3">
           <div className="col-span-12 md:col-span-4 space-y-3">
-            <div className="grid gap-2" style={{ gridTemplateColumns: meta.portraitAlt ? "repeat(2, minmax(0, 1fr))" : "1fr" }}>
-              <div
-                className="aspect-[4/3] rounded-md border border-[#2e3a55] bg-cover bg-center"
-                style={{
-                  background: `url(${meta.portrait}) center/cover, linear-gradient(135deg, #0e1525, #1a2236)`,
-                  backgroundBlendMode: "normal",
-                }}
-                role="img"
-                aria-label={`${meta.name} portrait`}
-              />
-              {meta.portraitAlt && (
-                <div
-                  className="aspect-[4/3] rounded-md border border-[#2e3a55] bg-cover bg-center"
-                  style={{
-                    background: `url(${meta.portraitAlt}) center/cover, linear-gradient(135deg, #0e1525, #1a2236)`,
-                    backgroundBlendMode: "normal",
-                  }}
-                  role="img"
-                  aria-label={`${meta.name} alternate portrait`}
-                />
-              )}
-            </div>
+            <PortraitRow meta={meta} />
 
             <div
               className="rounded-md border border-[#2e3a55] p-3 text-[11px] leading-snug text-slate-300"
