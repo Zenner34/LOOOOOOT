@@ -17,6 +17,7 @@ export {
   ExternalLink,
   Eye,
   Filter,
+  Hammer,
   Inbox,
   Info,
   Layers,
