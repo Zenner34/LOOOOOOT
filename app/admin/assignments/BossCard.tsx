@@ -574,34 +574,33 @@ function AddOnRow({
   }
 
   return (
-    <div
-      className="grid gap-px"
-      style={{ gridTemplateColumns: `22px repeat(${addOn.maxSlots}, minmax(0, 1fr))` }}
-    >
-      <div
-        className="flex items-center justify-center bg-[#1a1a1a] border border-black"
-        title="Misdirect"
-      >
-        <img
-          src={`${SPEC_ICON_BASE}${addOn.iconSlug}.jpg`}
-          alt=""
-          width={18}
-          height={18}
-          loading="lazy"
-          className="rounded-[2px]"
-          onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-        />
-      </div>
+    <div className="flex flex-col gap-px">
       {Array.from({ length: addOn.maxSlots }).map((_, idx) => (
-        <AddOnSlot
+        <div
           key={idx}
-          char={addOn.characterIds[idx] ? charsById.get(addOn.characterIds[idx]) ?? null : null}
-          eligibility={addOn.eligibility}
-          characters={characters}
-          teamRosterIds={teamRosterIds}
-          onPick={c => setSlot(idx, c.id)}
-          onRemove={() => setSlot(idx, null)}
-        />
+          className="grid gap-px"
+          style={{ gridTemplateColumns: "22px minmax(0, 1fr)" }}
+        >
+          <div className="flex items-center justify-center bg-[#1a1a1a] border border-black">
+            <img
+              src={`${SPEC_ICON_BASE}${addOn.iconSlug}.jpg`}
+              alt=""
+              width={18}
+              height={18}
+              loading="lazy"
+              className="rounded-[2px]"
+              onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+            />
+          </div>
+          <AddOnSlot
+            char={addOn.characterIds[idx] ? charsById.get(addOn.characterIds[idx]) ?? null : null}
+            eligibility={addOn.eligibility}
+            characters={characters}
+            teamRosterIds={teamRosterIds}
+            onPick={c => setSlot(idx, c.id)}
+            onRemove={() => setSlot(idx, null)}
+          />
+        </div>
       ))}
     </div>
   );

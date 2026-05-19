@@ -519,25 +519,34 @@ const E: Record<string, Eligibility> = {
   rangedDps: { classes: ["Hunter", "Mage", "Warlock", "Priest", "Druid", "Shaman"] },
 };
 
-// Misdirect addOn (Hunter sub-row) reused on every fight where the
-// active MT wants a hunter funnelling threat onto them. preferSpecs
-// orders the spec-priority pick per slot.
-const MISDIRECT_TWO = {
-  addOns: [{
-    iconSlug: "ability_hunter_misdirection",
-    eligibility: { classes: ["Hunter"] },
-    maxSlots: 2,
-    preferSpecs: ["Beast Mastery", "Survival"],
-  }],
+// Raw addOn templates — composed into section addOns arrays at use
+// site so a section can carry more than one sub-row (e.g. Morogrim
+// Add Tank gets a Misdirect addOn AND a Super Sapper Charge addOn).
+const ADDON_MD_BM_AND_SUR: SectionAddOnTemplate = {
+  iconSlug: "ability_hunter_misdirection",
+  eligibility: { classes: ["Hunter"] },
+  maxSlots: 2,
+  preferSpecs: ["Beast Mastery", "Survival"],
 };
-const MISDIRECT_TWO_BM_ONLY = {
-  addOns: [{
-    iconSlug: "ability_hunter_misdirection",
-    eligibility: { classes: ["Hunter"] },
-    maxSlots: 2,
-    preferSpecs: ["Beast Mastery"],
-  }],
+const ADDON_MD_BM_ONLY: SectionAddOnTemplate = {
+  iconSlug: "ability_hunter_misdirection",
+  eligibility: { classes: ["Hunter"] },
+  maxSlots: 2,
+  preferSpecs: ["Beast Mastery"],
 };
+// Super Sapper Charge — Engineering consumable, anyone-with-Engineering
+// can use it. One slot, no eligibility filter; admin picks the right
+// engineer manually.
+const ADDON_SUPER_SAPPER: SectionAddOnTemplate = {
+  iconSlug: "inv_gizmo_supersappercharge",
+  maxSlots: 1,
+};
+
+// Pre-composed { addOns: [...] } extras so the BOSS_TEMPLATES entries
+// stay readable.
+const MISDIRECT_TWO = { addOns: [ADDON_MD_BM_AND_SUR] };
+const MISDIRECT_TWO_BM_ONLY = { addOns: [ADDON_MD_BM_ONLY] };
+const MISDIRECT_BM_PLUS_SAPPER = { addOns: [ADDON_MD_BM_ONLY, ADDON_SUPER_SAPPER] };
 
 /**
  * Canonical assignment sections per boss, distilled from the source
@@ -582,7 +591,9 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
   morogrim: {
     sections: [
       t("Main Tank", E.tank, MISDIRECT_TWO),
-      t("Add Tank",  E.tank, MISDIRECT_TWO_BM_ONLY),
+      // Add Tank also takes a Super Sapper Charge sub-row — engineer
+      // nukes the spawned adds for the off-tank.
+      t("Add Tank",  E.tank, MISDIRECT_BM_PLUS_SAPPER),
       t("Grave Healer", E.heal),
       // Slow-trap rotation lands on its own row below the tank row.
       t("Hunter Slow Trap — N", E.hunter, { breakBefore: true }),
