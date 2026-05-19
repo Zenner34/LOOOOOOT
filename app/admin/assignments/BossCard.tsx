@@ -281,10 +281,15 @@ export function BossCard({
           </div>
         </div>
 
-        {/* TOP — portrait + info on the left; phase tabs + timeline +
-            assignments on the right. Strategy maps and kill order
-            moved below to a full-width band so the kill order is
-            always one glance away and the maps don't crowd the rail. */}
+        {/* Body. Strategy image lives in the left rail by default —
+            small enough to glance at, big enough to read. Phases that
+            ship multiple strategy images OR a kill-order grid (only
+            Vashj P2 today) opt into a "bottom band" rendered inside
+            the right column below the assignments — never full page
+            width, since that made the maps overwhelming. */}
+        {(() => {
+          const useBottomBand = platform.strategyImages.length > 1 || platform.dpsPriorityImages.length > 0;
+          return (
         <div className="grid grid-cols-12 gap-3">
           <div className="col-span-12 md:col-span-5 space-y-3">
             <PortraitRow meta={meta} />
@@ -302,6 +307,16 @@ export function BossCard({
                 ))}
               </ul>
             </div>
+
+            {/* Strategy image in the left rail for single-map phases.
+                Multi-image phases (Vashj P2) defer to the bottom band
+                inside the right column. */}
+            {!useBottomBand && platform.strategyImages.length === 1 && (
+              <StrategyImage
+                src={platform.strategyImages[0]}
+                alt={`${meta.name} placement diagram`}
+              />
+            )}
           </div>
 
           <div className="col-span-12 md:col-span-7 min-w-0">
@@ -427,67 +442,69 @@ export function BossCard({
                 <Plus size={12} aria-hidden /> Add section
               </button>
             </EditOnly>
+
+            {/* Phase opts into the bottom band: multi-image strategy
+                (Vashj P2 P2 + P2 Orbs) and the kill-order grid render
+                here under the assignments — inside the right column so
+                they take col-7 width, not full-page width. */}
+            {useBottomBand && (
+              <div className="mt-4 space-y-4">
+                {platform.strategyImages.length > 0 && (
+                  <div
+                    className={
+                      platform.strategyImages.length > 1
+                        ? "grid grid-cols-1 sm:grid-cols-2 gap-2"
+                        : ""
+                    }
+                  >
+                    {platform.strategyImages.map((src, i) => (
+                      <StrategyImage
+                        key={`strat-${i}-${src}`}
+                        src={src}
+                        alt={`${meta.name} placement diagram ${platform.strategyImages.length > 1 ? i + 1 : ""}`.trim()}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {platform.dpsPriorityImages.length > 0 && (
+                  <div>
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-1.5">
+                      Kill order
+                    </div>
+                    <div
+                      className="grid gap-2"
+                      style={{
+                        gridTemplateColumns: `repeat(${platform.dpsPriorityImages.length}, minmax(0, 1fr))`,
+                      }}
+                    >
+                      {platform.dpsPriorityImages.map((item, i) => (
+                        <div key={`dps-${i}-${item.src}`} className="space-y-1">
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-black font-bold text-[11px]">
+                              {i + 1}
+                            </span>
+                            {item.label && (
+                              <span className="text-[11px] text-slate-200 font-semibold truncate">
+                                {item.label}
+                              </span>
+                            )}
+                          </div>
+                          <StrategyImage
+                            src={item.src}
+                            alt={item.label ?? `${meta.name} kill priority ${i + 1}`}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
-
-        {/* BOTTOM — full-width strategy maps then kill-order row.
-            Strategy maps render side-by-side when there are 2+. Kill
-            order spreads its N items across one row with bold #N
-            badges. Both blocks hide when their data is empty. */}
-        {(platform.strategyImages.length > 0 || platform.dpsPriorityImages.length > 0) && (
-          <div className="mt-4 space-y-4">
-            {platform.strategyImages.length > 0 && (
-              <div
-                className={
-                  platform.strategyImages.length > 1
-                    ? "grid grid-cols-1 md:grid-cols-2 gap-3"
-                    : ""
-                }
-              >
-                {platform.strategyImages.map((src, i) => (
-                  <StrategyImage
-                    key={`strat-${i}-${src}`}
-                    src={src}
-                    alt={`${meta.name} placement diagram ${platform.strategyImages.length > 1 ? i + 1 : ""}`.trim()}
-                  />
-                ))}
-              </div>
-            )}
-
-            {platform.dpsPriorityImages.length > 0 && (
-              <div>
-                <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-1.5">
-                  Kill order
-                </div>
-                <div
-                  className="grid gap-3"
-                  style={{
-                    gridTemplateColumns: `repeat(${platform.dpsPriorityImages.length}, minmax(0, 1fr))`,
-                  }}
-                >
-                  {platform.dpsPriorityImages.map((item, i) => (
-                    <div key={`dps-${i}-${item.src}`} className="space-y-1.5">
-                      <div className="flex items-baseline gap-2">
-                        <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-sm shadow-[0_0_0_2px_rgba(212,175,55,0.25)]">
-                          {i + 1}
-                        </span>
-                        {item.label && (
-                          <span className="text-sm text-slate-200 font-semibold truncate">
-                            {item.label}
-                          </span>
-                        )}
-                      </div>
-                      <StrategyImage
-                        src={item.src}
-                        alt={item.label ?? `${meta.name} kill priority ${i + 1}`}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   );
