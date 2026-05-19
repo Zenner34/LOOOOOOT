@@ -524,20 +524,31 @@ function AssignBox({
         )}
       </span>
 
-      {/* AddOn sub-rows (e.g. Hydross Misdirects under each MT). */}
-      {section.addOns?.map((addOn, addOnIdx) => (
-        <AddOnRow
-          key={addOn.id}
-          addOn={addOn}
-          characters={characters}
-          teamRosterIds={teamRosterIds}
-          charsById={charsById}
-          onPatch={next => {
-            const nextAddOns = (section.addOns ?? []).map((a, i) => (i === addOnIdx ? next : a));
-            onPatch({ addOns: nextAddOns });
-          }}
-        />
-      ))}
+      {/* AddOn sub-rows. Single addOn renders full-width; multiple
+          addOns (e.g. Morogrim Add Tank = Misdirect + Super Sapper)
+          render side-by-side in equal columns. The hunter slots within
+          a misdirect stay stacked vertically — only the *addOn blocks*
+          go side-by-side. */}
+      {section.addOns?.length ? (
+        <div
+          className="grid gap-px items-start"
+          style={{ gridTemplateColumns: `repeat(${section.addOns.length}, minmax(0, 1fr))` }}
+        >
+          {section.addOns.map((addOn, addOnIdx) => (
+            <AddOnRow
+              key={addOn.id}
+              addOn={addOn}
+              characters={characters}
+              teamRosterIds={teamRosterIds}
+              charsById={charsById}
+              onPatch={next => {
+                const nextAddOns = (section.addOns ?? []).map((a, i) => (i === addOnIdx ? next : a));
+                onPatch({ addOns: nextAddOns });
+              }}
+            />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
