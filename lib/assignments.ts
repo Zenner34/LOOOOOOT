@@ -771,7 +771,13 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
       },
       {
         label: "Phase 2",
-        sections: [t("2H Axe Tank", E.tank), t("Longbow Tank", E.tank), t("Remaining Tanks (cluster)", E.tank)],
+        sections: [
+          t("2H Axe Tank", E.tank),
+          t("Longbow Tank", E.tank),
+          // Cluster tank takes the rest of the weapons — MD pair
+          // funnels threat through the swap chaos.
+          t("Remaining Tanks (cluster)", E.tank, MISDIRECT_TWO),
+        ],
       },
       {
         label: "Phase 3",
@@ -780,7 +786,8 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
       {
         label: "Phase 4",
         sections: [
-          t("Main Tank", E.tank),
+          // MT holds Kael once the advisors are dead — primary MD pair.
+          t("Main Tank", E.tank, MISDIRECT_TWO),
           t("Fireball Kick Order", E.melee),
           t("Pyroblast Kicks", E.melee),
           t("Phoenix Kiter #1", E.tank),
