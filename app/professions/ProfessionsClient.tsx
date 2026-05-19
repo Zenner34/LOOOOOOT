@@ -39,9 +39,9 @@ export type ProfessionGroup = {
 type BindingFilter = "boe" | "bop" | "all";
 
 const BINDING_OPTIONS: Array<{ value: BindingFilter; label: string; hint: string }> = [
-  { value: "boe", label: "BoE only", hint: "Tradeable crafts — your crafter can mail it to you." },
-  { value: "bop", label: "BoP only", hint: "Soulbound to the crafter; can't be traded." },
-  { value: "all", label: "All",      hint: "Every catalog recipe regardless of binding." },
+  { value: "boe", label: "Crafts BoE", hint: "Recipe makes a tradeable item — the crafter can mail it to you." },
+  { value: "bop", label: "Crafts BoP", hint: "Recipe makes a soulbound item — only the crafter can use it." },
+  { value: "all", label: "All",        hint: "Every catalog recipe regardless of what its output binds as." },
 ];
 
 export default function ProfessionsClient({ groups, totalItems }: {
@@ -68,7 +68,7 @@ export default function ProfessionsClient({ groups, totalItems }: {
       <PageHeader
         eyebrow="Crafters"
         title="Professions"
-        subtitle="Who can craft each belt / boots recipe from SSC and Tempest Keep. Patterns themselves are bound — only the looter can craft."
+        subtitle="Who in the guild can craft each belt / boots recipe from SSC and Tempest Keep. Filter by whether the crafted item is tradeable (BoE) or soulbound to the crafter (BoP)."
       />
 
       {totalItems > 0 && (
@@ -119,7 +119,9 @@ export default function ProfessionsClient({ groups, totalItems }: {
                             ? "bg-emerald-500/15 text-emerald-300"
                             : "bg-rose-500/15 text-rose-300"
                         }`}
-                        title={item.binding === "boe" ? "Bind on Equip — tradeable" : "Bind on Pickup — soulbound"}
+                        title={item.binding === "boe"
+                          ? "Crafted item is Bind on Equip — tradeable"
+                          : "Crafted item is Bind on Pickup — soulbound to the crafter"}
                       >
                         {item.binding === "boe" ? "BoE" : "BoP"}
                       </span>
