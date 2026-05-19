@@ -441,6 +441,14 @@ export function BossCard({
                     const tpl = sectionTemplateForBoss(slug, unit.section.title);
                     const breakBefore = unit.section.breakBefore || !!tpl?.breakBefore;
                     const addOnsOnly  = unit.section.addOnsOnly  || !!tpl?.addOnsOnly;
+                    const staticItems = tpl?.staticItems;
+                    if (staticItems?.length) {
+                      return (
+                        <div key={unit.section.id} className={breakBefore ? "lg:col-start-1" : undefined}>
+                          <StaticItemsBlock title={unit.section.title} items={staticItems} />
+                        </div>
+                      );
+                    }
                     return (
                       <div key={unit.section.id} className={breakBefore ? "lg:col-start-1" : undefined}>
                         <AssignBox
@@ -781,6 +789,34 @@ function GroupedRow({
           />
         )}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Read-only section — navy header + a stack of static label rows.
+ * Used when the section's content is fixed (enemy names, ability
+ * lists, role callouts) instead of admin-picked characters. No
+ * picker, no remove, no "+ add".
+ */
+function StaticItemsBlock({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="flex flex-col gap-px">
+      <div
+        className="w-full text-[11px] font-bold uppercase tracking-wider text-white text-center bg-[#1e3a5f] border border-[#2c5494] px-2 py-1 truncate"
+        style={{ letterSpacing: "0.02em", textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
+      >
+        {title}
+      </div>
+      {items.map((item, i) => (
+        <div
+          key={i}
+          className="text-[12px] italic text-center px-2 py-[5px] border border-black/40 leading-snug select-none"
+          style={{ background: "#e8e8e8", color: "#1a1a1a" }}
+        >
+          {item}
+        </div>
+      ))}
     </div>
   );
 }

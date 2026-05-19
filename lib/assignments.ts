@@ -527,6 +527,11 @@ type SectionTemplate = {
   rowLabel?: string;
   /** Auto-fill all eligible chars without consuming them from dedup. */
   fillAllEligible?: boolean;
+  /** Static text rows — when set, the section renders as a read-only
+   *  list (navy header + N labelled rows) instead of a character
+   *  picker. Used for things like Kael'thas P2 weapons kill order
+   *  where the items are enemy targets, not roster members. */
+  staticItems?: string[];
 };
 type BossTemplate = {
   sections?: SectionTemplate[];
@@ -545,6 +550,7 @@ const t = (
     rowGroup?: string;
     rowLabel?: string;
     fillAllEligible?: boolean;
+    staticItems?: string[];
   },
 ): SectionTemplate =>
   ({ title, eligibility, ...extra });
@@ -777,11 +783,30 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
           // Cluster tank takes the rest of the weapons — MD pair
           // funnels threat through the swap chaos.
           t("Remaining Tanks (cluster)", E.tank, MISDIRECT_TWO),
+          // Static kill-order list for the seven weapons.
+          t("Weapons Kill Order", undefined, {
+            staticItems: [
+              "Cosmic Infuser (Mace)",
+              "Staff of Disintegration (Staff)",
+              "Warp Slicer (2H Sword)",
+              "Infinity Blade (Daggers)",
+              "Phaseshift Bulwark (Shield)",
+              "Netherstrand Longbow (Bow)",
+              "Devastation (2H Axe)",
+            ],
+          }),
         ],
       },
       {
         label: "Phase 3",
-        sections: [t("Sanguinar Tank", E.tank), t("Telonicus Tank", E.tank), t("Capernian Tank", E.tank), t("Conflag Soaker")],
+        sections: [
+          t("Sanguinar Tank", E.tank),
+          t("Telonicus Tank", E.tank),
+          t("Capernian Tank", E.tank),
+          t("Conflag Soaker"),
+          t("Melee Kill Order",  undefined, { staticItems: ["Sanguinar", "Telonicus"] }),
+          t("Ranged Kill Order", undefined, { staticItems: ["Thaladred", "Capernian"] }),
+        ],
       },
       {
         label: "Phase 4",
@@ -789,14 +814,29 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
           // MT holds Kael once the advisors are dead — primary MD pair.
           t("Main Tank", E.tank, MISDIRECT_TWO),
           t("Fireball Kick Order", E.melee),
-          t("Pyroblast Kicks", E.melee),
-          t("Phoenix Kiter #1", E.tank),
-          t("Phoenix Kiter #2", E.tank),
+          t("Pyroblast Kicks",     E.melee),
+          t("Phoenix Kiter #1",    E.tank),
+          t("Phoenix Kiter #2",    E.tank),
+          // Static role-callouts — who's expected to handle each kit.
+          t("Staff Users",  undefined, { staticItems: ["Casters"] }),
+          t("Dagger Users", undefined, { staticItems: ["Hunters + Rogue"] }),
         ],
       },
       {
         label: "Phase 5",
-        sections: [],
+        sections: [
+          // "Still does" — list of P4 abilities Kael keeps casting once
+          // he's airborne. Static, no character picks.
+          t("Still Does the Following", undefined, {
+            staticItems: [
+              "Arcane Disruption",
+              "Fireball",
+              "Flamestrike",
+              "Phoenix",
+              "Shock Barrier",
+            ],
+          }),
+        ],
       },
     ],
   },
@@ -1337,8 +1377,8 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
       "Phase 2": {
         heading: "Weapons",
         notes: [
-          "Tank everything in cluster — except 2H Axe & Bow.",
-          "Kill order: Mace → Staff → Warp Slicer → Daggers → Shield → Bow → Axe.",
+          "Tank everything in a cluster — except 2H Axe & Bow (kept in seed range).",
+          "Marks: Left X = Devastation (2H Axe). Right X = Netherstrand Longbow. Middle X = remaining weapons.",
         ],
         strategyImage: "/bosses/KT%20Boss%20Fight%20P2.png",
       },
@@ -1360,9 +1400,9 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
       "Phase 5": {
         heading: "50% HP — full kit",
         notes: [
-          "Gravity Lapse teleports + air.",
-          "Nether Beam — chain beam, spread out.",
-          "Nether Vapor: black clouds, -10% max HP per tick, move ASAP.",
+          "Gravity Lapse teleports raid + throws everyone into the air.",
+          "Nether Beam — cast during Gravity Lapse, chain beam, spread out.",
+          "Nether Vapor: black clouds, -10% max HP per tick — move ASAP.",
         ],
         strategyImage: "/bosses/KT%20Boss%20Fight%20P5.png",
       },
