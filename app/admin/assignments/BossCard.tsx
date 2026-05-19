@@ -281,10 +281,10 @@ export function BossCard({
           </div>
         </div>
 
-        {/* Body: left rail (5) — portraits + notes + strategy diagram —
-            then content (7) — phase tabs + assignments grid. Rail is
-            wider than a typical sidebar because the strategy image is
-            the most important visual on the page. */}
+        {/* TOP — portrait + info on the left; phase tabs + timeline +
+            assignments on the right. Strategy maps and kill order
+            moved below to a full-width band so the kill order is
+            always one glance away and the maps don't crowd the rail. */}
         <div className="grid grid-cols-12 gap-3">
           <div className="col-span-12 md:col-span-5 space-y-3">
             <PortraitRow meta={meta} />
@@ -302,45 +302,6 @@ export function BossCard({
                 ))}
               </ul>
             </div>
-
-            {/* Kill order sits above the strategy diagrams so the
-                most-asked-for info is one glance away — no scrolling
-                past the platform maps. Each thumb captions its
-                priority number + label. */}
-            {platform.dpsPriorityImages.length > 0 && (
-              <div>
-                <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-1.5">
-                  Kill order
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {platform.dpsPriorityImages.map((item, i) => (
-                    <div key={`dps-${i}-${item.src}`} className="space-y-1">
-                      <StrategyImage
-                        src={item.src}
-                        alt={item.label ?? `${meta.name} kill priority ${i + 1}`}
-                      />
-                      {item.label && (
-                        <div className="text-[11px] text-slate-300 text-center leading-tight">
-                          <span className="text-amber-200 font-bold">#{i + 1}</span> {item.label}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {platform.strategyImages.length > 0 && (
-              <div className={platform.strategyImages.length > 1 ? "grid grid-cols-2 gap-2" : ""}>
-                {platform.strategyImages.map((src, i) => (
-                  <StrategyImage
-                    key={`strat-${i}-${src}`}
-                    src={src}
-                    alt={`${meta.name} placement diagram ${platform.strategyImages.length > 1 ? i + 1 : ""}`.trim()}
-                  />
-                ))}
-              </div>
-            )}
           </div>
 
           <div className="col-span-12 md:col-span-7 min-w-0">
@@ -434,6 +395,65 @@ export function BossCard({
             </EditOnly>
           </div>
         </div>
+
+        {/* BOTTOM — full-width strategy maps then kill-order row.
+            Strategy maps render side-by-side when there are 2+. Kill
+            order spreads its N items across one row with bold #N
+            badges. Both blocks hide when their data is empty. */}
+        {(platform.strategyImages.length > 0 || platform.dpsPriorityImages.length > 0) && (
+          <div className="mt-4 space-y-4">
+            {platform.strategyImages.length > 0 && (
+              <div
+                className={
+                  platform.strategyImages.length > 1
+                    ? "grid grid-cols-1 md:grid-cols-2 gap-3"
+                    : ""
+                }
+              >
+                {platform.strategyImages.map((src, i) => (
+                  <StrategyImage
+                    key={`strat-${i}-${src}`}
+                    src={src}
+                    alt={`${meta.name} placement diagram ${platform.strategyImages.length > 1 ? i + 1 : ""}`.trim()}
+                  />
+                ))}
+              </div>
+            )}
+
+            {platform.dpsPriorityImages.length > 0 && (
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-1.5">
+                  Kill order
+                </div>
+                <div
+                  className="grid gap-3"
+                  style={{
+                    gridTemplateColumns: `repeat(${platform.dpsPriorityImages.length}, minmax(0, 1fr))`,
+                  }}
+                >
+                  {platform.dpsPriorityImages.map((item, i) => (
+                    <div key={`dps-${i}-${item.src}`} className="space-y-1.5">
+                      <div className="flex items-baseline gap-2">
+                        <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-black font-bold text-sm shadow-[0_0_0_2px_rgba(212,175,55,0.25)]">
+                          {i + 1}
+                        </span>
+                        {item.label && (
+                          <span className="text-sm text-slate-200 font-semibold truncate">
+                            {item.label}
+                          </span>
+                        )}
+                      </div>
+                      <StrategyImage
+                        src={item.src}
+                        alt={item.label ?? `${meta.name} kill priority ${i + 1}`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
