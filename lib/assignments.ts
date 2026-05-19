@@ -86,6 +86,11 @@ export type AssignSection = {
    *  naturally hold many chars (PoF · G1-5 = 3 priests; Tranq = every
    *  druid; etc.). */
   targetSlots?: number;
+  /** When true, auto-fill picks EVERY eligible roster member and the
+   *  picks are NOT consumed from the cross-section dedup pool. Used
+   *  for "list of capable players" sections (Void Reaver Orb Eaters
+   *  — every hunter can eat an orb, and they can also be MDing). */
+  fillAllEligible?: boolean;
   /** Character ids assigned to this section, in display order. */
   characterIds: number[];
   /** Optional icon-labelled sub-rows that render *inside* this section
@@ -520,6 +525,8 @@ type SectionTemplate = {
   rowGroup?: string;
   /** Short label rendered to the left of the chip inside a rowGroup. */
   rowLabel?: string;
+  /** Auto-fill all eligible chars without consuming them from dedup. */
+  fillAllEligible?: boolean;
 };
 type BossTemplate = {
   sections?: SectionTemplate[];
@@ -537,6 +544,7 @@ const t = (
     addOnsOnly?: boolean;
     rowGroup?: string;
     rowLabel?: string;
+    fillAllEligible?: boolean;
   },
 ): SectionTemplate =>
   ({ title, eligibility, ...extra });
@@ -742,10 +750,12 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
   },
   voidreaver: {
     // Tank-and-spank — one MT, up to 3 hunters funneling threat.
-    // Orb Eaters retired (was a free-form notes section; the strat
-    // image covers spread positioning).
+    // Orb Eaters is a roster slot for every hunter; they can MD AND
+    // eat an orb when one lands on them, so fillAllEligible skips
+    // cross-section dedup against the MT's misdirect addOn.
     sections: [
-      t("Main Tank", E.tank, MISDIRECT_THREE),
+      t("Main Tank",  E.tank,   MISDIRECT_THREE),
+      t("Orb Eaters", E.hunter, { fillAllEligible: true }),
     ],
   },
   solarian: {
@@ -794,6 +804,7 @@ function makeSections(tpls: SectionTemplate[]): AssignSection[] {
     ...(s.targetSlots !== undefined ? { targetSlots: s.targetSlots } : {}),
     ...(s.breakBefore ? { breakBefore: true } : {}),
     ...(s.addOnsOnly ? { addOnsOnly: true } : {}),
+    ...(s.fillAllEligible ? { fillAllEligible: true } : {}),
     ...(s.addOns?.length
       ? {
           addOns: s.addOns.map(a => ({
@@ -876,10 +887,6 @@ export function defaultBossAssignment(slug: BossSlug): BossAssignment {
  */
 const DEPRECATED_BOSS_SECTIONS: Partial<Record<BossSlug, string[]>> = {
   hydross: ["Banish — Skull", "Banish — Cross", "Banish — Triangle"],
-  // Void Reaver "Orb Eaters" was a free-form note section; the strat
-  // image now communicates the spread, and the user prefers a clean
-  // 1-MT-with-MDs layout.
-  voidreaver: ["Orb Eaters"],
 };
 
 /**
@@ -899,6 +906,42 @@ export function flattenSinglePhaseBosses(
     const current = out[slug];
     if (!current?.phases || current.sections) continue;
     out[slug] = { sections: current.phases[0]?.sections ?? [] };
+  }
+  return out;
+}
+
+/**
+ * Append any template sections that don't yet exist on the saved
+ * sheet. Counterpart to removeDeprecatedBossSections — used when we
+ * un-retire a section (Void Reaver Orb Eaters) or add a brand-new
+ * one to a boss without forcing admins to "Reset to defaults". Match
+ * is by title; admin-renamed sections aren't auto-restored.
+ */
+export function mergeMissingBossSections(
+  bosses: Partial<Record<BossSlug, BossAssignment>>,
+): Partial<Record<BossSlug, BossAssignment>> {
+  const out: Partial<Record<BossSlug, BossAssignment>> = { ...bosses };
+  for (const [slug, tpl] of Object.entries(BOSS_TEMPLATES) as [BossSlug, BossTemplate][]) {
+    const current = out[slug];
+    if (!current) continue;
+    if (tpl.sections && current.sections) {
+      const existing = new Set(current.sections.map(s => s.title));
+      const missing = tpl.sections.filter(s => !existing.has(s.title));
+      if (missing.length === 0) continue;
+      out[slug] = { ...current, sections: [...current.sections, ...makeSections(missing)] };
+    } else if (tpl.phases && current.phases) {
+      out[slug] = {
+        ...current,
+        phases: current.phases.map(phase => {
+          const tplPhase = tpl.phases!.find(p => p.label === phase.label);
+          if (!tplPhase) return phase;
+          const existing = new Set(phase.sections.map(s => s.title));
+          const missing = tplPhase.sections.filter(s => !existing.has(s.title));
+          if (missing.length === 0) return phase;
+          return { ...phase, sections: [...phase.sections, ...makeSections(missing)] };
+        }),
+      };
+    }
   }
   return out;
 }
@@ -1034,6 +1077,14 @@ export function suggestFillSections(sections: AssignSection[], roster: EligibleC
 
   function fillMain(s: AssignSection): AssignSection {
     if (s.characterIds.length > 0) return s;
+    // fillAllEligible: list every roster member who matches the
+    // eligibility, ignore the cross-section dedup pool, and don't add
+    // them to `used` (so a hunter Orb-Eater can also MD elsewhere).
+    if (s.fillAllEligible && s.eligibility) {
+      const all = roster.filter(c => matchesEligibility(c, s.eligibility!));
+      if (all.length === 0) return s;
+      return { ...s, characterIds: all.map(c => c.id) };
+    }
     if (s.slotEligibility?.length) {
       const picks: number[] = [];
       for (const elig of s.slotEligibility) {

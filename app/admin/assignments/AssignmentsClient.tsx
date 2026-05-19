@@ -9,6 +9,7 @@ import {
   emptyAssignmentData,
   flattenSinglePhaseBosses,
   mergeMissingBossAddOns,
+  mergeMissingBossSections,
   mergeMissingBuffBlocks,
   removeDeprecatedBossSections,
   mondayOfWeek,
@@ -67,11 +68,14 @@ function hydrateSheetData(data: AssignmentData | null | undefined): AssignmentDa
     ...base,
     buffs: mergeMissingBuffBlocks(base.buffs),
     // Order matters: flatten phases first so deprecated-section removal
-    // and addOn-merge operate on the single-phase shape, otherwise an
-    // Al'ar sheet still rendering Phase 1 / Phase 2 wouldn't migrate.
+    // and addOn-merge operate on the single-phase shape, then append any
+    // missing sections from the current template (e.g. Void Reaver Orb
+    // Eaters coming back), then attach missing addOns to all sections.
     bosses: mergeMissingBossAddOns(
-      removeDeprecatedBossSections(
-        flattenSinglePhaseBosses(base.bosses),
+      mergeMissingBossSections(
+        removeDeprecatedBossSections(
+          flattenSinglePhaseBosses(base.bosses),
+        ),
       ),
     ),
   };
