@@ -429,8 +429,27 @@ const tempestKeep: RaidDef = {
       { name: "Seventh Ring of the Tirisfalen", wowheadId: 30028, slot: "Finger", itemLevel: 128, archetype: "jewel-caster" },
       { name: "Bark-Gloves of Ancient Wisdom", wowheadId: 30029, slot: "Hands", itemLevel: 128, archetype: "heal-leather" },
       { name: "Girdle of Fallen Stars", wowheadId: 30030, slot: "Waist", itemLevel: 128, archetype: "melee-leather" },
-      { name: "Pattern: Boots of Blasting", wowheadId: 30282, slot: "Pattern", itemLevel: 128, notes: "Tailoring pattern - world drop", weights: {} },
-      { name: "Pattern: Boots of Natural Grace", wowheadId: 30305, slot: "Pattern", itemLevel: 128, notes: "Leatherworking pattern - world drop", weights: {} },
+      { name: "Pattern: Boots of Blasting",          wowheadId: 30282, slot: "Pattern",  itemLevel: 128, notes: "Tailoring 375 — crafts Boots of Blasting (BoE). World drop, BoP.",         weights: {} },
+      { name: "Pattern: Boots of Natural Grace",     wowheadId: 30305, slot: "Pattern",  itemLevel: 128, notes: "Leatherworking 375 — crafts Boots of Natural Grace (BoE). World drop, BoP.", weights: {} },
+      // Remaining BoP profession patterns / plans that drop from any SSC
+      // or TK boss. Parked under TK Trash Loot for consistency with the
+      // two patterns above; the planned professions tab queries by
+      // item name + slot, not by boss.
+      { name: "Pattern: Belt of Blasting",            wowheadId: 30280, slot: "Pattern",  itemLevel: 128, notes: "Tailoring 375 — crafts Belt of Blasting (BoE). World drop, BoP.",            weights: {} },
+      { name: "Pattern: Belt of the Long Road",       wowheadId: 30281, slot: "Pattern",  itemLevel: 128, notes: "Tailoring 375 — crafts Belt of the Long Road (BoE). World drop, BoP.",       weights: {} },
+      { name: "Pattern: Boots of the Long Road",      wowheadId: 30283, slot: "Pattern",  itemLevel: 128, notes: "Tailoring 375 — crafts Boots of the Long Road (BoE). World drop, BoP.",      weights: {} },
+      { name: "Pattern: Belt of Natural Power",       wowheadId: 30301, slot: "Pattern",  itemLevel: 128, notes: "Leatherworking 375 — crafts Belt of Natural Power (BoE). World drop, BoP.",  weights: {} },
+      { name: "Pattern: Belt of Deep Shadow",         wowheadId: 30302, slot: "Pattern",  itemLevel: 128, notes: "Leatherworking 375 — crafts Belt of Deep Shadow (BoE). World drop, BoP.",    weights: {} },
+      { name: "Pattern: Belt of the Black Eagle",     wowheadId: 30303, slot: "Pattern",  itemLevel: 128, notes: "Leatherworking 375 — crafts Belt of the Black Eagle (BoE). World drop, BoP.",weights: {} },
+      { name: "Pattern: Monsoon Belt",                wowheadId: 30304, slot: "Pattern",  itemLevel: 128, notes: "Leatherworking 375 — crafts Monsoon Belt (BoE). World drop, BoP.",            weights: {} },
+      { name: "Pattern: Boots of Utter Darkness",     wowheadId: 30306, slot: "Pattern",  itemLevel: 128, notes: "Leatherworking 375 — crafts Boots of Utter Darkness (BoE). World drop, BoP.", weights: {} },
+      { name: "Pattern: Boots of the Crimson Hawk",   wowheadId: 30307, slot: "Pattern",  itemLevel: 128, notes: "Leatherworking 375 — crafts Boots of the Crimson Hawk (BoE). World drop, BoP.",weights: {} },
+      { name: "Pattern: Hurricane Boots",             wowheadId: 30308, slot: "Pattern",  itemLevel: 128, notes: "Leatherworking 375 — crafts Hurricane Boots (BoE). World drop, BoP.",         weights: {} },
+      { name: "Plans: Belt of the Guardian",          wowheadId: 30321, slot: "Plans",    itemLevel: 128, notes: "Blacksmithing 375 — crafts Belt of the Guardian (BoE). World drop, BoP.",     weights: {} },
+      { name: "Plans: Red Belt of Battle",            wowheadId: 30322, slot: "Plans",    itemLevel: 128, notes: "Blacksmithing 375 — crafts Red Belt of Battle (BoE). World drop, BoP.",       weights: {} },
+      { name: "Plans: Boots of the Protector",        wowheadId: 30323, slot: "Plans",    itemLevel: 128, notes: "Blacksmithing 375 — crafts Boots of the Protector (BoE). World drop, BoP.",   weights: {} },
+      { name: "Plans: Red Havoc Boots",               wowheadId: 30324, slot: "Plans",    itemLevel: 128, notes: "Blacksmithing 375 — crafts Red Havoc Boots (BoE). World drop, BoP.",          weights: {} },
+      { name: "Badge of Justice",                     wowheadId: 29434, slot: "Currency", itemLevel: 0,   notes: "Heroic / raid badge currency. Drops from every boss in SSC and Tempest Keep.", weights: {} },
     ]},
   ],
 };
