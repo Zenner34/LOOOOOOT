@@ -898,7 +898,33 @@ function AddOnRow({
         );
       })}
       {hasRoom && (
-        <div ref={anchorRef} className="relative">
+        <div
+          ref={anchorRef}
+          className="relative grid gap-px"
+          style={{ gridTemplateColumns: `repeat(${icons.length}, 22px) minmax(0, 1fr)` }}
+        >
+          {/* Show a dimmed icon strip on the trailing "+ add" row so
+              admins can tell at a glance that the empty slot is for
+              MD (or whatever this addOn carries) — without it the
+              add affordance is indistinguishable from the section's
+              main + add. Filled rows still render the icons at full
+              opacity. */}
+          {icons.map((slug, iconIdx) => (
+            <div
+              key={iconIdx}
+              className="flex items-center justify-center bg-[#1a1a1a] border border-black opacity-50"
+            >
+              <img
+                src={`${SPEC_ICON_BASE}${slug}.jpg`}
+                alt=""
+                width={18}
+                height={18}
+                loading="lazy"
+                className="rounded-[2px]"
+                onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+              />
+            </div>
+          ))}
           <EmptySlot size="sm" onClick={() => setPickerOpen(true)} />
           {pickerOpen && (
             <CharacterPicker
