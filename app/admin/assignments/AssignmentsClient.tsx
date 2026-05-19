@@ -600,12 +600,19 @@ function TeamModal({
   const [color, setColor] = useState(existing?.color ?? "#1e3a5f");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const nameRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
     document.addEventListener("keydown", onKey);
+    // Focus the name input manually with preventScroll. The browser's
+    // default autoFocus would scrollIntoView the input — and because the
+    // modal sits inside AssignmentsClient's transformed root, the
+    // input's DOM-computed position is far down the page, so the page
+    // would jump to whatever boss happens to be near that y-coordinate.
+    nameRef.current?.focus({ preventScroll: true });
     return () => {
       document.body.style.overflow = prev;
       document.removeEventListener("keydown", onKey);
@@ -673,7 +680,7 @@ function TeamModal({
             <div>
               <label className="label">Name</label>
               <input
-                autoFocus
+                ref={nameRef}
                 className="input"
                 placeholder="Sunday Main"
                 value={name}
