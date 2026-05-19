@@ -20,10 +20,24 @@ export async function POST(req: Request) {
   const notes = body?.notes ? String(body.notes) : null;
   if (!name) return NextResponse.json({ error: "name required" }, { status: 400 });
 
+  let team;
   try {
-    const team = await prisma.raidTeam.create({
+    team = await prisma.raidTeam.create({
       data: { name, color, notes },
     });
+  } catch (e: any) {
+    if (e?.code === "P2002") {
+      return NextResponse.json({ error: "A team with that name already exists." }, { status: 409 });
+    }
+    throw e;
+  }
+
+  // Best-effort seed of an AssignmentSheet for the current week. If
+  // this fails the team is still usable — the editor lazy-creates one
+  // from emptyAssignmentData() on next open. Log so we can diagnose,
+  // but don't fail the request and confuse the admin with a "Couldn't
+  // create team" toast when the team is right there.
+  try {
     await prisma.assignmentSheet.create({
       data: {
         teamId: team.id,
@@ -31,11 +45,9 @@ export async function POST(req: Request) {
         data: emptyAssignmentData() as any,
       },
     });
-    return NextResponse.json(team, { status: 201 });
-  } catch (e: any) {
-    if (e?.code === "P2002") {
-      return NextResponse.json({ error: "A team with that name already exists." }, { status: 409 });
-    }
-    throw e;
+  } catch (e) {
+    console.warn(`[raid-teams] seed sheet failed for team ${team.id}:`, e);
   }
+
+  return NextResponse.json(team, { status: 201 });
 }
