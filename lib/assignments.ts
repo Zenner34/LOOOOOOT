@@ -24,7 +24,7 @@ export type BossMeta = {
 };
 
 export const ASSIGNMENT_BOSSES = [
-  { slug: "hydross",    raidShort: "SSC", name: "Hydross the Unstable",         portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74886.jpg" },
+  { slug: "hydross",    raidShort: "SSC", name: "Hydross the Unstable",         portrait: "/bosses/hydross/frost.png", portraitAlt: "/bosses/hydross/nature.png" },
   { slug: "lurker",     raidShort: "SSC", name: "The Lurker Below",             portrait: "https://wow.zamimg.com/uploads/screenshots/normal/68543.jpg" },
   { slug: "morogrim",   raidShort: "SSC", name: "Morogrim Tidewalker",          portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74894.jpg" },
   { slug: "fathom",     raidShort: "SSC", name: "Fathom-Lord Karathress",       portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74875.jpg" },
@@ -905,7 +905,7 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
       "Boss starts on south side.",
       "Stream-change line in the middle splits Frost ↔ Nature.",
     ],
-    strategyImage: "/strategy/hydross.png",
+    strategyImage: "/bosses/hydross/strategy.png",
   },
   lurker: {
     gradient: "linear-gradient(135deg, #2a1f3a, #5a2e2a)",
