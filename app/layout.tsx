@@ -49,7 +49,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script dangerouslySetInnerHTML={{ __html: `
           var whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: true, domain: "tbc"};
         `}} />
-        <script src="https://wow.zamimg.com/js/tooltips.js" defer></script>
+        <script src="https://wow.zamimg.com/widgets/power.js" defer></script>
       </head>
       <body className="font-sans">
         <TooltipProvider delayDuration={200} skipDelayDuration={300}>
