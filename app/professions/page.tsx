@@ -24,6 +24,21 @@ function craftedItemName(patternName: string): string {
   return patternName.replace(/^(Pattern|Plans):\s*/i, "");
 }
 
+/**
+ * Reads the binding of the *crafted* item out of the pattern's notes
+ * (e.g. "Tailoring 375 — crafts Belt of Blasting (BoE). World drop,
+ * BoP." → "boe"). Defaults to "boe" when no marker is found, since the
+ * vast majority of profession patterns produce BoE gear.
+ */
+function craftedBinding(notes: string | null): "boe" | "bop" {
+  if (!notes) return "boe";
+  // Match the first "(BoE)" or "(BoP)" inside the "crafts …" portion —
+  // ignore the trailing "BoP" that just notes the pattern's own bind.
+  const m = notes.match(/crafts[^.]*?\((BoE|BoP)\)/i);
+  if (!m) return "boe";
+  return m[1].toLowerCase() === "bop" ? "bop" : "boe";
+}
+
 export default async function ProfessionsPage() {
   const patterns = await prisma.item.findMany({
     where: { slot: { in: ["Pattern", "Plans"] } },
@@ -77,6 +92,7 @@ export default async function ProfessionsPage() {
         craftedItemName: craftedItemName(item.name),
         wowheadId: item.wowheadId,
         crafters: [...owners.values()],
+        binding: craftedBinding(item.notes),
       };
     }),
   }));
