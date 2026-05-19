@@ -550,11 +550,21 @@ const ADDON_MD_BM_WITH_SAPPER: SectionAddOnTemplate = {
   maxSlots: 2,
   preferSpecs: ["Beast Mastery"],
 };
+// Single-slot misdirect for sections that take only one hunter (e.g.
+// Leotheras WW Threat Wipe — one hunter MDs to bleed off post-WW
+// threat onto the tank).
+const ADDON_MD_BM_ONE: SectionAddOnTemplate = {
+  iconSlug: "ability_hunter_misdirection",
+  eligibility: { classes: ["Hunter"] },
+  maxSlots: 1,
+  preferSpecs: ["Beast Mastery"],
+};
 
 // Pre-composed { addOns: [...] } extras so the BOSS_TEMPLATES entries
 // stay readable.
 const MISDIRECT_TWO = { addOns: [ADDON_MD_BM_AND_SUR] };
 const MISDIRECT_TWO_BM_ONLY = { addOns: [ADDON_MD_BM_ONLY] };
+const MISDIRECT_ONE = { addOns: [ADDON_MD_BM_ONE] };
 const MISDIRECT_AND_SAPPER = { addOns: [ADDON_MD_BM_WITH_SAPPER] };
 
 /**
@@ -612,18 +622,27 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
   },
   fathom: {
     sections: [
-      t("FL Tank", E.tank),
-      t("Tank Healer", E.heal),
-      t("Tidal & Shark Tank", E.tank),
-      t("LOS Tank", E.tank),
-      t("LOS Healer", E.heal),
+      // Three tanks rotate; each takes its own MD hunter pair. FL is
+      // the primary MT so it gets BM+Survival preference; the side
+      // tanks just want a BM pet for the threat dump.
+      t("FL Tank",             E.tank, MISDIRECT_TWO),
+      t("Tank Healer",         E.heal),
+      t("Tidal & Shark Tank",  E.tank, MISDIRECT_TWO_BM_ONLY),
+      t("LOS Tank",            E.tank, MISDIRECT_TWO_BM_ONLY),
+      t("LOS Healer",          E.heal),
     ],
   },
   leotheras: {
     sections: [
-      t("Main Tank", E.tank),
-      t("Demon Tank", E.warlock),
-      t("WW Threat Wipe"),
+      // Main Tank holds Leo; MD hunter pair funnels threat onto the
+      // tank pre- and post-Inner Demon. Demon Tank stays warlock-only.
+      t("Main Tank",      E.tank,    MISDIRECT_TWO),
+      t("Demon Tank",     E.warlock),
+      // WW Threat Wipe — one hunter MDs onto the MT immediately after
+      // Whirlwind so threat re-establishes before the boss picks a
+      // new target. Section is the hunter; MD icon makes the role
+      // unmistakable.
+      t("WW Threat Wipe", undefined, MISDIRECT_ONE),
     ],
   },
   vashj: {
