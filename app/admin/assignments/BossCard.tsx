@@ -122,10 +122,11 @@ function PortraitRow({ meta }: { meta: BossMeta }) {
   // Crop focus: most boss screenshots are full-body shots framed with
   // a lot of empty space below the boss. Default `object-cover`
   // centers the crop and chops the face off. Pin to top so the
-  // boss's face stays in frame. Hydross / Lurker / Al'ar are
-  // already-cropped portraits where centering reads correctly.
-  const cropTop = !["hydross", "lurker", "alar"].includes(meta.slug);
-  const cropClass = cropTop ? "object-top" : "object-center";
+  // boss's face stays in frame. A few portraits read better
+  // centered — Lurker and Al'ar are tight crops, Fathom-Lord's
+  // composition puts the face in the middle.
+  const cropCenter = ["lurker", "alar", "fathom"].includes(meta.slug);
+  const cropClass = cropCenter ? "object-center" : "object-top";
   return (
     <div
       className="grid gap-2"
@@ -297,11 +298,10 @@ export function BossCard({
         {(() => {
           const useBottomBand = platform.strategyImages.length > 1 || platform.dpsPriorityImages.length > 0;
           // Per-boss layout: most bosses split the rail-top horizontally
-          // (portrait | info). Hydross / Lurker / Al'ar keep the original
-          // stacked layout (portrait above info) — Hydross because both
-          // portraits read better at full-rail width, Lurker / Al'ar
-          // because their portrait crops aren't worth squeezing.
-          const stackedPortraitInfo = slug === "hydross" || slug === "lurker" || slug === "alar";
+          // (portrait | info). Hydross is the only stacked layout —
+          // both frost + nature portraits need full-rail width to
+          // render side-by-side at a usable size.
+          const stackedPortraitInfo = slug === "hydross";
           const notesPanel = (
             <div
               className="rounded-md border border-[#2e3a55] p-3 text-[11px] leading-snug text-slate-300"
