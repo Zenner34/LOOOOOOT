@@ -145,15 +145,19 @@ export function BuffsCard({
               onAddSibling={() => {
                 const last = g.sections[g.sections.length - 1];
                 const insertAfter = data.buffs.findIndex(s => s.id === last.id);
+                // New siblings always default to a single slot — matches
+                // "everywhere else" behaviour. The block's multi-slot
+                // row (e.g. PoF · G1-5 with 3 priests) stays the way it
+                // was; a new sibling under it is just one slot.
                 const sibling: AssignSection = {
                   id: newSectionId(),
                   title: `${g.category} · `,
                   iconSlug: last.iconSlug,
                   rowIconSlug: last.rowIconSlug,
                   eligibility: last.eligibility,
-                  slotEligibility: last.slotEligibility,
-                  fixedSlots: last.fixedSlots,
-                  targetSlots: last.targetSlots,
+                  slotEligibility: undefined,
+                  fixedSlots: 1,
+                  targetSlots: undefined,
                   characterIds: [],
                 };
                 const next = [...data.buffs];

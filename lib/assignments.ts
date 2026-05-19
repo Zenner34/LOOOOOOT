@@ -176,10 +176,20 @@ type BuffTpl = {
 };
 
 const BUFF_TEMPLATE: BuffTpl[] = [
-  // ═══ LEFT COLUMN — raid-wide one-per-class-group buffs ════════════════
+  // ═══ LEFT COLUMN — raid-wide buffs + tank/mana support ════════════════
   { title: "Prayer of Fortitude · G1-5",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] }, targetSlots: 3, fixedSlots: 3 },
   { title: "Gift of the Wild · G1-5",           iconSlug: "spell_nature_regeneration",             eligibility: { classes: ["Druid"] }, fixedSlots: 1 },
   { title: "Arcane Brilliance · G1-5",          iconSlug: "spell_holy_arcaneintellect",            eligibility: { classes: ["Mage"] }, fixedSlots: 1 },
+  // Earth Shield — resto shaman on tank. Each row paired Shaman + Tank.
+  { title: "Earth Shield · MT",                 iconSlug: "spell_nature_skinofearth",              rowIconSlug: "spell_nature_skinofearth",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Shaman"] }, { roles: ["tank"] }] },
+  { title: "Earth Shield · OT",                 iconSlug: "spell_nature_skinofearth",              rowIconSlug: "spell_nature_skinofearth",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Shaman"] }, { roles: ["tank"] }] },
+  // Innervate — resto druid → mage. Each row paired Druid + Mage.
+  { title: "Innervate · Pair 1",                iconSlug: "spell_nature_lightning",                rowIconSlug: "spell_nature_lightning",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
+  { title: "Innervate · Pair 2",                iconSlug: "spell_nature_lightning",                rowIconSlug: "spell_nature_lightning",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
 
   // ═══ MIDDLE COLUMN — all Paladin assignments ═════════════════════════
   // Each row uses rowIconSlug so the row label is the spell icon
@@ -199,15 +209,7 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   { title: "Greater Blessings · Wisdom",        iconSlug: "spell_magic_greaterblessingofkings",    rowIconSlug: "spell_holy_greaterblessingofwisdom",    eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
   { title: "Greater Blessings · Salvation",     iconSlug: "spell_magic_greaterblessingofkings",    rowIconSlug: "spell_holy_greaterblessingofsalvation", eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
 
-  // ═══ RIGHT COLUMN — druid + shaman + warlock utility ════════════════
-  { title: "Innervate · Pair 1",                iconSlug: "spell_nature_lightning",                rowIconSlug: "spell_nature_lightning",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
-  { title: "Innervate · Pair 2",                iconSlug: "spell_nature_lightning",                rowIconSlug: "spell_nature_lightning",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
-  { title: "Earth Shield · MT",                 iconSlug: "spell_nature_skinofearth",              rowIconSlug: "spell_nature_skinofearth",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Shaman"] }, { roles: ["tank"] }] },
-  { title: "Earth Shield · OT",                 iconSlug: "spell_nature_skinofearth",              rowIconSlug: "spell_nature_skinofearth",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Shaman"] }, { roles: ["tank"] }] },
+  // ═══ RIGHT COLUMN — warlock utility + raid debuffs ════════════════════
   // Soulstones — each row pairs a Warlock caster with their target
   // (any character; typically a healer in rezz-priority order). Five
   // default rows mirror the source spreadsheet's priority list; admin
@@ -254,10 +256,12 @@ const BUFF_TEMPLATE: BuffTpl[] = [
  * sorted into the middle column.
  */
 export const BUFF_COLUMNS: Record<string, "left" | "middle" | "right"> = {
-  // LEFT — raid-wide buffs
+  // LEFT — raid-wide buffs + tank/mana support
   "Prayer of Fortitude":           "left",
   "Gift of the Wild":              "left",
   "Arcane Brilliance":             "left",
+  "Earth Shield":                  "left",
+  "Innervate":                     "left",
   "Power Infusion":                "left",      // legacy
   "Mark of the Wild":              "left",      // legacy
 
@@ -272,9 +276,7 @@ export const BUFF_COLUMNS: Record<string, "left" | "middle" | "right"> = {
   "Greater Blessing of Sanctuary": "middle",    // legacy
   "Greater Blessing of Light":     "middle",    // legacy
 
-  // RIGHT — druid + shaman + warlock utility
-  "Innervate":                     "right",
-  "Earth Shield":                  "right",
+  // RIGHT — warlock utility + raid debuffs
   "Soulstones":                    "right",
   "Soulstone Caster":              "right",     // legacy
   "Soulstone Order":               "right",     // legacy
@@ -320,6 +322,55 @@ export function defaultBuffs(): AssignSection[] {
     targetSlots: b.targetSlots,
     characterIds: [],
   }));
+}
+
+/**
+ * Migration applied on sheet hydration:
+ *   1. Append any BUFF_TEMPLATE section whose category (prefix before
+ *      "·") is entirely absent from the saved sheet. New blocks like
+ *      Debuffs land in every existing team's sheet on next load without
+ *      requiring "Reset to defaults" — admin-edited rows are never
+ *      touched.
+ *   2. Reorder blocks to match the current template order, so when the
+ *      template moves (e.g. Earth Shield from right→left column), every
+ *      existing sheet picks up the new arrangement on next load.
+ *
+ * Sections whose category isn't in the template (admin-renamed
+ * categories) sort to the end, preserving their original relative order.
+ * The only side effect of "category entirely deleted" is the empty rows
+ * coming back — rare and re-deletable.
+ */
+export function mergeMissingBuffBlocks(buffs: AssignSection[]): AssignSection[] {
+  const category = (title: string) => title.split("·")[0].trim();
+  const tplCategoryRank = new Map<string, number>();
+  BUFF_TEMPLATE.forEach((tpl, i) => {
+    const cat = category(tpl.title);
+    if (!tplCategoryRank.has(cat)) tplCategoryRank.set(cat, i);
+  });
+
+  const existing = new Set(buffs.map(b => category(b.title)));
+  const additions: AssignSection[] = [];
+  for (const tpl of BUFF_TEMPLATE) {
+    if (existing.has(category(tpl.title))) continue;
+    additions.push({
+      id: newSectionId(),
+      title: tpl.title,
+      iconSlug: tpl.iconSlug,
+      rowIconSlug: tpl.rowIconSlug,
+      eligibility: tpl.eligibility,
+      slotEligibility: tpl.slotEligibility,
+      fixedSlots: tpl.fixedSlots,
+      targetSlots: tpl.targetSlots,
+      characterIds: [],
+    });
+  }
+
+  const all = [...buffs, ...additions];
+  // Stable sort by (template category rank, original index). Admin-added
+  // categories not in the template get rank +Infinity → sort to the end.
+  const indexed = all.map((s, i) => ({ s, i, rank: tplCategoryRank.get(category(s.title)) ?? Number.POSITIVE_INFINITY }));
+  indexed.sort((a, b) => (a.rank - b.rank) || (a.i - b.i));
+  return indexed.map(x => x.s);
 }
 
 /* ────────────────────────────────────────────────────────────────────

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
 import {
   emptyAssignmentData,
+  mergeMissingBuffBlocks,
   mondayOfWeek,
   weekOfLabel,
   rosterCharacterIds,
@@ -50,6 +51,17 @@ function isCasterSpec(spec: string): boolean {
   return /Mage|Warlock|Priest|Hunter|Druid \(Balance\)|Balance Druid|Elemental Shaman/.test(spec);
 }
 
+/**
+ * Normalize a saved sheet against the current template — appends new
+ * buff blocks added since the sheet was last saved, and reorders blocks
+ * to match the current template arrangement. Admin-edited rows are
+ * never modified. Returns a fresh empty-data when `data` is null.
+ */
+function hydrateSheetData(data: AssignmentData | null | undefined): AssignmentData {
+  const base = data ?? emptyAssignmentData();
+  return { ...base, buffs: mergeMissingBuffBlocks(base.buffs) };
+}
+
 export default function AssignmentsClient({
   teams,
   selectedTeamId,
@@ -69,7 +81,7 @@ export default function AssignmentsClient({
   const searchParams = useSearchParams();
   // null = closed; "create" = new-team modal; { team } = editing that team
   const [teamModal, setTeamModal] = useState<null | "create" | { team: Team }>(null);
-  const [data, setData] = useState<AssignmentData>(sheet?.data ?? emptyAssignmentData());
+  const [data, setData] = useState<AssignmentData>(hydrateSheetData(sheet?.data));
   const [savingState, setSavingState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const charsById = useMemo(() => new Map(characters.map(c => [c.id, c])), [characters]);
   const selectedTeam = teams.find(t => t.id === selectedTeamId) ?? null;
@@ -77,7 +89,7 @@ export default function AssignmentsClient({
   // Reset local state when the server hands us a different sheet
   // (team or week change).
   useEffect(() => {
-    setData(sheet?.data ?? emptyAssignmentData());
+    setData(hydrateSheetData(sheet?.data));
     setSavingState("idle");
   }, [sheet?.teamId, sheet?.weekOf]);
 
