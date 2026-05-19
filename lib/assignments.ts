@@ -1047,6 +1047,22 @@ export const VASHJ_P2_TIMELINE: Array<{ t: string; label: string; scary?: boolea
    PLATFORM-ART STRATEGY NOTES
    ──────────────────────────────────────────────────────────────────── */
 
+type PhaseInfo = {
+  heading?: string;
+  notes: string[];
+  /** Single primary diagram for this phase. Kept for back-compat with
+   *  single-image phases (P1, P3). Use `strategyImages` instead when
+   *  a phase wants multiple full-width diagrams stacked. */
+  strategyImage?: string;
+  /** Multiple primary diagrams stacked at full rail width. When set,
+   *  takes precedence over `strategyImage`. */
+  strategyImages?: string[];
+  /** Smaller secondary diagrams rendered as a 2-col grid below the
+   *  primary strategy images. Used for things like Vashj P2 DPS-
+   *  priority cheatsheets (one per add type). */
+  dpsPriorityImages?: string[];
+};
+
 type PlatformInfo = {
   /** CSS gradient string used as the platform-art panel background. */
   gradient: string;
@@ -1056,15 +1072,15 @@ type PlatformInfo = {
   /** Heading rendered above `notes`, optional. */
   heading?: string;
   /** Per-phase override for multi-phase bosses. Keyed by phase label
-   *  (matches BOSS_TEMPLATES). Each phase may override the heading,
-   *  the notes, and/or the strategyImage. */
-  phaseNotes?: Record<string, { heading?: string; notes: string[]; strategyImage?: string }>;
-  /** Optional path to a placement-diagram image rendered below the
-   *  notes panel. Falls back to phaseNotes[phase].strategyImage for the
-   *  active phase if set; otherwise this top-level value is used. When
-   *  the file is absent the image hides silently via BossCard's
-   *  onError fallback — no broken-image icon. */
+   *  (matches BOSS_TEMPLATES). */
+  phaseNotes?: Record<string, PhaseInfo>;
+  /** Top-level single strategy image (single-phase bosses, or fallback
+   *  when a phase doesn't supply one). */
   strategyImage?: string;
+  /** Top-level array of primary strategy images. */
+  strategyImages?: string[];
+  /** Top-level DPS-priority secondary grid. */
+  dpsPriorityImages?: string[];
 };
 
 const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
@@ -1127,7 +1143,20 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
           "Overlapping casts marked scary in the timeline above.",
           "Triple-overlap at 180s is the make-or-break window.",
         ],
-        strategyImage: "/bosses/Lady%20Vashj%20Boss%20Fight%20P2.png",
+        // Two primary diagrams stacked at full rail width — the main
+        // platform map and the orb hand-off lanes.
+        strategyImages: [
+          "/bosses/Lady%20Vashj%20Boss%20Fight%20P2.png",
+          "/bosses/Lady%20Vashj%20Boss%20Fight%20P2%20Orbs.png",
+        ],
+        // DPS-priority cheatsheets render as a 2-col grid below the
+        // primary diagrams: which add to nuke when each spawns.
+        dpsPriorityImages: [
+          "/bosses/Lady%20Vashj%20DPS%20Prio%201%20-%20Coilfang%20Elite.png",
+          "/bosses/Lady%20Vashj%20DPS%20Prio%201%20-%20Coilfang%20Strider.png",
+          "/bosses/Lady%20Vashj%20DPS%20Prio%201%20-%20Tainted%20Elemental.jpg",
+          "/bosses/Lady%20Vashj%20DPS%20Prio%202%20-%20Enchanted%20Elemental.jpg",
+        ],
       },
       "Phase 3": {
         heading: "Orb throw map",
@@ -1205,16 +1234,45 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
   },
 };
 
-export function bossPlatformInfo(slug: BossSlug, phaseLabel?: string): { gradient: string; heading?: string; notes: string[]; strategyImage?: string } {
+export function bossPlatformInfo(
+  slug: BossSlug,
+  phaseLabel?: string,
+): {
+  gradient: string;
+  heading?: string;
+  notes: string[];
+  /** Resolved primary strategy images — phase override wins, then
+   *  phase.strategyImage (single → singleton array), then top-level
+   *  strategyImages / strategyImage. Empty array when nothing. */
+  strategyImages: string[];
+  /** Resolved DPS-priority grid — phase override wins, then top-level. */
+  dpsPriorityImages: string[];
+} {
   const info = PLATFORM_INFO[slug];
   const phase = phaseLabel ? info.phaseNotes?.[phaseLabel] : undefined;
+  const pickStrategy = (p?: PhaseInfo): string[] => {
+    if (p?.strategyImages?.length) return p.strategyImages;
+    if (p?.strategyImage) return [p.strategyImage];
+    if (info.strategyImages?.length) return info.strategyImages;
+    if (info.strategyImage) return [info.strategyImage];
+    return [];
+  };
+  const pickDpsPrio = (p?: PhaseInfo): string[] =>
+    p?.dpsPriorityImages ?? info.dpsPriorityImages ?? [];
   if (phase) {
     return {
       gradient: info.gradient,
       heading: phase.heading,
       notes: phase.notes,
-      strategyImage: phase.strategyImage ?? info.strategyImage,
+      strategyImages: pickStrategy(phase),
+      dpsPriorityImages: pickDpsPrio(phase),
     };
   }
-  return { gradient: info.gradient, heading: info.heading, notes: info.notes, strategyImage: info.strategyImage };
+  return {
+    gradient: info.gradient,
+    heading: info.heading,
+    notes: info.notes,
+    strategyImages: pickStrategy(),
+    dpsPriorityImages: pickDpsPrio(),
+  };
 }

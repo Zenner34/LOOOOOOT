@@ -303,8 +303,29 @@ export function BossCard({
               </ul>
             </div>
 
-            {platform.strategyImage && (
-              <StrategyImage src={platform.strategyImage} alt={`${meta.name} placement diagram`} />
+            {platform.strategyImages.map((src, i) => (
+              <StrategyImage
+                key={`strat-${i}-${src}`}
+                src={src}
+                alt={`${meta.name} placement diagram ${platform.strategyImages.length > 1 ? i + 1 : ""}`.trim()}
+              />
+            ))}
+
+            {platform.dpsPriorityImages.length > 0 && (
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-1.5">
+                  DPS priority
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {platform.dpsPriorityImages.map((src, i) => (
+                    <StrategyImage
+                      key={`dps-${i}-${src}`}
+                      src={src}
+                      alt={`${meta.name} DPS priority ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
             )}
           </div>
 
