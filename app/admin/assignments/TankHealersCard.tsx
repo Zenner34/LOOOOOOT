@@ -78,7 +78,7 @@ export function TankHealersCard({
   return (
     <div
       id="tank-heal"
-      className="rounded-lg border border-[#2a3650] p-3 scroll-mt-4"
+      className="rounded-lg border border-[#2a3650] p-3 scroll-mt-20"
       style={{ background: "linear-gradient(180deg, #1a2236, #111827)" }}
     >
       <div

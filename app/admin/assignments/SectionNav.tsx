@@ -72,7 +72,7 @@ export function SectionNav() {
 
   return (
     <nav
-      className="rounded-lg border border-[#2a3650] p-3 sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto"
+      className="rounded-lg border border-[#2a3650] p-3 sticky top-[4.5rem] max-h-[calc(100vh-5.5rem)] overflow-y-auto"
       style={{ background: "linear-gradient(180deg, #1a2236, #111827)" }}
       aria-label="Jump to section"
     >

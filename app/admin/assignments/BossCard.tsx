@@ -238,7 +238,7 @@ export function BossCard({
   return (
     <div
       id={`boss-${slug}`}
-      className="relative rounded-lg border border-[#2a3650] overflow-visible scroll-mt-4"
+      className="relative rounded-lg border border-[#2a3650] overflow-visible scroll-mt-20"
       style={{ background: "linear-gradient(180deg, #131b2c, #0e1525)" }}
     >
       {/* Subtle gold sheen at the top, like the mockup .magic-frame::before */}
