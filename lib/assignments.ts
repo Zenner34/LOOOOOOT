@@ -105,6 +105,16 @@ export type AssignSection = {
    *  existing chips in `characterIds` still render so admin data isn't
    *  hidden; only the trailing empty add slot disappears. */
   addOnsOnly?: boolean;
+  /** Visual grouping hint: consecutive sections sharing the same
+   *  `rowGroup` value render as one block (single header + a row per
+   *  section). Used for "Healer Positioning" on Vashj P3 — N/S/E/W/
+   *  Flex sections collapse into one navy-headed block with directional
+   *  labels on the left of each chip. */
+  rowGroup?: string;
+  /** Short label rendered at the left of the chip when this section
+   *  is inside a `rowGroup` block. Falls back to the full section
+   *  title when unset. */
+  rowLabel?: string;
 };
 
 /**
@@ -505,6 +515,11 @@ type SectionTemplate = {
   /** When true, hide the section's main "+ add" affordance — the
    *  section is just its addOns. Looked up by title at render time. */
   addOnsOnly?: boolean;
+  /** Visual group hint — consecutive sections sharing the value
+   *  collapse into one block at render time. */
+  rowGroup?: string;
+  /** Short label rendered to the left of the chip inside a rowGroup. */
+  rowLabel?: string;
 };
 type BossTemplate = {
   sections?: SectionTemplate[];
@@ -515,7 +530,14 @@ type BossTemplate = {
 const t = (
   title: string,
   eligibility?: Eligibility,
-  extra?: { addOns?: SectionAddOnTemplate[]; breakBefore?: boolean; targetSlots?: number; addOnsOnly?: boolean },
+  extra?: {
+    addOns?: SectionAddOnTemplate[];
+    breakBefore?: boolean;
+    targetSlots?: number;
+    addOnsOnly?: boolean;
+    rowGroup?: string;
+    rowLabel?: string;
+  },
 ): SectionTemplate =>
   ({ title, eligibility, ...extra });
 const E: Record<string, Eligibility> = {
@@ -680,13 +702,17 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
       {
         label: "Phase 3",
         sections: [
-          t("Main Tank", E.tank),
+          t("Main Tank", E.tank, MISDIRECT_TWO),
           t("Tank Healers", E.heal),
-          t("Healer — North", E.heal),
-          t("Healer — South", E.heal),
-          t("Healer — East", E.heal),
-          t("Healer — West", E.heal),
-          t("Healer — Flex", E.heal),
+          // Healer Positioning — 5 sections collapse into one block at
+          // render time via rowGroup. Each section keeps its own
+          // characterIds (so existing assignments survive) but renders
+          // as [direction label | healer chip] under a shared header.
+          t("Healer — North", E.heal, { rowGroup: "Healer Positioning", rowLabel: "North" }),
+          t("Healer — South", E.heal, { rowGroup: "Healer Positioning", rowLabel: "South" }),
+          t("Healer — East",  E.heal, { rowGroup: "Healer Positioning", rowLabel: "East" }),
+          t("Healer — West",  E.heal, { rowGroup: "Healer Positioning", rowLabel: "West" }),
+          t("Healer — Flex",  E.heal, { rowGroup: "Healer Positioning", rowLabel: "Flex" }),
           t("Zone 1"),
           t("Zone 2"),
           t("Zone 3"),

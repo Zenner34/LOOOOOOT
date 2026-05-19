@@ -360,28 +360,62 @@ export function BossCard({
               <div className="text-[11px] text-neutral-500 italic">No sections in this phase.</div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {activeSections.map(section => {
-                  // Template hints: row breaks (layout) and addOnsOnly
-                  // (suppress empty main slot). Data fields win when
-                  // present so admin overrides stick; otherwise fall
-                  // back to whatever the current template declares.
-                  const tpl = sectionTemplateForBoss(slug, section.title);
-                  const breakBefore = section.breakBefore || !!tpl?.breakBefore;
-                  const addOnsOnly  = section.addOnsOnly  || !!tpl?.addOnsOnly;
-                  return (
-                    <div key={section.id} className={breakBefore ? "lg:col-start-1" : undefined}>
-                      <AssignBox
-                        section={section}
-                        addOnsOnly={addOnsOnly}
-                        characters={characters}
-                        teamRosterIds={teamRosterIds}
-                        charsById={charsById}
-                        onPatch={patch => patchSection(section.id, patch)}
-                        onDelete={() => deleteSection(section.id)}
-                      />
-                    </div>
-                  );
-                })}
+                {(() => {
+                  // Walk activeSections and bucket consecutive ones
+                  // sharing a `rowGroup` template hint into a single
+                  // render unit. Solo sections render as today.
+                  type Unit =
+                    | { kind: "solo"; section: AssignSection }
+                    | { kind: "group"; groupTitle: string; sections: AssignSection[] };
+                  const units: Unit[] = [];
+                  for (const section of activeSections) {
+                    const tpl = sectionTemplateForBoss(slug, section.title);
+                    const rowGroup = section.rowGroup ?? tpl?.rowGroup;
+                    const last = units[units.length - 1];
+                    if (rowGroup && last?.kind === "group" && last.groupTitle === rowGroup) {
+                      last.sections.push(section);
+                    } else if (rowGroup) {
+                      units.push({ kind: "group", groupTitle: rowGroup, sections: [section] });
+                    } else {
+                      units.push({ kind: "solo", section });
+                    }
+                  }
+                  return units.map((unit, unitIdx) => {
+                    if (unit.kind === "group") {
+                      const firstTpl = sectionTemplateForBoss(slug, unit.sections[0].title);
+                      const breakBefore = !!firstTpl?.breakBefore || !!unit.sections[0].breakBefore;
+                      return (
+                        <div key={`grp-${unitIdx}`} className={breakBefore ? "lg:col-start-1" : undefined}>
+                          <GroupedSectionBlock
+                            groupTitle={unit.groupTitle}
+                            sections={unit.sections}
+                            slug={slug}
+                            characters={characters}
+                            teamRosterIds={teamRosterIds}
+                            charsById={charsById}
+                            patchSection={patchSection}
+                          />
+                        </div>
+                      );
+                    }
+                    const tpl = sectionTemplateForBoss(slug, unit.section.title);
+                    const breakBefore = unit.section.breakBefore || !!tpl?.breakBefore;
+                    const addOnsOnly  = unit.section.addOnsOnly  || !!tpl?.addOnsOnly;
+                    return (
+                      <div key={unit.section.id} className={breakBefore ? "lg:col-start-1" : undefined}>
+                        <AssignBox
+                          section={unit.section}
+                          addOnsOnly={addOnsOnly}
+                          characters={characters}
+                          teamRosterIds={teamRosterIds}
+                          charsById={charsById}
+                          onPatch={patch => patchSection(unit.section.id, patch)}
+                          onDelete={() => deleteSection(unit.section.id)}
+                        />
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             )}
             <EditOnly>
@@ -617,6 +651,119 @@ function AssignBox({
 }
 
 /* ──────────────────────────────────────────────────────────────────── */
+
+/**
+ * Renders a collapsed-block view of multiple AssignSections sharing
+ * the same `rowGroup` template hint. One navy header (the group's
+ * title) sits above a stack of `[direction label | single chip]`
+ * rows — used for Vashj P3 Healer Positioning so the five healer-
+ * direction sections read as a single block instead of five
+ * standalone cards.
+ *
+ * Each row supports the same picker / chip / remove × interactions as
+ * a normal section, just at single-slot scale. Eligibility passes
+ * through from each section.
+ */
+function GroupedSectionBlock({
+  groupTitle,
+  sections,
+  slug,
+  characters,
+  teamRosterIds,
+  charsById,
+  patchSection,
+}: {
+  groupTitle: string;
+  sections: AssignSection[];
+  slug: BossSlug;
+  characters: AssignableCharacter[];
+  teamRosterIds: number[];
+  charsById: Map<number, AssignableCharacter>;
+  patchSection: (id: string, patch: Partial<AssignSection>) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-px">
+      <div
+        className="text-[11px] font-bold uppercase tracking-wider text-white text-center bg-[#1e3a5f] border border-[#2c5494] px-2 py-1 truncate"
+        style={{ letterSpacing: "0.02em", textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
+      >
+        {groupTitle}
+      </div>
+      {sections.map(section => {
+        const tpl = sectionTemplateForBoss(slug, section.title);
+        const rowLabel = section.rowLabel ?? tpl?.rowLabel ?? section.title;
+        return (
+          <GroupedRow
+            key={section.id}
+            section={section}
+            rowLabel={rowLabel}
+            characters={characters}
+            teamRosterIds={teamRosterIds}
+            charsById={charsById}
+            onPatch={patch => patchSection(section.id, patch)}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function GroupedRow({
+  section,
+  rowLabel,
+  characters,
+  teamRosterIds,
+  charsById,
+  onPatch,
+}: {
+  section: AssignSection;
+  rowLabel: string;
+  characters: AssignableCharacter[];
+  teamRosterIds: number[];
+  charsById: Map<number, AssignableCharacter>;
+  onPatch: (patch: Partial<AssignSection>) => void;
+}) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const filled = section.characterIds.filter(id => id > 0);
+  const c = filled[0] ? charsById.get(filled[0]) ?? null : null;
+
+  function pickChar(picked: AssignableCharacter) {
+    onPatch({ characterIds: [picked.id] });
+    setPickerOpen(false);
+  }
+  function removeChar() {
+    onPatch({ characterIds: [] });
+  }
+
+  return (
+    <div
+      className="grid gap-px"
+      style={{ gridTemplateColumns: "minmax(60px, max-content) minmax(0, 1fr)" }}
+    >
+      <div className="flex items-center justify-center bg-[#1e3a5f] border border-[#2c5494] text-white text-[10px] font-bold uppercase tracking-wider px-2 whitespace-nowrap">
+        {rowLabel}
+      </div>
+      <div ref={anchorRef} className="relative">
+        {c ? (
+          <CharacterChip character={c} size="sm" onRemove={removeChar} onClick={() => setPickerOpen(o => !o)} />
+        ) : (
+          <EmptySlot size="sm" onClick={() => setPickerOpen(true)} />
+        )}
+        {pickerOpen && (
+          <CharacterPicker
+            characters={characters}
+            scopeIds={teamRosterIds.length > 0 ? teamRosterIds : null}
+            eligibility={section.eligibility}
+            onPick={pickChar}
+            onClose={() => setPickerOpen(false)}
+            anchorRef={anchorRef as React.RefObject<HTMLElement>}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
 
 const SPEC_ICON_BASE = "https://wow.zamimg.com/images/wow/icons/medium/";
 
