@@ -532,9 +532,6 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
       t("Tank Healers", E.heal),
       t("Melee Group 1", E.melee),
       t("Melee Group 2", E.melee),
-      t("Banish — Skull", E.warlock),
-      t("Banish — Cross", E.warlock),
-      t("Banish — Triangle", E.warlock),
       t("RDPS 1", E.ranged),
       t("RDPS 2", E.ranged),
       t("RDPS 3", E.ranged),
@@ -716,6 +713,39 @@ export function defaultBossAssignment(slug: BossSlug): BossAssignment {
     };
   }
   return { sections: makeSections(tpl.sections ?? []) };
+}
+
+/**
+ * Sections we've dropped from a boss template. On hydration we remove
+ * matching sections from existing sheets so admins don't have to "Reset
+ * to defaults" just to shed retired rows. Match is by exact title; if
+ * an admin renamed a section, it stays.
+ *
+ * Hydross banishes were removed when the strat stopped using banish
+ * crowd control — the elementals get tanked + nuked instead.
+ */
+const DEPRECATED_BOSS_SECTIONS: Partial<Record<BossSlug, string[]>> = {
+  hydross: ["Banish — Skull", "Banish — Cross", "Banish — Triangle"],
+};
+
+export function removeDeprecatedBossSections(
+  bosses: Partial<Record<BossSlug, BossAssignment>>,
+): Partial<Record<BossSlug, BossAssignment>> {
+  const out: Partial<Record<BossSlug, BossAssignment>> = { ...bosses };
+  for (const [slug, titles] of Object.entries(DEPRECATED_BOSS_SECTIONS) as [BossSlug, string[]][]) {
+    const current = out[slug];
+    if (!current) continue;
+    const drop = new Set(titles);
+    if (current.sections) {
+      out[slug] = { ...current, sections: current.sections.filter(s => !drop.has(s.title)) };
+    } else if (current.phases) {
+      out[slug] = {
+        ...current,
+        phases: current.phases.map(p => ({ ...p, sections: p.sections.filter(s => !drop.has(s.title)) })),
+      };
+    }
+  }
+  return out;
 }
 
 /**

@@ -8,6 +8,7 @@ import {
   emptyAssignmentData,
   mergeMissingBossAddOns,
   mergeMissingBuffBlocks,
+  removeDeprecatedBossSections,
   mondayOfWeek,
   weekOfLabel,
   rosterCharacterIds,
@@ -63,7 +64,9 @@ function hydrateSheetData(data: AssignmentData | null | undefined): AssignmentDa
   return {
     ...base,
     buffs: mergeMissingBuffBlocks(base.buffs),
-    bosses: mergeMissingBossAddOns(base.bosses),
+    // Drop retired sections first so the addOn merge doesn't reattach
+    // anything to a section that's about to disappear.
+    bosses: mergeMissingBossAddOns(removeDeprecatedBossSections(base.bosses)),
   };
 }
 

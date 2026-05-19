@@ -42,7 +42,7 @@ function PortraitRow({ meta }: { meta: BossMeta }) {
         alt={`${meta.name} portrait`}
         loading="lazy"
         onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-        className="aspect-[4/3] w-full rounded-md border border-[#2e3a55] object-cover bg-[#0e1525]"
+        className="aspect-[16/9] w-full rounded-md border border-[#2e3a55] object-cover bg-[#0e1525]"
       />
       {showAlt && (
         <img
@@ -50,7 +50,7 @@ function PortraitRow({ meta }: { meta: BossMeta }) {
           alt={`${meta.name} alternate portrait`}
           loading="lazy"
           onError={() => setAltErrored(true)}
-          className="aspect-[4/3] w-full rounded-md border border-[#2e3a55] object-cover bg-[#0e1525]"
+          className="aspect-[16/9] w-full rounded-md border border-[#2e3a55] object-cover bg-[#0e1525]"
         />
       )}
     </div>
@@ -194,10 +194,12 @@ export function BossCard({
           </div>
         </div>
 
-        {/* Body: left rail (4) — portraits + notes + strategy diagram —
-            then content (8) — phase tabs + assignments grid. */}
+        {/* Body: left rail (5) — portraits + notes + strategy diagram —
+            then content (7) — phase tabs + assignments grid. Rail is
+            wider than a typical sidebar because the strategy image is
+            the most important visual on the page. */}
         <div className="grid grid-cols-12 gap-3">
-          <div className="col-span-12 md:col-span-4 space-y-3">
+          <div className="col-span-12 md:col-span-5 space-y-3">
             <PortraitRow meta={meta} />
 
             <div
@@ -225,7 +227,7 @@ export function BossCard({
             )}
           </div>
 
-          <div className="col-span-12 md:col-span-8 min-w-0">
+          <div className="col-span-12 md:col-span-7 min-w-0">
             {/* Phase tabs */}
             {isMultiPhase && (
               <div className="flex flex-wrap gap-1 mb-3">
