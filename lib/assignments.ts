@@ -231,6 +231,15 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   { title: "Curses · Recklessness",             iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_unholystrength",   eligibility: { classes: ["Warlock"] }, fixedSlots: 1 },
   { title: "Curses · Elements",                 iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_chilltouch",        eligibility: { classes: ["Warlock"] }, fixedSlots: 1 },
   { title: "Curses · Malediction",              iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_curseofachimonde",  eligibility: { classes: ["Warlock"] }, fixedSlots: 1 },
+
+  // ── Physical raid debuffs — one row per boss-side debuff, one eligible
+  // class per row (Druid FF, Rogue iEA, Warrior Demo/BF/TC). Same layout
+  // as Curses: row icon on the left, one slot on the right.
+  { title: "Debuffs · Faerie Fire",             iconSlug: "ability_warrior_warcry",                rowIconSlug: "spell_nature_faeriefire",        eligibility: { classes: ["Druid"] },   fixedSlots: 1 },
+  { title: "Debuffs · Improved Expose Armor",   iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_warrior_riposte",        eligibility: { classes: ["Rogue"] },   fixedSlots: 1 },
+  { title: "Debuffs · Demoralizing Shout",      iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_warrior_warcry",         eligibility: { classes: ["Warrior"] }, fixedSlots: 1 },
+  { title: "Debuffs · Blood Frenzy",            iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_warrior_bloodfrenzy",    eligibility: { classes: ["Warrior"] }, fixedSlots: 1 },
+  { title: "Debuffs · Thunderclap",             iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_thunderclap",            eligibility: { classes: ["Warrior"] }, fixedSlots: 1 },
 ];
 
 /**
@@ -271,6 +280,7 @@ export const BUFF_COLUMNS: Record<string, "left" | "middle" | "right"> = {
   "Soulstone Order":               "right",     // legacy
   "Tranquility":                   "right",     // legacy
   "Curses":                        "right",
+  "Debuffs":                       "right",
   "Affliction Warlock (Debuffs)":  "right",     // legacy
   "Misdirection":                  "right",     // legacy
   "Faerie Fire":                   "right",     // legacy
@@ -295,6 +305,7 @@ export const BUFF_TOOLTIPS: Record<string, string> = {
   "Greater Blessings":     "Paladin raid buffs by spec. Kings for tanks, Might for melee, Wisdom for casters/healers, Salvation for DPS.",
   "Paladin Seals":         "On-boss seals from paladins. Crusader for melee haste, Wisdom for mana return on hits, Light for incidental healing.",
   "Curses":                "Warlock debuffs on the boss. Recklessness for physical raids, Elements for caster raids, Shadow / Tongues situational.",
+  "Debuffs":               "Physical-damage raid debuffs maintained on the boss. Faerie Fire (Druid), Improved Expose Armor (Rogue), Demoralizing Shout / Blood Frenzy / Thunderclap (Warrior).",
 };
 
 export function defaultBuffs(): AssignSection[] {
