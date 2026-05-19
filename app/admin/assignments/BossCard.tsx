@@ -289,14 +289,13 @@ export function BossCard({
           </div>
         </div>
 
-        {/* Body. Strategy image lives in the left rail by default —
-            small enough to glance at, big enough to read. Phases that
-            ship multiple strategy images OR a kill-order grid (only
-            Vashj P2 today) opt into a "bottom band" rendered inside
-            the right column below the assignments — never full page
-            width, since that made the maps overwhelming. */}
+        {/* Body. Strategy images live in the left rail (stacked when
+            there are multiple — Vashj P2 platform map + orb-handoff).
+            Only the kill-order grid opts into the bottom band under
+            the assignments on the right; the bottom-band is never
+            full page width. */}
         {(() => {
-          const useBottomBand = platform.strategyImages.length > 1 || platform.dpsPriorityImages.length > 0;
+          const useBottomBand = platform.dpsPriorityImages.length > 0;
           // Per-boss layout: most bosses split the rail-top horizontally
           // (portrait | info). Hydross is the only stacked layout —
           // both frost + nature portraits need full-rail width to
@@ -332,15 +331,17 @@ export function BossCard({
               </div>
             )}
 
-            {/* Strategy image in the left rail for single-map phases.
-                Multi-image phases (Vashj P2) defer to the bottom band
-                inside the right column. */}
-            {!useBottomBand && platform.strategyImages.length === 1 && (
+            {/* Strategy images in the left rail. Single image renders
+                full-rail; multi-image phases (Vashj P2 platform + orb
+                map) stack vertically. Kill-order grid still routes to
+                the bottom band on the right. */}
+            {platform.strategyImages.map((src, i) => (
               <StrategyImage
-                src={platform.strategyImages[0]}
-                alt={`${meta.name} placement diagram`}
+                key={`strat-${i}-${src}`}
+                src={src}
+                alt={`${meta.name} placement diagram ${platform.strategyImages.length > 1 ? i + 1 : ""}`.trim()}
               />
-            )}
+            ))}
           </div>
 
           <div className="col-span-12 md:col-span-7 min-w-0">
@@ -467,62 +468,40 @@ export function BossCard({
               </button>
             </EditOnly>
 
-            {/* Phase opts into the bottom band: multi-image strategy
-                (Vashj P2 P2 + P2 Orbs) and the kill-order grid render
-                here under the assignments — inside the right column so
-                they take col-7 width, not full-page width. */}
-            {useBottomBand && (
-              <div className="mt-4 space-y-4">
-                {platform.strategyImages.length > 0 && (
-                  <div
-                    className={
-                      platform.strategyImages.length > 1
-                        ? "grid grid-cols-1 sm:grid-cols-2 gap-2"
-                        : ""
-                    }
-                  >
-                    {platform.strategyImages.map((src, i) => (
+            {/* Bottom band — only the kill-order grid lives here.
+                Strategy images stay in the left rail per user's
+                request; the kill order keeps its place under the
+                assignments column. */}
+            {useBottomBand && platform.dpsPriorityImages.length > 0 && (
+              <div className="mt-4">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-1.5">
+                  Kill order
+                </div>
+                <div
+                  className="grid gap-2"
+                  style={{
+                    gridTemplateColumns: `repeat(${platform.dpsPriorityImages.length}, minmax(0, 1fr))`,
+                  }}
+                >
+                  {platform.dpsPriorityImages.map((item, i) => (
+                    <div key={`dps-${i}-${item.src}`} className="space-y-1">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-black font-bold text-[11px]">
+                          {i + 1}
+                        </span>
+                        {item.label && (
+                          <span className="text-[11px] text-slate-200 font-semibold truncate">
+                            {item.label}
+                          </span>
+                        )}
+                      </div>
                       <StrategyImage
-                        key={`strat-${i}-${src}`}
-                        src={src}
-                        alt={`${meta.name} placement diagram ${platform.strategyImages.length > 1 ? i + 1 : ""}`.trim()}
+                        src={item.src}
+                        alt={item.label ?? `${meta.name} kill priority ${i + 1}`}
                       />
-                    ))}
-                  </div>
-                )}
-
-                {platform.dpsPriorityImages.length > 0 && (
-                  <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-1.5">
-                      Kill order
                     </div>
-                    <div
-                      className="grid gap-2"
-                      style={{
-                        gridTemplateColumns: `repeat(${platform.dpsPriorityImages.length}, minmax(0, 1fr))`,
-                      }}
-                    >
-                      {platform.dpsPriorityImages.map((item, i) => (
-                        <div key={`dps-${i}-${item.src}`} className="space-y-1">
-                          <div className="flex items-baseline gap-1.5">
-                            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-black font-bold text-[11px]">
-                              {i + 1}
-                            </span>
-                            {item.label && (
-                              <span className="text-[11px] text-slate-200 font-semibold truncate">
-                                {item.label}
-                              </span>
-                            )}
-                          </div>
-                          <StrategyImage
-                            src={item.src}
-                            alt={item.label ?? `${meta.name} kill priority ${i + 1}`}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  ))}
+                </div>
               </div>
             )}
           </div>
