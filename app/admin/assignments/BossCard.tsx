@@ -621,10 +621,10 @@ function AssignBox({
 const SPEC_ICON_BASE = "https://wow.zamimg.com/images/wow/icons/medium/";
 
 /**
- * One add-on row attached under an AssignBox. Layout mirrors the
- * BuffsCard's Curses/Debuffs rows: [icon cell | N slot cells] in a CSS
- * grid. Slots are CharacterChip / EmptySlot at size="sm" with the same
- * readOnly + EditOnly gating as the rest of the page.
+ * One add-on row block. Renders [icon-strip | chip] for each FILLED
+ * slot, plus a single trailing "+ add" affordance (without icons)
+ * when there's room for more. Empty icon rows would be visual noise —
+ * the icons only earn their pixels once a character is in the slot.
  */
 function AddOnRow({
   addOn,
@@ -639,90 +639,76 @@ function AddOnRow({
   charsById: Map<number, AssignableCharacter>;
   onPatch: (next: SectionAddOn) => void;
 }) {
-  function setSlot(idx: number, id: number | null) {
-    const next = [...addOn.characterIds];
-    while (next.length <= idx) next.push(0);
-    next[idx] = id ?? 0;
-    while (next.length > 0 && next[next.length - 1] === 0) next.pop();
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const anchorRef = useRef<HTMLDivElement>(null);
+
+  // Drop any sentinel 0s from older data; `filled` is now a clean
+  // list of real character ids in display order.
+  const filled = addOn.characterIds.filter(id => id > 0).slice(0, addOn.maxSlots);
+
+  function addChar(c: AssignableCharacter) {
+    const next = [...filled, c.id].slice(0, addOn.maxSlots);
+    onPatch({ ...addOn, characterIds: next });
+    setPickerOpen(false);
+  }
+
+  function removeChar(idx: number) {
+    const next = filled.filter((_, i) => i !== idx);
     onPatch({ ...addOn, characterIds: next });
   }
 
-  // Icon strip: primary slug + any extras. Each becomes a 22-px cell
-  // to the left of every slot row, mirroring the multi-duty visual
-  // ([MD][Sapper][Hunter] for Morogrim Add Tank).
+  // Icon strip: primary slug + any extras. Same visual unit as before;
+  // just only rendered when a character occupies the row.
   const icons = [addOn.iconSlug, ...(addOn.extraIcons ?? [])];
+  const hasRoom = filled.length < addOn.maxSlots;
+  const excludeIds = new Set(filled);
 
   return (
     <div className="flex flex-col gap-px">
-      {Array.from({ length: addOn.maxSlots }).map((_, idx) => (
-        <div
-          key={idx}
-          className="grid gap-px"
-          style={{ gridTemplateColumns: `repeat(${icons.length}, 22px) minmax(0, 1fr)` }}
-        >
-          {icons.map((slug, iconIdx) => (
-            <div
-              key={iconIdx}
-              className="flex items-center justify-center bg-[#1a1a1a] border border-black"
-            >
-              <img
-                src={`${SPEC_ICON_BASE}${slug}.jpg`}
-                alt=""
-                width={18}
-                height={18}
-                loading="lazy"
-                className="rounded-[2px]"
-                onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-              />
-            </div>
-          ))}
-          <AddOnSlot
-            char={addOn.characterIds[idx] ? charsById.get(addOn.characterIds[idx]) ?? null : null}
-            eligibility={addOn.eligibility}
-            characters={characters}
-            teamRosterIds={teamRosterIds}
-            onPick={c => setSlot(idx, c.id)}
-            onRemove={() => setSlot(idx, null)}
-          />
+      {filled.map((charId, idx) => {
+        const c = charsById.get(charId);
+        if (!c) return null;
+        return (
+          <div
+            key={`${charId}:${idx}`}
+            className="grid gap-px"
+            style={{ gridTemplateColumns: `repeat(${icons.length}, 22px) minmax(0, 1fr)` }}
+          >
+            {icons.map((slug, iconIdx) => (
+              <div
+                key={iconIdx}
+                className="flex items-center justify-center bg-[#1a1a1a] border border-black"
+              >
+                <img
+                  src={`${SPEC_ICON_BASE}${slug}.jpg`}
+                  alt=""
+                  width={18}
+                  height={18}
+                  loading="lazy"
+                  className="rounded-[2px]"
+                  onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                />
+              </div>
+            ))}
+            <CharacterChip character={c} size="sm" onRemove={() => removeChar(idx)} />
+          </div>
+        );
+      })}
+      {hasRoom && (
+        <div ref={anchorRef} className="relative">
+          <EmptySlot size="sm" onClick={() => setPickerOpen(true)} />
+          {pickerOpen && (
+            <CharacterPicker
+              characters={characters}
+              scopeIds={teamRosterIds.length > 0 ? teamRosterIds : null}
+              excludeIds={excludeIds}
+              eligibility={addOn.eligibility}
+              onPick={addChar}
+              onClose={() => setPickerOpen(false)}
+              anchorRef={anchorRef as React.RefObject<HTMLElement>}
+            />
+          )}
         </div>
-      ))}
-    </div>
-  );
-}
-
-function AddOnSlot({
-  char,
-  eligibility,
-  characters,
-  teamRosterIds,
-  onPick,
-  onRemove,
-}: {
-  char: AssignableCharacter | null;
-  eligibility?: SectionAddOn["eligibility"];
-  characters: AssignableCharacter[];
-  teamRosterIds: number[];
-  onPick: (c: AssignableCharacter) => void;
-  onRemove: () => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  return (
-    <div ref={ref} className="relative">
-      {char ? (
-        <CharacterChip character={char} size="sm" onRemove={onRemove} onClick={() => setOpen(o => !o)} />
-      ) : (
-        <EmptySlot size="sm" onClick={() => setOpen(o => !o)} />
-      )}
-      {open && (
-        <CharacterPicker
-          characters={characters}
-          scopeIds={teamRosterIds.length > 0 ? teamRosterIds : null}
-          eligibility={eligibility}
-          onPick={c => { onPick(c); setOpen(false); }}
-          onClose={() => setOpen(false)}
-          anchorRef={ref as React.RefObject<HTMLElement>}
-        />
       )}
     </div>
   );
