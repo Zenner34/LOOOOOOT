@@ -34,10 +34,10 @@ export const ASSIGNMENT_BOSSES = [
   { slug: "fathom",     raidShort: "SSC", name: "Fathom-Lord Karathress",       portrait: "/bosses/Fathom%20Lord.png" },
   { slug: "leotheras",  raidShort: "SSC", name: "Leotheras the Blind",          portrait: "/bosses/Leo.png" },
   { slug: "vashj",      raidShort: "SSC", name: "Lady Vashj",                   portrait: "/bosses/Lady%20Vashj.png" },
-  { slug: "alar",       raidShort: "TK",  name: "Al'ar",                        portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74822.jpg" },
-  { slug: "voidreaver", raidShort: "TK",  name: "Void Reaver",                  portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74900.jpg" },
-  { slug: "solarian",   raidShort: "TK",  name: "High Astromancer Solarian",    portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74896.jpg" },
-  { slug: "kael",       raidShort: "TK",  name: "Kael'thas Sunstrider",         portrait: "https://wow.zamimg.com/uploads/screenshots/normal/74888.jpg" },
+  { slug: "alar",       raidShort: "TK",  name: "Al'ar",                        portrait: "/bosses/Alar.png" },
+  { slug: "voidreaver", raidShort: "TK",  name: "Void Reaver",                  portrait: "/bosses/Void%20Reaver.jpg" },
+  { slug: "solarian",   raidShort: "TK",  name: "High Astromancer Solarian",    portrait: "/bosses/Solarian.jpg" },
+  { slug: "kael",       raidShort: "TK",  name: "Kael'thas Sunstrider",         portrait: "/bosses/KT.png" },
 ] as const satisfies readonly BossMeta[];
 
 export type BossSlug = (typeof ASSIGNMENT_BOSSES)[number]["slug"];
@@ -1206,6 +1206,7 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
       "Melee jump down on flight.",
       "Tank 1 & 2 swap on Melt Armor.",
     ],
+    strategyImage: "/bosses/Alar%20Boss%20Fight.png",
   },
   voidreaver: {
     gradient: "linear-gradient(135deg, #2a1a3a, #4a2a6a)",
@@ -1213,6 +1214,7 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
       "Spread 15y.",
       "Orbs target random raid members — eat the orb if it lands.",
     ],
+    strategyImage: "/bosses/Void%20Reaver%20Boss%20Fight.png",
   },
   solarian: {
     gradient: "linear-gradient(135deg, #1a1a3a, #3a1a5a)",
@@ -1220,6 +1222,7 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
       "Post-nerf Wrath = living bomb.",
       "Get out and blow up at marked corners.",
     ],
+    strategyImage: "/bosses/Solarian%20Boss%20Fight.png",
   },
   kael: {
     gradient: "linear-gradient(135deg, #3a1a3a, #6a1a4a)",
@@ -1231,6 +1234,7 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
           "Tank Sanguinar near pillar.",
           "Soaker stands on Conflagration mark.",
         ],
+        strategyImage: "/bosses/KT%20Boss%20Fight%20P1.png",
       },
       "Phase 2": {
         heading: "Weapons",
@@ -1238,10 +1242,12 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
           "Tank everything in cluster — except 2H Axe & Bow.",
           "Kill order: Mace → Staff → Warp Slicer → Daggers → Shield → Bow → Axe.",
         ],
+        strategyImage: "/bosses/KT%20Boss%20Fight%20P2.png",
       },
       "Phase 3": {
         heading: "Advisors return",
         notes: ["All 4 advisors return at once.", "Melee → Sanguinar then Telonicus; Ranged → Thaladred then Capernian."],
+        strategyImage: "/bosses/KT%20Boss%20Fight%20P3.png",
       },
       "Phase 4": {
         heading: "Kael, but he flies",
@@ -1250,6 +1256,8 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
           "MC dispelled by daggers; hunters wing-clip.",
           "Shock Barrier: 80k shield, 10s.",
         ],
+        // P4 intentionally has no image — free-fight phase, the P3 / P5
+        // platforms cover the room layout.
       },
       "Phase 5": {
         heading: "50% HP — full kit",
@@ -1258,6 +1266,7 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
           "Nether Beam — chain beam, spread out.",
           "Nether Vapor: black clouds, -10% max HP per tick, move ASAP.",
         ],
+        strategyImage: "/bosses/KT%20Boss%20Fight%20P5.png",
       },
     },
   },
