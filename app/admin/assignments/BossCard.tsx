@@ -9,6 +9,7 @@ import {
   bossPlatformInfo,
   defaultBossAssignment,
   newSectionId,
+  sectionTemplateForBoss,
   suggestFillSections,
   type AssignSection,
   type AssignmentData,
@@ -363,17 +364,26 @@ export function BossCard({
               <div className="text-[11px] text-neutral-500 italic">No sections in this phase.</div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {activeSections.map(section => (
-                  <AssignBox
-                    key={section.id}
-                    section={section}
-                    characters={characters}
-                    teamRosterIds={teamRosterIds}
-                    charsById={charsById}
-                    onPatch={patch => patchSection(section.id, patch)}
-                    onDelete={() => deleteSection(section.id)}
-                  />
-                ))}
+                {activeSections.map(section => {
+                  // Layout hint: template-declared row breaks
+                  // (e.g. spout teams start a fresh row, healer
+                  // stacks start the next). Falls back to data-level
+                  // hint for sections that already carry it.
+                  const breakBefore = section.breakBefore
+                    || !!sectionTemplateForBoss(slug, section.title)?.breakBefore;
+                  return (
+                    <div key={section.id} className={breakBefore ? "lg:col-start-1" : undefined}>
+                      <AssignBox
+                        section={section}
+                        characters={characters}
+                        teamRosterIds={teamRosterIds}
+                        charsById={charsById}
+                        onPatch={patch => patchSection(section.id, patch)}
+                        onDelete={() => deleteSection(section.id)}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             )}
             <EditOnly>

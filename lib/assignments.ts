@@ -93,6 +93,12 @@ export type AssignSection = {
    *  [iconSlug cell | maxSlots chip/empty cells]. Used for Hydross
    *  Misdirects (Hunter sub-rows under each MT). */
   addOns?: SectionAddOn[];
+  /** Layout hint: when true, this section forces a new row in the
+   *  boss-card assignments grid (`lg:col-start-1`). Used to keep
+   *  groups of related sections together (e.g. all spout teams on one
+   *  row, all healer stacks on the next). Stored on the template, not
+   *  the data — looked up by section title at render time. */
+  breakBefore?: boolean;
 };
 
 /**
@@ -479,6 +485,11 @@ type SectionTemplate = {
   title: string;
   eligibility?: Eligibility;
   addOns?: SectionAddOnTemplate[];
+  /** When true, forces a new row in the boss-card grid at render
+   *  time. Looked up by section title — admin renames lose the hint. */
+  breakBefore?: boolean;
+  /** How many slots auto-fill should populate (defaults to 1). */
+  targetSlots?: number;
 };
 type BossTemplate = {
   sections?: SectionTemplate[];
@@ -486,7 +497,11 @@ type BossTemplate = {
 };
 
 // Shortcuts to keep BOSS_TEMPLATES readable.
-const t = (title: string, eligibility?: Eligibility, extra?: { addOns?: SectionAddOnTemplate[] }): SectionTemplate =>
+const t = (
+  title: string,
+  eligibility?: Eligibility,
+  extra?: { addOns?: SectionAddOnTemplate[]; breakBefore?: boolean; targetSlots?: number },
+): SectionTemplate =>
   ({ title, eligibility, ...extra });
 const E: Record<string, Eligibility> = {
   tank:    { roles: ["tank"] },
@@ -498,6 +513,30 @@ const E: Record<string, Eligibility> = {
   druid:   { classes: ["Druid"] },
   priest:  { classes: ["Priest"] },
   paladin: { classes: ["Paladin"] },
+  // Ranged-DPS pool for spout teams / staggered ranged groups —
+  // hunters plus caster classes. Picks up healer-spec priests/druids
+  // too; admin re-arranges when auto-fill grabs the wrong character.
+  rangedDps: { classes: ["Hunter", "Mage", "Warlock", "Priest", "Druid", "Shaman"] },
+};
+
+// Misdirect addOn (Hunter sub-row) reused on every fight where the
+// active MT wants a hunter funnelling threat onto them. preferSpecs
+// orders the spec-priority pick per slot.
+const MISDIRECT_TWO = {
+  addOns: [{
+    iconSlug: "ability_hunter_misdirection",
+    eligibility: { classes: ["Hunter"] },
+    maxSlots: 2,
+    preferSpecs: ["Beast Mastery", "Survival"],
+  }],
+};
+const MISDIRECT_TWO_BM_ONLY = {
+  addOns: [{
+    iconSlug: "ability_hunter_misdirection",
+    eligibility: { classes: ["Hunter"] },
+    maxSlots: 2,
+    preferSpecs: ["Beast Mastery"],
+  }],
 };
 
 /**
@@ -512,23 +551,9 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
     sections: [
       // Tanks. Frost MT and Nature MT each get up to 2 Hunter misdirect
       // sub-rows. Add Tank gets no misdirect (movement / add control).
-      t("Frost MT", E.tank, {
-        addOns: [{
-          iconSlug: "ability_hunter_misdirection",
-          eligibility: { classes: ["Hunter"] },
-          maxSlots: 2,
-          preferSpecs: ["Beast Mastery", "Survival"],
-        }],
-      }),
-      t("Nature MT", E.tank, {
-        addOns: [{
-          iconSlug: "ability_hunter_misdirection",
-          eligibility: { classes: ["Hunter"] },
-          maxSlots: 2,
-          preferSpecs: ["Beast Mastery"],
-        }],
-      }),
-      t("Add Tank", E.tank),
+      t("Frost MT",  E.tank, MISDIRECT_TWO),
+      t("Nature MT", E.tank, MISDIRECT_TWO_BM_ONLY),
+      t("Add Tank",  E.tank),
       t("Tank Healers", E.heal),
       t("Melee Group 1", E.melee),
       t("Melee Group 2", E.melee),
@@ -539,22 +564,28 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
   },
   lurker: {
     sections: [
-      t("Main Tank", E.tank),
-      t("Ring Adds (Feral + ProtPal)", E.tank),
-      t("Spout Team A"),
-      t("Spout Team B"),
-      t("Spout Team C"),
-      t("Healer Stack 1", E.heal),
+      // Tanks share row 1. Misdirects funnel threat onto each tank.
+      t("Main Tank",                     E.tank, MISDIRECT_TWO),
+      t("Ring Adds (Feral + ProtPal)",   E.tank, MISDIRECT_TWO_BM_ONLY),
+      // Spout teams share their own row. Eligible pool is ranged DPS
+      // (casters + hunters); each team auto-fills 3 with cross-section
+      // dedup so the teams come out as a natural mix.
+      t("Spout Team A", E.rangedDps, { breakBefore: true, targetSlots: 3 }),
+      t("Spout Team B", E.rangedDps, { targetSlots: 3 }),
+      t("Spout Team C", E.rangedDps, { targetSlots: 3 }),
+      // Healer stacks share the bottom row.
+      t("Healer Stack 1", E.heal, { breakBefore: true }),
       t("Healer Stack 2", E.heal),
       t("Healer Stack 3", E.heal),
     ],
   },
   morogrim: {
     sections: [
-      t("Main Tank", E.tank),
-      t("Add Tank", E.tank),
+      t("Main Tank", E.tank, MISDIRECT_TWO),
+      t("Add Tank",  E.tank, MISDIRECT_TWO_BM_ONLY),
       t("Grave Healer", E.heal),
-      t("Hunter Slow Trap — N", E.hunter),
+      // Slow-trap rotation lands on its own row below the tank row.
+      t("Hunter Slow Trap — N", E.hunter, { breakBefore: true }),
       t("Hunter Slow Trap — S", E.hunter),
       t("Hunter Slow Trap — C", E.hunter),
     ],
@@ -663,6 +694,8 @@ function makeSections(tpls: SectionTemplate[]): AssignSection[] {
     title: s.title,
     eligibility: s.eligibility,
     characterIds: [],
+    ...(s.targetSlots !== undefined ? { targetSlots: s.targetSlots } : {}),
+    ...(s.breakBefore ? { breakBefore: true } : {}),
     ...(s.addOns?.length
       ? {
           addOns: s.addOns.map(a => ({
@@ -676,6 +709,24 @@ function makeSections(tpls: SectionTemplate[]): AssignSection[] {
         }
       : {}),
   }));
+}
+
+/**
+ * Look up a boss-template section by title. Used at render time for
+ * layout hints (e.g. breakBefore) that aren't worth syncing into the
+ * saved sheet data. Returns undefined when the section was renamed
+ * away from the template.
+ */
+export function sectionTemplateForBoss(slug: BossSlug, title: string): SectionTemplate | undefined {
+  const tpl = BOSS_TEMPLATES[slug];
+  if (tpl.sections) return tpl.sections.find(s => s.title === title);
+  if (tpl.phases) {
+    for (const phase of tpl.phases) {
+      const hit = phase.sections.find(s => s.title === title);
+      if (hit) return hit;
+    }
+  }
+  return undefined;
 }
 
 export function defaultBosses(): Partial<Record<BossSlug, BossAssignment>> {
