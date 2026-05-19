@@ -214,19 +214,28 @@ function BuffGroup({
 }) {
   const iconSrc = iconSlug ? `${ICON_BASE}${iconSlug}.jpg` : null;
   const tooltipText = BUFF_TOOLTIPS[heading];
+  // Hide the block header icon when every row inside already carries
+  // its own rowIconSlug (Paladin Seals, BoP, Greater Blessings, Earth
+  // Shield, Innervate, Soulstones, Curses, Debuffs). Keeps the header
+  // icon for PoF / GotW / Arcane Brilliance, where rows aren't
+  // icon-labelled.
+  const allRowsHaveIcons = sections.length > 0 && sections.every(s => !!s.rowIconSlug);
+  const showHeaderIcon = !allRowsHaveIcons;
   const headerRow = (
     <div className="flex items-center gap-2 cursor-help">
-      {iconSrc ? (
-        <img
-          src={iconSrc}
-          alt=""
-          width={22}
-          height={22}
-          className="border border-[#2e3a55] rounded-sm flex-shrink-0"
-          onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
-        />
-      ) : (
-        <span className="w-[22px] h-[22px] border border-dashed border-white/15 rounded-sm flex-shrink-0" aria-hidden />
+      {showHeaderIcon && (
+        iconSrc ? (
+          <img
+            src={iconSrc}
+            alt=""
+            width={22}
+            height={22}
+            className="border border-[#2e3a55] rounded-sm flex-shrink-0"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
+          />
+        ) : (
+          <span className="w-[22px] h-[22px] border border-dashed border-white/15 rounded-sm flex-shrink-0" aria-hidden />
+        )
       )}
       <span className="text-[11px] uppercase tracking-wider text-slate-300 truncate flex-1">{heading}</span>
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   ASSIGNMENT_BOSSES,
@@ -29,6 +29,83 @@ const BOSS_INFO = Object.fromEntries(ASSIGNMENT_BOSSES.map(b => [b.slug, b])) as
  * is missing/404s, the grid collapses back to a single column so
  * there's no awkward empty cell.
  */
+/**
+ * Strategy diagram thumbnail with a click-to-zoom lightbox. The
+ * thumbnail fits the left rail; clicking opens a centered overlay at
+ * the image's natural size (capped to viewport). Closes via the close
+ * button, the backdrop, or the Escape key.
+ */
+function StrategyImage({ src, alt }: { src: string; alt: string }) {
+  const [open, setOpen] = useState(false);
+  const [errored, setErrored] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("keydown", onKey);
+    // Lock body scroll while open so the page doesn't shift behind the
+    // overlay on browsers that don't auto-suppress it.
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  if (errored) return null;
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="block w-full group/strategy"
+        aria-label={`${alt} (click to enlarge)`}
+        title="Click to enlarge"
+      >
+        <img
+          src={src}
+          alt={alt}
+          loading="lazy"
+          onError={() => setErrored(true)}
+          className="w-full rounded-md border border-[#2e3a55] transition group-hover/strategy:border-amber-400/60 group-hover/strategy:shadow-[0_0_0_2px_rgba(212,175,55,0.15)]"
+        />
+      </button>
+
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 animate-fade-in"
+          role="dialog"
+          aria-modal="true"
+          aria-label={alt}
+        >
+          <div
+            className="absolute inset-0 bg-black/85 backdrop-blur-sm"
+            onClick={() => setOpen(false)}
+          />
+          <img
+            src={src}
+            alt={alt}
+            className="relative max-w-full max-h-full rounded-md shadow-2xl border border-white/10 cursor-zoom-out"
+            onClick={() => setOpen(false)}
+          />
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            aria-label="Close"
+            className="absolute top-3 right-3 sm:top-5 sm:right-5 p-2 rounded-full bg-black/60 text-white/80 hover:text-white hover:bg-black/80 transition"
+          >
+            <X size={18} aria-hidden />
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+
 function PortraitRow({ meta }: { meta: BossMeta }) {
   const [altErrored, setAltErrored] = useState(false);
   const showAlt = !!meta.portraitAlt && !altErrored;
@@ -217,13 +294,7 @@ export function BossCard({
             </div>
 
             {platform.strategyImage && (
-              <img
-                src={platform.strategyImage}
-                alt={`${meta.name} placement diagram`}
-                loading="lazy"
-                onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                className="w-full rounded-md border border-[#2e3a55]"
-              />
+              <StrategyImage src={platform.strategyImage} alt={`${meta.name} placement diagram`} />
             )}
           </div>
 
