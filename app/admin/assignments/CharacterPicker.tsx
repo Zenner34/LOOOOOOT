@@ -41,7 +41,16 @@ export function CharacterPicker({
   anchorRef: React.RefObject<HTMLElement>;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
+
+  // Manually focus the input *without* the browser's default scroll-into-view
+  // behaviour. autoFocus on the Command.Input would otherwise yank the page
+  // up/down to centre the input, which feels like the whole sheet jumps when
+  // an admin clicks an empty slot.
+  useEffect(() => {
+    inputRef.current?.focus({ preventScroll: true });
+  }, []);
 
   useEffect(() => {
     function onMouseDown(e: MouseEvent) {
@@ -97,7 +106,7 @@ export function CharacterPicker({
         <div className="relative p-2 border-b border-white/5">
           <Search size={12} className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" aria-hidden />
           <Command.Input
-            autoFocus
+            ref={inputRef}
             value={query}
             onValueChange={setQuery}
             placeholder="Search character, player, class…"

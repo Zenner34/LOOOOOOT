@@ -403,12 +403,26 @@ function AssignmentsBody({
 /* ──────────────────────────────────────────────────────────────────── */
 
 function SaveIndicator({ state }: { state: "idle" | "saving" | "saved" | "error" }) {
-  if (state === "idle") return null;
+  // Always render a fixed-width span so appearing / disappearing the
+  // text never shifts the rest of the top bar (and by extension the
+  // boss cards below). Idle just leaves the slot blank.
   const cls = state === "saving" ? "text-neutral-500"
             : state === "saved"  ? "text-emerald-300"
-            : "text-rose-300";
-  const text = state === "saving" ? "Saving…" : state === "saved" ? "Saved" : "Save failed";
-  return <span className={`tabular-nums text-[11px] ${cls}`}>{text}</span>;
+            : state === "error"  ? "text-rose-300"
+            : "text-transparent";
+  const text = state === "saving" ? "Saving…"
+             : state === "saved"  ? "Saved"
+             : state === "error"  ? "Save failed"
+             : "";
+  return (
+    <span
+      aria-live="polite"
+      className={`tabular-nums text-[11px] inline-block text-right ${cls}`}
+      style={{ minWidth: 72 }}
+    >
+      {text || " "}
+    </span>
+  );
 }
 
 /* ──────────────────────────────────────────────────────────────────── */
