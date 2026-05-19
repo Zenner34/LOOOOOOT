@@ -1037,7 +1037,7 @@ export const VASHJ_P2_TIMELINE: Array<{ t: string; label: string; scary?: boolea
   { t: "120s", label: "Strider" },
   { t: "135s", label: "Elite" },
   { t: "150s", label: "Tainted 3" },
-  { t: "180s", label: "DANGER", danger: true },
+  { t: "180s", label: "Elites + Strider", danger: true },
   { t: "200s", label: "Tainted 4" },
   { t: "225s", label: "Elite", scary: true },
   { t: "240s", label: "Strider", scary: true },
@@ -1046,6 +1046,8 @@ export const VASHJ_P2_TIMELINE: Array<{ t: string; label: string; scary?: boolea
 /* ────────────────────────────────────────────────────────────────────
    PLATFORM-ART STRATEGY NOTES
    ──────────────────────────────────────────────────────────────────── */
+
+type DpsPriorityItem = { src: string; label?: string };
 
 type PhaseInfo = {
   heading?: string;
@@ -1057,10 +1059,11 @@ type PhaseInfo = {
   /** Multiple primary diagrams stacked at full rail width. When set,
    *  takes precedence over `strategyImage`. */
   strategyImages?: string[];
-  /** Smaller secondary diagrams rendered as a 2-col grid below the
-   *  primary strategy images. Used for things like Vashj P2 DPS-
-   *  priority cheatsheets (one per add type). */
-  dpsPriorityImages?: string[];
+  /** Kill-order cheatsheet rendered as a 2-col grid above the
+   *  strategy images. Each entry is `string` (just the path) or
+   *  `{ src, label }` — the label renders below the thumbnail with a
+   *  `#N` prefix matching its array position. */
+  dpsPriorityImages?: Array<string | DpsPriorityItem>;
 };
 
 type PlatformInfo = {
@@ -1079,8 +1082,8 @@ type PlatformInfo = {
   strategyImage?: string;
   /** Top-level array of primary strategy images. */
   strategyImages?: string[];
-  /** Top-level DPS-priority secondary grid. */
-  dpsPriorityImages?: string[];
+  /** Top-level kill-order grid. */
+  dpsPriorityImages?: Array<string | DpsPriorityItem>;
 };
 
 const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
@@ -1149,13 +1152,13 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
           "/bosses/Lady%20Vashj%20Boss%20Fight%20P2.png",
           "/bosses/Lady%20Vashj%20Boss%20Fight%20P2%20Orbs.png",
         ],
-        // DPS-priority cheatsheets render as a 2-col grid below the
-        // primary diagrams: which add to nuke when each spawns.
+        // Kill order — Tainted is highest priority (Static Charge),
+        // Enchanted next, then the physical adds (Elite / Strider).
         dpsPriorityImages: [
-          "/bosses/Lady%20Vashj%20DPS%20Prio%201%20-%20Coilfang%20Elite.png",
-          "/bosses/Lady%20Vashj%20DPS%20Prio%201%20-%20Coilfang%20Strider.png",
-          "/bosses/Lady%20Vashj%20DPS%20Prio%201%20-%20Tainted%20Elemental.jpg",
-          "/bosses/Lady%20Vashj%20DPS%20Prio%202%20-%20Enchanted%20Elemental.jpg",
+          { src: "/bosses/Lady%20Vashj%20DPS%20Prio%201%20-%20Tainted%20Elemental.jpg",  label: "Tainted Elemental" },
+          { src: "/bosses/Lady%20Vashj%20DPS%20Prio%202%20-%20Enchanted%20Elemental.jpg", label: "Enchanted Elemental" },
+          { src: "/bosses/Lady%20Vashj%20DPS%20Prio%201%20-%20Coilfang%20Elite.png",     label: "Coilfang Elite" },
+          { src: "/bosses/Lady%20Vashj%20DPS%20Prio%201%20-%20Coilfang%20Strider.png",   label: "Coilfang Strider" },
         ],
       },
       "Phase 3": {
@@ -1245,8 +1248,9 @@ export function bossPlatformInfo(
    *  phase.strategyImage (single → singleton array), then top-level
    *  strategyImages / strategyImage. Empty array when nothing. */
   strategyImages: string[];
-  /** Resolved DPS-priority grid — phase override wins, then top-level. */
-  dpsPriorityImages: string[];
+  /** Resolved kill-order entries, normalised to objects so the
+   *  renderer doesn't have to type-narrow. */
+  dpsPriorityImages: DpsPriorityItem[];
 } {
   const info = PLATFORM_INFO[slug];
   const phase = phaseLabel ? info.phaseNotes?.[phaseLabel] : undefined;
@@ -1257,8 +1261,10 @@ export function bossPlatformInfo(
     if (info.strategyImage) return [info.strategyImage];
     return [];
   };
-  const pickDpsPrio = (p?: PhaseInfo): string[] =>
-    p?.dpsPriorityImages ?? info.dpsPriorityImages ?? [];
+  const normaliseDps = (xs: Array<string | DpsPriorityItem> | undefined): DpsPriorityItem[] =>
+    (xs ?? []).map(x => (typeof x === "string" ? { src: x } : x));
+  const pickDpsPrio = (p?: PhaseInfo): DpsPriorityItem[] =>
+    normaliseDps(p?.dpsPriorityImages ?? info.dpsPriorityImages);
   if (phase) {
     return {
       gradient: info.gradient,

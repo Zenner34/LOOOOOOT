@@ -303,28 +303,42 @@ export function BossCard({
               </ul>
             </div>
 
-            {platform.strategyImages.map((src, i) => (
-              <StrategyImage
-                key={`strat-${i}-${src}`}
-                src={src}
-                alt={`${meta.name} placement diagram ${platform.strategyImages.length > 1 ? i + 1 : ""}`.trim()}
-              />
-            ))}
-
+            {/* Kill order sits above the strategy diagrams so the
+                most-asked-for info is one glance away — no scrolling
+                past the platform maps. Each thumb captions its
+                priority number + label. */}
             {platform.dpsPriorityImages.length > 0 && (
               <div>
                 <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-1.5">
-                  DPS priority
+                  Kill order
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  {platform.dpsPriorityImages.map((src, i) => (
-                    <StrategyImage
-                      key={`dps-${i}-${src}`}
-                      src={src}
-                      alt={`${meta.name} DPS priority ${i + 1}`}
-                    />
+                  {platform.dpsPriorityImages.map((item, i) => (
+                    <div key={`dps-${i}-${item.src}`} className="space-y-1">
+                      <StrategyImage
+                        src={item.src}
+                        alt={item.label ?? `${meta.name} kill priority ${i + 1}`}
+                      />
+                      {item.label && (
+                        <div className="text-[11px] text-slate-300 text-center leading-tight">
+                          <span className="text-amber-200 font-bold">#{i + 1}</span> {item.label}
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {platform.strategyImages.length > 0 && (
+              <div className={platform.strategyImages.length > 1 ? "grid grid-cols-2 gap-2" : ""}>
+                {platform.strategyImages.map((src, i) => (
+                  <StrategyImage
+                    key={`strat-${i}-${src}`}
+                    src={src}
+                    alt={`${meta.name} placement diagram ${platform.strategyImages.length > 1 ? i + 1 : ""}`.trim()}
+                  />
+                ))}
               </div>
             )}
           </div>
