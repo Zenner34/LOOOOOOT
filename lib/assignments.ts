@@ -200,9 +200,9 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   { title: "Greater Blessings · Salvation",     iconSlug: "spell_magic_greaterblessingofkings",    rowIconSlug: "spell_holy_greaterblessingofsalvation", eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
 
   // ═══ RIGHT COLUMN — druid + shaman + warlock utility ════════════════
-  { title: "Innervate · Pair 1",                iconSlug: "spell_nature_lightning",
+  { title: "Innervate · Pair 1",                iconSlug: "spell_nature_lightning",                rowIconSlug: "spell_nature_lightning",
     fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
-  { title: "Innervate · Pair 2",                iconSlug: "spell_nature_lightning",
+  { title: "Innervate · Pair 2",                iconSlug: "spell_nature_lightning",                rowIconSlug: "spell_nature_lightning",
     fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
   { title: "Earth Shield · MT",                 iconSlug: "spell_nature_skinofearth",
     fixedSlots: 2, slotEligibility: [{ classes: ["Shaman"] }, { roles: ["tank"] }] },
