@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
@@ -600,7 +601,10 @@ function TeamModal({
   const [color, setColor] = useState(existing?.color ?? "#1e3a5f");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -609,9 +613,7 @@ function TeamModal({
     document.addEventListener("keydown", onKey);
     // Focus the name input manually with preventScroll. The browser's
     // default autoFocus would scrollIntoView the input — and because the
-    // modal sits inside AssignmentsClient's transformed root, the
-    // input's DOM-computed position is far down the page, so the page
-    // would jump to whatever boss happens to be near that y-coordinate.
+    // modal portals into <body>, the scroll would yank the page to top.
     nameRef.current?.focus({ preventScroll: true });
     return () => {
       document.body.style.overflow = prev;
@@ -660,8 +662,12 @@ function TeamModal({
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={isEdit ? "Edit raid team" : "Create raid team"}>
+  // Modal is portalled into <body> so its position:fixed actually pins
+  // to the viewport instead of AssignmentsClient's transformed root
+  // (which would push it off-screen to the parent's vertical midpoint).
+  if (!mounted) return null;
+  return createPortal(
+    <div className="fixed inset-0 z-[100]" role="dialog" aria-modal="true" aria-label={isEdit ? "Edit raid team" : "Create raid team"}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" onClick={onClose} />
       <div className="relative h-full flex items-center justify-center p-4 pointer-events-none">
         <div className="pointer-events-auto w-full max-w-sm rounded-xl border border-white/10 bg-[var(--surface)] shadow-2xl animate-fade-in">
@@ -725,7 +731,8 @@ function TeamModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
