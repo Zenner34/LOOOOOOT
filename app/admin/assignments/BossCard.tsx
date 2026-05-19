@@ -365,16 +365,18 @@ export function BossCard({
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 {activeSections.map(section => {
-                  // Layout hint: template-declared row breaks
-                  // (e.g. spout teams start a fresh row, healer
-                  // stacks start the next). Falls back to data-level
-                  // hint for sections that already carry it.
-                  const breakBefore = section.breakBefore
-                    || !!sectionTemplateForBoss(slug, section.title)?.breakBefore;
+                  // Template hints: row breaks (layout) and addOnsOnly
+                  // (suppress empty main slot). Data fields win when
+                  // present so admin overrides stick; otherwise fall
+                  // back to whatever the current template declares.
+                  const tpl = sectionTemplateForBoss(slug, section.title);
+                  const breakBefore = section.breakBefore || !!tpl?.breakBefore;
+                  const addOnsOnly  = section.addOnsOnly  || !!tpl?.addOnsOnly;
                   return (
                     <div key={section.id} className={breakBefore ? "lg:col-start-1" : undefined}>
                       <AssignBox
                         section={section}
+                        addOnsOnly={addOnsOnly}
                         characters={characters}
                         teamRosterIds={teamRosterIds}
                         charsById={charsById}
@@ -415,6 +417,7 @@ export function BossCard({
  */
 function AssignBox({
   section,
+  addOnsOnly,
   characters,
   teamRosterIds,
   charsById,
@@ -422,6 +425,9 @@ function AssignBox({
   onDelete,
 }: {
   section: AssignSection;
+  /** Hide the trailing "+ add" empty slot — the section is meant to
+   *  be just its addOn rows. Existing chips still render. */
+  addOnsOnly?: boolean;
   characters: AssignableCharacter[];
   teamRosterIds: number[];
   charsById: Map<number, AssignableCharacter>;
@@ -509,20 +515,22 @@ function AssignBox({
         );
       })}
 
-      <span className="relative">
-        <EmptySlot onClick={() => setPickerOpen(true)} size="sm" />
-        {pickerOpen && (
-          <CharacterPicker
-            characters={characters}
-            scopeIds={teamRosterIds.length > 0 ? teamRosterIds : null}
-            excludeIds={excludeIds}
-            eligibility={section.eligibility}
-            onPick={addChar}
-            onClose={() => setPickerOpen(false)}
-            anchorRef={addBtnRef}
-          />
-        )}
-      </span>
+      {!addOnsOnly && (
+        <span className="relative">
+          <EmptySlot onClick={() => setPickerOpen(true)} size="sm" />
+          {pickerOpen && (
+            <CharacterPicker
+              characters={characters}
+              scopeIds={teamRosterIds.length > 0 ? teamRosterIds : null}
+              excludeIds={excludeIds}
+              eligibility={section.eligibility}
+              onPick={addChar}
+              onClose={() => setPickerOpen(false)}
+              anchorRef={addBtnRef}
+            />
+          )}
+        </span>
+      )}
 
       {/* AddOn sub-rows. Single addOn renders full-width; multiple
           addOns (e.g. Morogrim Add Tank = Misdirect + Super Sapper)

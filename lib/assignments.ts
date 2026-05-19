@@ -99,6 +99,12 @@ export type AssignSection = {
    *  row, all healer stacks on the next). Stored on the template, not
    *  the data — looked up by section title at render time. */
   breakBefore?: boolean;
+  /** When true, suppress the section's main "+ add" slot — the section
+   *  is meant to be just its addOn rows (e.g. Leotheras WW Threat Wipe
+   *  is conceptually just a misdirect hunter, no parent chip). Any
+   *  existing chips in `characterIds` still render so admin data isn't
+   *  hidden; only the trailing empty add slot disappears. */
+  addOnsOnly?: boolean;
 };
 
 /**
@@ -496,6 +502,9 @@ type SectionTemplate = {
   breakBefore?: boolean;
   /** How many slots auto-fill should populate (defaults to 1). */
   targetSlots?: number;
+  /** When true, hide the section's main "+ add" affordance — the
+   *  section is just its addOns. Looked up by title at render time. */
+  addOnsOnly?: boolean;
 };
 type BossTemplate = {
   sections?: SectionTemplate[];
@@ -506,7 +515,7 @@ type BossTemplate = {
 const t = (
   title: string,
   eligibility?: Eligibility,
-  extra?: { addOns?: SectionAddOnTemplate[]; breakBefore?: boolean; targetSlots?: number },
+  extra?: { addOns?: SectionAddOnTemplate[]; breakBefore?: boolean; targetSlots?: number; addOnsOnly?: boolean },
 ): SectionTemplate =>
   ({ title, eligibility, ...extra });
 const E: Record<string, Eligibility> = {
@@ -635,14 +644,15 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
   leotheras: {
     sections: [
       // Main Tank holds Leo; MD hunter pair funnels threat onto the
-      // tank pre- and post-Inner Demon. Demon Tank stays warlock-only.
-      t("Main Tank",      E.tank,    MISDIRECT_TWO),
-      t("Demon Tank",     E.warlock),
-      // WW Threat Wipe — one hunter MDs onto the MT immediately after
-      // Whirlwind so threat re-establishes before the boss picks a
-      // new target. Section is the hunter; MD icon makes the role
-      // unmistakable.
-      t("WW Threat Wipe", undefined, MISDIRECT_ONE),
+      // tank pre- and post-Inner Demon.
+      t("Main Tank",  E.tank,    MISDIRECT_TWO),
+      // Demon Tank takes Leo's inner demon — single MD hunter feeds
+      // threat onto the warlock tanking it.
+      t("Demon Tank", E.warlock, MISDIRECT_ONE),
+      // WW Threat Wipe is just the post-Whirlwind MD hunter — no
+      // parent chip. addOnsOnly suppresses the empty main slot so
+      // the section reads as a clean [MD][Hunter] row.
+      t("WW Threat Wipe", undefined, { ...MISDIRECT_ONE, addOnsOnly: true }),
     ],
   },
   vashj: {
@@ -735,6 +745,7 @@ function makeSections(tpls: SectionTemplate[]): AssignSection[] {
     characterIds: [],
     ...(s.targetSlots !== undefined ? { targetSlots: s.targetSlots } : {}),
     ...(s.breakBefore ? { breakBefore: true } : {}),
+    ...(s.addOnsOnly ? { addOnsOnly: true } : {}),
     ...(s.addOns?.length
       ? {
           addOns: s.addOns.map(a => ({
