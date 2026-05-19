@@ -204,23 +204,23 @@ const BUFF_TEMPLATE: BuffTpl[] = [
     fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
   { title: "Innervate · Pair 2",                iconSlug: "spell_nature_lightning",                rowIconSlug: "spell_nature_lightning",
     fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
-  { title: "Earth Shield · MT",                 iconSlug: "spell_nature_skinofearth",
+  { title: "Earth Shield · MT",                 iconSlug: "spell_nature_skinofearth",              rowIconSlug: "spell_nature_skinofearth",
     fixedSlots: 2, slotEligibility: [{ classes: ["Shaman"] }, { roles: ["tank"] }] },
-  { title: "Earth Shield · OT",                 iconSlug: "spell_nature_skinofearth",
+  { title: "Earth Shield · OT",                 iconSlug: "spell_nature_skinofearth",              rowIconSlug: "spell_nature_skinofearth",
     fixedSlots: 2, slotEligibility: [{ classes: ["Shaman"] }, { roles: ["tank"] }] },
   // Soulstones — each row pairs a Warlock caster with their target
   // (any character; typically a healer in rezz-priority order). Five
   // default rows mirror the source spreadsheet's priority list; admin
   // can add more via the per-block + or delete unused ones.
-  { title: "Soulstones · #1",                   iconSlug: "spell_shadow_soulgem",
+  { title: "Soulstones · #1",                   iconSlug: "spell_shadow_soulgem",                  rowIconSlug: "spell_shadow_soulgem",
     fixedSlots: 2, slotEligibility: [{ classes: ["Warlock"] }, undefined] },
-  { title: "Soulstones · #2",                   iconSlug: "spell_shadow_soulgem",
+  { title: "Soulstones · #2",                   iconSlug: "spell_shadow_soulgem",                  rowIconSlug: "spell_shadow_soulgem",
     fixedSlots: 2, slotEligibility: [{ classes: ["Warlock"] }, undefined] },
-  { title: "Soulstones · #3",                   iconSlug: "spell_shadow_soulgem",
+  { title: "Soulstones · #3",                   iconSlug: "spell_shadow_soulgem",                  rowIconSlug: "spell_shadow_soulgem",
     fixedSlots: 2, slotEligibility: [{ classes: ["Warlock"] }, undefined] },
-  { title: "Soulstones · #4",                   iconSlug: "spell_shadow_soulgem",
+  { title: "Soulstones · #4",                   iconSlug: "spell_shadow_soulgem",                  rowIconSlug: "spell_shadow_soulgem",
     fixedSlots: 2, slotEligibility: [{ classes: ["Warlock"] }, undefined] },
-  { title: "Soulstones · #5",                   iconSlug: "spell_shadow_soulgem",
+  { title: "Soulstones · #5",                   iconSlug: "spell_shadow_soulgem",                  rowIconSlug: "spell_shadow_soulgem",
     fixedSlots: 2, slotEligibility: [{ classes: ["Warlock"] }, undefined] },
 
   // ── Warlock curses — single block, icon-as-row-label, 1 warlock per ──
