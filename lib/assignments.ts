@@ -590,12 +590,22 @@ const ADDON_MD_BM_ONE: SectionAddOnTemplate = {
   maxSlots: 1,
   preferSpecs: ["Beast Mastery"],
 };
+// Triple-slot misdirect for tank-and-spank bosses (Void Reaver,
+// Solarian) where the user wants up to 3 hunters MDing onto the MT.
+// preferSpecs hints one hunter of each spec when available.
+const ADDON_MD_TRIPLE: SectionAddOnTemplate = {
+  iconSlug: "ability_hunter_misdirection",
+  eligibility: { classes: ["Hunter"] },
+  maxSlots: 3,
+  preferSpecs: ["Beast Mastery", "Survival", "Marksmanship"],
+};
 
 // Pre-composed { addOns: [...] } extras so the BOSS_TEMPLATES entries
 // stay readable.
 const MISDIRECT_TWO = { addOns: [ADDON_MD_BM_AND_SUR] };
 const MISDIRECT_TWO_BM_ONLY = { addOns: [ADDON_MD_BM_ONLY] };
 const MISDIRECT_ONE = { addOns: [ADDON_MD_BM_ONE] };
+const MISDIRECT_THREE = { addOns: [ADDON_MD_TRIPLE] };
 const MISDIRECT_AND_SAPPER = { addOns: [ADDON_MD_BM_WITH_SAPPER] };
 
 /**
@@ -721,22 +731,27 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
     ],
   },
   alar: {
-    phases: [
-      {
-        label: "Phase 1",
-        sections: [t("Main Tank", E.tank), t("OT (might be afk)", E.tank), t("Add Tank", E.tank)],
-      },
-      {
-        label: "Phase 2",
-        sections: [t("Main Tank", E.tank), t("OT (taunt Melt Armor)", E.tank), t("Add Tank", E.tank)],
-      },
+    // Al'ar collapsed to single-phase — P1 and P2 had effectively the
+    // same tank assignments. The old phases:[P1, P2] structure on
+    // existing sheets gets flattened by hydration (uses P1's data).
+    sections: [
+      t("Main Tank", E.tank),
+      t("OT (might be afk)", E.tank),
+      t("Add Tank", E.tank),
     ],
   },
   voidreaver: {
-    sections: [t("Main Tank", E.tank), t("Orb Eaters")],
+    // Tank-and-spank — one MT, up to 3 hunters funneling threat.
+    // Orb Eaters retired (was a free-form notes section; the strat
+    // image covers spread positioning).
+    sections: [
+      t("Main Tank", E.tank, MISDIRECT_THREE),
+    ],
   },
   solarian: {
-    sections: [t("Main Tank", E.tank)],
+    sections: [
+      t("Main Tank", E.tank, MISDIRECT_THREE),
+    ],
   },
   kael: {
     phases: [
@@ -861,7 +876,32 @@ export function defaultBossAssignment(slug: BossSlug): BossAssignment {
  */
 const DEPRECATED_BOSS_SECTIONS: Partial<Record<BossSlug, string[]>> = {
   hydross: ["Banish — Skull", "Banish — Cross", "Banish — Triangle"],
+  // Void Reaver "Orb Eaters" was a free-form note section; the strat
+  // image now communicates the spread, and the user prefers a clean
+  // 1-MT-with-MDs layout.
+  voidreaver: ["Orb Eaters"],
 };
+
+/**
+ * One-way migration: when a boss template switches from multi-phase
+ * to single-phase (e.g. Al'ar collapsed to one section list), flatten
+ * existing sheets that still hold a `phases` array. Uses the FIRST
+ * phase's sections — the user's call when collapsing was that the
+ * phases were duplicates anyway. If they care about a specific phase
+ * later, admin re-adds the sections.
+ */
+export function flattenSinglePhaseBosses(
+  bosses: Partial<Record<BossSlug, BossAssignment>>,
+): Partial<Record<BossSlug, BossAssignment>> {
+  const out: Partial<Record<BossSlug, BossAssignment>> = { ...bosses };
+  for (const [slug, tpl] of Object.entries(BOSS_TEMPLATES) as [BossSlug, BossTemplate][]) {
+    if (!tpl.sections || tpl.phases) continue;
+    const current = out[slug];
+    if (!current?.phases || current.sections) continue;
+    out[slug] = { sections: current.phases[0]?.sections ?? [] };
+  }
+  return out;
+}
 
 export function removeDeprecatedBossSections(
   bosses: Partial<Record<BossSlug, BossAssignment>>,
