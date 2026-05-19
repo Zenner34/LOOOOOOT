@@ -14,7 +14,7 @@ import { EmptyState } from "@/app/components/ui/EmptyState";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { Card } from "@/app/components/ui/Card";
 import { Kbd } from "@/app/components/ui/Kbd";
-import { Package } from "@/app/components/ui/Icon";
+import { Package, Search } from "@/app/components/ui/Icon";
 
 type Weight = { spec: string; weight: number };
 type Item = { id: number; name: string; slot: string | null; itemLevel: number | null; wowheadId: number | null; weights: Weight[] };
@@ -53,6 +53,12 @@ export default function AssignClient({ phases, rosters, recent, admin, allPhases
   const [awards, setAwards] = useState<Award[]>(recent);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [recentOpen, setRecentOpen] = useState(false);
+  // Cross-boss item search. When the query is non-empty the middle
+  // column shows matching items from every boss instead of the
+  // boss-selected view; each result card surfaces the boss path so
+  // the admin knows the source.
+  const [itemQuery, setItemQuery] = useState("");
+  const itemQueryRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const r = rosters.find(x => x.id === rosterId);
@@ -66,6 +72,39 @@ export default function AssignClient({ phases, rosters, recent, admin, allPhases
   }, [phases]);
 
   const selected = selectedBossId ? bossIndex.get(selectedBossId) : null;
+
+  // Flat catalogue of every item across every boss for the search box.
+  // Carries the boss/raid for the result subtitle so the admin sees
+  // where the item comes from before awarding.
+  const allItems = useMemo(() => {
+    const out: Array<{ item: Item; phase: Phase; raid: Raid; boss: Boss }> = [];
+    for (const p of phases) for (const r of p.raids) for (const b of r.bosses) {
+      for (const i of b.items) out.push({ item: i, phase: p, raid: r, boss: b });
+    }
+    return out;
+  }, [phases]);
+
+  const searchResults = useMemo(() => {
+    const q = itemQuery.trim().toLowerCase();
+    if (!q) return [];
+    return allItems
+      .filter(x => x.item.name.toLowerCase().includes(q))
+      .slice(0, 50);
+  }, [allItems, itemQuery]);
+
+  // Press `/` anywhere on the page (outside an input) to focus the
+  // item search box. Mirrors the /overview convention.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== "/") return;
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement)?.isContentEditable) return;
+      e.preventDefault();
+      itemQueryRef.current?.focus();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   // Lock body scroll when picker is open + Escape closes.
   useEffect(() => {
@@ -332,7 +371,57 @@ export default function AssignClient({ phases, rosters, recent, admin, allPhases
 
         {/* Items + assign */}
         <section className="col-span-12 lg:col-span-5 panel p-3 lg:max-h-[80vh] overflow-auto">
-          {selected ? (
+          <div className="relative mb-3">
+            <Search
+              size={14}
+              aria-hidden
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none"
+            />
+            <input
+              ref={itemQueryRef}
+              value={itemQuery}
+              onChange={e => setItemQuery(e.target.value)}
+              placeholder="Search any item across all bosses…"
+              aria-label="Search loot"
+              className="input pl-9 pr-8 text-sm w-full"
+            />
+            {itemQuery && (
+              <button
+                type="button"
+                onClick={() => { setItemQuery(""); itemQueryRef.current?.focus(); }}
+                aria-label="Clear search"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-vermillion-200 text-xs px-1.5 py-0.5 rounded"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          {itemQuery.trim() ? (
+            // Search-results view. When the user is filtering across
+            // every boss, show the boss subtitle on each card so they
+            // know which fight the item drops from before awarding.
+            searchResults.length === 0 ? (
+              <EmptyState
+                icon={Search}
+                title={`No items match "${itemQuery.trim()}"`}
+                description="Try a different keyword or clear the search to browse by boss."
+                variant="compact"
+              />
+            ) : (
+              <ul className="space-y-2.5">
+                {searchResults.map(({ item, raid, boss }) => (
+                  <ItemCard
+                    key={item.id}
+                    item={item}
+                    roster={activeRoster}
+                    onAssign={cid => assign(item.id, cid)}
+                    subtitle={`${raid.shortName ?? raid.name} · ${boss.name}`}
+                  />
+                ))}
+              </ul>
+            )
+          ) : selected ? (
             <>
               <div className="text-xs text-neutral-500">{selected.phase.name} · {selected.raid.name}</div>
               <h2 className="text-lg font-semibold mb-3">{selected.boss.name}</h2>
@@ -358,8 +447,8 @@ export default function AssignClient({ phases, rosters, recent, admin, allPhases
             </>
           ) : (
             <p className="text-neutral-400 text-sm py-6 text-center">
-              <span className="lg:hidden">Tap the picker above to choose a boss.</span>
-              <span className="hidden lg:inline">Select a boss on the left to see its loot.</span>
+              <span className="lg:hidden">Tap the picker above, or type to search loot.</span>
+              <span className="hidden lg:inline">Pick a boss on the left, or type <Kbd>/</Kbd> to search loot.</span>
             </p>
           )}
         </section>
@@ -407,7 +496,7 @@ export default function AssignClient({ phases, rosters, recent, admin, allPhases
   );
 }
 
-function ItemCard({ item, roster, onAssign }: { item: Item; roster?: Roster; onAssign: (cid: number) => void }) {
+function ItemCard({ item, roster, onAssign, subtitle }: { item: Item; roster?: Roster; onAssign: (cid: number) => void; subtitle?: string }) {
   const [sel, setSel] = useState<number | "">("");
   const specWeight: Record<string, number> = Object.fromEntries(item.weights.map(w => [w.spec, w.weight]));
 
@@ -421,6 +510,11 @@ function ItemCard({ item, roster, onAssign }: { item: Item; roster?: Roster; onA
   return (
     <li className="rounded-lg bg-white/[0.02] ring-1 ring-white/5 p-3 hover:ring-white/10 transition">
       <div className="mb-3 min-w-0">
+        {subtitle && (
+          <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-0.5 ml-[36px]">
+            {subtitle}
+          </div>
+        )}
         <WowheadLink name={item.name} wowheadId={item.wowheadId} iconSize={28} className="text-base font-semibold" />
         <div className="text-[11px] text-neutral-500 mt-1 ml-[36px]">
           {item.slot ?? ""}{item.itemLevel != null ? ` · iLvl ${item.itemLevel}` : ""}
