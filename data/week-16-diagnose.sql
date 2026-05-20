@@ -34,5 +34,5 @@ SELECT v.player, v.class, v.spec,
 -- the culprits (mages renamed Frost→Arcane, alts that may not exist).
 SELECT p."displayName", c.name, c.class, c.spec, c."isMain"
   FROM "Character" c JOIN "Player" p ON c."playerId" = p.id
- WHERE p."displayName" IN ('Blargn','Koco','Skryt','Whappintime','Dody','Bake','Shmoo','Massesto','Glzy')
+ WHERE p."displayName" IN ('Blargn','Koco','Skryt','Whappintime','Dody','Bake','Shmoo','Massesto','Glzy','Doge')
  ORDER BY p."displayName", c."isMain" DESC, c.spec;
