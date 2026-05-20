@@ -12,7 +12,7 @@
 -- new players or characters this week. In-game names that differ from
 -- our DB character names map by (player + class + spec):
 --   Boredudu      → Bored,        Druid,   Feral Druid (Tank)
---   Dogelock      → Doge,         Warlock, Affliction Warlock
+--   Dogelock      → Doge,         Warlock, Destruction Warlock
 --   Thesleepyrat  → Sleepyrat,    Paladin, Holy Paladin
 --   Lipstix       → Glzy,         Paladin, Retribution Paladin
 --   Chainsawgirl  → Chainsaw,     Hunter,  Beast Mastery Hunter (main)
@@ -66,7 +66,7 @@ SELECT
   '2026-05-19T00:00:00Z'::timestamp
   FROM (VALUES
     ('Bored',        'Druid',   'Feral Druid (Tank)',   'Pauldrons of the Vanquished Defender'),
-    ('Doge',         'Warlock', 'Affliction Warlock',   'Verdant Sphere'),
+    ('Doge',         'Warlock', 'Destruction Warlock',  'Verdant Sphere'),
     ('Pizookies',    'Warrior', 'Fury Warrior',         'Chestguard of the Vanquished Defender'),
     ('Pizookies',    'Warrior', 'Fury Warrior',         'Pauldrons of the Vanquished Defender'),
     ('Sleepyrat',    'Paladin', 'Holy Paladin',         'Royal Gauntlets of Silvermoon'),
