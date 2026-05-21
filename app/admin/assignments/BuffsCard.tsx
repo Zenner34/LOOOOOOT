@@ -145,19 +145,23 @@ export function BuffsCard({
               onAddSibling={() => {
                 const last = g.sections[g.sections.length - 1];
                 const insertAfter = data.buffs.findIndex(s => s.id === last.id);
-                // New siblings always default to a single slot — matches
-                // "everywhere else" behaviour. The block's multi-slot
-                // row (e.g. PoF · G1-5 with 3 priests) stays the way it
-                // was; a new sibling under it is just one slot.
+                // Paired sections (Innervate Druid+Mage, Earth Shield
+                // Shaman+Tank, BoP, Soulstones) inherit their split-column
+                // shape so a new row is another caster|target pair, not a
+                // lone slot. Non-paired multi-fill blocks (e.g. PoF · G1-5
+                // with 3 priests) still get a single-slot sibling for the
+                // "split G1-3 / G4-5" case.
+                const lastSlots = last.fixedSlots ?? 0;
+                const isPaired = lastSlots > 1 && (last.slotEligibility?.length ?? 0) === lastSlots;
                 const sibling: AssignSection = {
                   id: newSectionId(),
                   title: `${g.category} · `,
                   iconSlug: last.iconSlug,
                   rowIconSlug: last.rowIconSlug,
                   eligibility: last.eligibility,
-                  slotEligibility: undefined,
-                  fixedSlots: 1,
-                  targetSlots: undefined,
+                  slotEligibility: isPaired ? [...(last.slotEligibility ?? [])] : undefined,
+                  fixedSlots: isPaired ? lastSlots : 1,
+                  targetSlots: isPaired ? last.targetSlots : undefined,
                   characterIds: [],
                 };
                 const next = [...data.buffs];
