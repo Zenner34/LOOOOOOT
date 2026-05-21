@@ -618,23 +618,61 @@ function AssignBox({
         </div>
       )}
 
-      {/* Chip stack */}
+      {/* Chip stack — each chip optionally prefixed with the section's
+          chipIconSlug (e.g. Misdirection on Leotheras WW Threat Wipe). */}
       {section.characterIds.map((id, idx) => {
         const c = charsById.get(id);
         if (!c) return null;
-        return (
+        const chip = (
           <CharacterChip
-            key={`${id}:${idx}`}
             character={c}
             size="sm"
             onRemove={() => removeChar(idx)}
           />
         );
+        if (!section.chipIconSlug) return <span key={`${id}:${idx}`}>{chip}</span>;
+        return (
+          <div
+            key={`${id}:${idx}`}
+            className="grid gap-px"
+            style={{ gridTemplateColumns: "22px minmax(0, 1fr)" }}
+          >
+            <div className="flex items-center justify-center bg-[#1a1a1a] border border-black">
+              <img
+                src={`${SPEC_ICON_BASE}${section.chipIconSlug}.jpg`}
+                alt=""
+                width={18}
+                height={18}
+                loading="lazy"
+                className="rounded-[2px]"
+                onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+              />
+            </div>
+            {chip}
+          </div>
+        );
       })}
 
       {!addOnsOnly && (
         <span className="relative">
-          <EmptySlot onClick={() => setPickerOpen(true)} size="sm" />
+          {section.chipIconSlug ? (
+            <div className="grid gap-px" style={{ gridTemplateColumns: "22px minmax(0, 1fr)" }}>
+              <div className="flex items-center justify-center bg-[#1a1a1a] border border-black opacity-50">
+                <img
+                  src={`${SPEC_ICON_BASE}${section.chipIconSlug}.jpg`}
+                  alt=""
+                  width={18}
+                  height={18}
+                  loading="lazy"
+                  className="rounded-[2px]"
+                  onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                />
+              </div>
+              <EmptySlot onClick={() => setPickerOpen(true)} size="sm" />
+            </div>
+          ) : (
+            <EmptySlot onClick={() => setPickerOpen(true)} size="sm" />
+          )}
           {pickerOpen && (
             <CharacterPicker
               characters={characters}

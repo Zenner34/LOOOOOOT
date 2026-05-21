@@ -97,6 +97,11 @@ export type AssignSection = {
    *  When false, caster rows are generated but the target slot is left
    *  empty for manual assignment (Blessing of Protection, Soulstones). */
   expandFillTargets?: boolean;
+  /** Wowhead icon slug rendered to the left of every chip in a boss
+   *  section's main stack (and its "+ add" slot), so each row reads
+   *  [icon | character] — e.g. Leotheras WW Threat Wipe shows the
+   *  Misdirection icon next to each hunter. */
+  chipIconSlug?: string;
   /** Optional soft-constraint hint for who can fill this slot. */
   eligibility?: Eligibility;
   /** Per-slot eligibility override. Used for paired sections like
@@ -609,6 +614,8 @@ type SectionTemplate = {
   rowLabel?: string;
   /** Auto-fill all eligible chars without consuming them from dedup. */
   fillAllEligible?: boolean;
+  /** Wowhead icon shown to the left of every chip in this section. */
+  chipIconSlug?: string;
   /** Static text rows — when set, the section renders as a read-only
    *  list (navy header + N labelled rows) instead of a character
    *  picker. Used for things like Kael'thas P2 weapons kill order
@@ -632,6 +639,7 @@ const t = (
     rowGroup?: string;
     rowLabel?: string;
     fillAllEligible?: boolean;
+    chipIconSlug?: string;
     staticItems?: string[];
   },
 ): SectionTemplate =>
@@ -778,8 +786,9 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
       // threat onto the warlock tanking it.
       t("Demon Tank", E.warlock, MISDIRECT_ONE),
       // WW Threat Wipe — every hunter on the roster MDs to dump threat
-      // after a Whirlwind. fillAllEligible lists one slot per hunter.
-      t("WW Threat Wipe", E.hunter, { fillAllEligible: true }),
+      // after a Whirlwind. fillAllEligible lists one slot per hunter,
+      // each prefixed with the Misdirection icon.
+      t("WW Threat Wipe", E.hunter, { fillAllEligible: true, chipIconSlug: "ability_hunter_misdirection" }),
     ],
   },
   vashj: {
@@ -933,6 +942,7 @@ function makeSections(tpls: SectionTemplate[]): AssignSection[] {
     ...(s.breakBefore ? { breakBefore: true } : {}),
     ...(s.addOnsOnly ? { addOnsOnly: true } : {}),
     ...(s.fillAllEligible ? { fillAllEligible: true } : {}),
+    ...(s.chipIconSlug ? { chipIconSlug: s.chipIconSlug } : {}),
     ...(s.addOns?.length
       ? {
           addOns: s.addOns.map(a => ({
@@ -1131,6 +1141,7 @@ export function reconcileBossSectionDefs(
       const next: AssignSection = { ...s, eligibility: tpl.eligibility };
       if (tpl.fillAllEligible) next.fillAllEligible = true; else delete next.fillAllEligible;
       if (tpl.addOnsOnly) next.addOnsOnly = true; else delete next.addOnsOnly;
+      if (tpl.chipIconSlug) next.chipIconSlug = tpl.chipIconSlug; else delete next.chipIconSlug;
       if (s.addOns?.length) {
         const tplIcons = new Set((tpl.addOns ?? []).map(a => a.iconSlug));
         const kept = s.addOns.filter(a => tplIcons.has(a.iconSlug));
