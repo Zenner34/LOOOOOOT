@@ -244,7 +244,7 @@ type BuffTpl = {
 
 const BUFF_TEMPLATE: BuffTpl[] = [
   // ═══ LEFT COLUMN — raid-wide buffs + tank/mana support ════════════════
-  { title: "Prayer of Fortitude · G1-5",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] }, targetSlots: 3, fixedSlots: 3 },
+  { title: "Prayer of Fortitude · G1-5",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] }, fixedSlots: 1 },
   { title: "Gift of the Wild · G1-5",           iconSlug: "spell_nature_regeneration",             eligibility: { classes: ["Druid"] }, fixedSlots: 1 },
   { title: "Arcane Brilliance · G1-5",          iconSlug: "spell_holy_arcaneintellect",            eligibility: { classes: ["Mage"] }, fixedSlots: 1 },
   // Earth Shield — resto shaman on tank. Each row paired Shaman + Tank.
@@ -456,7 +456,7 @@ export function mergeMissingBuffBlocks(buffs: AssignSection[]): AssignSection[] 
     });
   }
 
-  const all = [...buffs, ...additions].map(reconcilePairShape);
+  const all = [...buffs, ...additions].map(reconcileSectionShape);
   // Stable sort by (template category rank, original index). Admin-added
   // categories not in the template get rank +Infinity → sort to the end.
   const indexed = all.map((s, i) => ({ s, i, rank: tplCategoryRank.get(category(s.title)) ?? Number.POSITIVE_INFINITY }));
@@ -465,28 +465,34 @@ export function mergeMissingBuffBlocks(buffs: AssignSection[]): AssignSection[] 
 }
 
 /**
- * Heal rows in paired buff categories (Innervate, Earth Shield, Blessing
- * of Protection, Soulstones) that were saved without the caster|target
- * pair shape — e.g. rows added before the per-slot eligibility landed, or
- * single-slot rows created by the old "add row" bug. Restores the
- * template's fixedSlots/slotEligibility so the row renders as a split
- * again; any already-assigned character stays in the caster slot.
- * Non-paired categories (PoF, Greater Blessings, etc.) are left untouched.
+ * Align a saved buff row's slot shape (fixedSlots + per-slot eligibility)
+ * to its template category, so template changes propagate to existing
+ * sheets on next load. Two cases this handles:
+ *   - paired categories (Innervate, Earth Shield, Blessing of Protection,
+ *     Soulstones) saved without the caster|target split heal back to two
+ *     slots — any already-assigned character stays in the caster slot;
+ *   - Prayer of Fortitude saved as the old 3-slot stack collapses to a
+ *     single slot per row.
+ * Every template category has one canonical shape shared by all its rows,
+ * so this never disturbs intra-category icon differences (Greater
+ * Blessings, Curses, Debuffs) — those keep their own fixedSlots and only
+ * fill a missing icon. Admin-renamed/custom categories are left as-is.
  */
-function reconcilePairShape(section: AssignSection): AssignSection {
+function reconcileSectionShape(section: AssignSection): AssignSection {
   const cat = section.title.split("·")[0].trim();
   const shape = buffCategoryShape(cat);
-  const tplPaired = !!shape && (shape.fixedSlots ?? 0) > 1 && (shape.slotEligibility?.length ?? 0) === shape.fixedSlots;
-  if (!tplPaired) return section;
-  const alreadyPaired = (section.fixedSlots ?? 0) > 1 && (section.slotEligibility?.length ?? 0) === section.fixedSlots;
-  if (alreadyPaired) return section;
+  if (!shape) return section;
+  const sameShape =
+    (section.fixedSlots ?? 0) === (shape.fixedSlots ?? 0) &&
+    (section.slotEligibility?.length ?? 0) === (shape.slotEligibility?.length ?? 0);
+  if (sameShape) return section;
   return {
     ...section,
-    fixedSlots: shape!.fixedSlots,
-    slotEligibility: shape!.slotEligibility ? [...shape!.slotEligibility] : undefined,
-    targetSlots: shape!.targetSlots,
-    rowIconSlug: section.rowIconSlug ?? shape!.rowIconSlug,
-    iconSlug: section.iconSlug ?? shape!.iconSlug,
+    fixedSlots: shape.fixedSlots,
+    slotEligibility: shape.slotEligibility ? [...shape.slotEligibility] : undefined,
+    targetSlots: shape.targetSlots,
+    rowIconSlug: section.rowIconSlug ?? shape.rowIconSlug,
+    iconSlug: section.iconSlug ?? shape.iconSlug,
   };
 }
 
