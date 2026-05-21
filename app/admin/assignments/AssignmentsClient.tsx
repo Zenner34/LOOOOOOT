@@ -170,8 +170,7 @@ export default function AssignmentsClient({
   useEffect(() => {
     if (!sheet || !admin || teamRosterChars.length === 0) return;
     const nextBuffs = suggestFillSections(data.buffs, teamRosterChars);
-    const changed = nextBuffs.some((s, i) => s.characterIds.length !== data.buffs[i].characterIds.length);
-    if (changed) setData({ ...data, buffs: nextBuffs });
+    if (JSON.stringify(nextBuffs) !== JSON.stringify(data.buffs)) setData({ ...data, buffs: nextBuffs });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rosterKey, admin]);
 

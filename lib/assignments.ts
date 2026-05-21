@@ -84,6 +84,19 @@ export type AssignSection = {
    *  so it stays empty for manual assignment (e.g. Curse of Recklessness,
    *  assigned per-fight). The eligibility hint still drives the picker. */
   noAutoFill?: boolean;
+  /** When true, auto-fill regenerates the whole category into one paired
+   *  row per roster member matching slot 0's eligibility (the "caster").
+   *  Used for Innervate (per druid), Earth Shield (per resto shaman),
+   *  Blessing of Protection (per paladin), Soulstones (per warlock).
+   *  Casters/targets here are NOT consumed from the cross-section pool,
+   *  so a druid still gets Gift of the Wild and a mage still gets Arcane
+   *  Brilliance. */
+  expandPerCaster?: boolean;
+  /** With `expandPerCaster`, also auto-fill slot 1 "targets" round-robin
+   *  across the generated rows (Innervate mages, Earth Shield tanks).
+   *  When false, caster rows are generated but the target slot is left
+   *  empty for manual assignment (Blessing of Protection, Soulstones). */
+  expandFillTargets?: boolean;
   /** Optional soft-constraint hint for who can fill this slot. */
   eligibility?: Eligibility;
   /** Per-slot eligibility override. Used for paired sections like
@@ -258,6 +271,8 @@ type BuffTpl = {
   fixedSlots?: number;
   targetSlots?: number;
   noAutoFill?: boolean;
+  expandPerCaster?: boolean;
+  expandFillTargets?: boolean;
 };
 
 const BUFF_TEMPLATE: BuffTpl[] = [
@@ -268,16 +283,14 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   { title: "Gift of the Wild · G4-5",           iconSlug: "spell_nature_regeneration",             eligibility: { classes: ["Druid"] }, fixedSlots: 1 },
   { title: "Arcane Brilliance · G1-3",          iconSlug: "spell_holy_arcaneintellect",            eligibility: { classes: ["Mage"] }, fixedSlots: 1 },
   { title: "Arcane Brilliance · G4-5",          iconSlug: "spell_holy_arcaneintellect",            eligibility: { classes: ["Mage"] }, fixedSlots: 1 },
-  // Earth Shield — resto shaman on tank. Each row paired Shaman + Tank.
-  { title: "Earth Shield · MT",                 iconSlug: "spell_nature_skinofearth",              rowIconSlug: "spell_nature_skinofearth",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Shaman"] }, { roles: ["tank"] }] },
-  { title: "Earth Shield · OT",                 iconSlug: "spell_nature_skinofearth",              rowIconSlug: "spell_nature_skinofearth",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Shaman"] }, { roles: ["tank"] }] },
-  // Innervate — resto druid → mage. Each row paired Druid + Mage.
-  { title: "Innervate · Pair 1",                iconSlug: "spell_nature_lightning",                rowIconSlug: "spell_nature_lightning",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
-  { title: "Innervate · Pair 2",                iconSlug: "spell_nature_lightning",                rowIconSlug: "spell_nature_lightning",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }] },
+  // Earth Shield — one row per unique resto shaman, each paired with a
+  // tank (tanks split round-robin across the shamans).
+  { title: "Earth Shield · 1",                  iconSlug: "spell_nature_skinofearth",              rowIconSlug: "spell_nature_skinofearth",
+    fixedSlots: 2, slotEligibility: [{ specs: ["Restoration Shaman"] }, { roles: ["tank"] }], expandPerCaster: true, expandFillTargets: true },
+  // Innervate — one row per druid in the raid (any spec), each druid
+  // paired with a mage; mages are split round-robin across the druids.
+  { title: "Innervate · 1",                     iconSlug: "spell_nature_lightning",                rowIconSlug: "spell_nature_lightning",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }], expandPerCaster: true, expandFillTargets: true },
 
   // ═══ MIDDLE COLUMN — all Paladin assignments ═════════════════════════
   // Each row uses rowIconSlug so the row label is the spell icon
@@ -286,11 +299,10 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   { title: "Paladin Seals · Crusader",          iconSlug: "spell_holy_holysmite",                  rowIconSlug: "spell_holy_holysmite",               eligibility: { specs: ["Retribution Paladin"] }, fixedSlots: 1 },
   { title: "Paladin Seals · Wisdom",            iconSlug: "spell_holy_holysmite",                  rowIconSlug: "spell_holy_righteousnessaura",       eligibility: { specs: ["Protection Paladin"] }, fixedSlots: 1 },
   { title: "Paladin Seals · Light",             iconSlug: "spell_holy_holysmite",                  rowIconSlug: "spell_holy_healingaura",             eligibility: { specs: ["Holy Paladin"] }, fixedSlots: 1 },
-  // Save / protection pairs (Paladin + Warlock).
-  { title: "Blessing of Protection · Pair 1",   iconSlug: "spell_holy_sealofprotection",           rowIconSlug: "spell_holy_sealofprotection",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Paladin"] }, { classes: ["Warlock"] }] },
-  { title: "Blessing of Protection · Pair 2",   iconSlug: "spell_holy_sealofprotection",           rowIconSlug: "spell_holy_sealofprotection",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Paladin"] }, { classes: ["Warlock"] }] },
+  // Blessing of Protection — one row per paladin; target (the protected
+  // raider) left empty for manual assignment.
+  { title: "Blessing of Protection · 1",        iconSlug: "spell_holy_sealofprotection",           rowIconSlug: "spell_holy_sealofprotection",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Paladin"] }, { classes: ["Warlock"] }], expandPerCaster: true },
   // Greater Blessings — Kings on Ret, Might+Wisdom on the Holy paladin
   // (one slot, two icons), Salvation on Prot. Spec-keyed so the same
   // paladin can also hold his seal above.
@@ -299,20 +311,10 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   { title: "Greater Blessings · Salvation",     iconSlug: "spell_magic_greaterblessingofkings",    rowIconSlug: "spell_holy_greaterblessingofsalvation", eligibility: { specs: ["Protection Paladin"] }, fixedSlots: 1 },
 
   // ═══ RIGHT COLUMN — warlock utility + raid debuffs ════════════════════
-  // Soulstones — each row pairs a Warlock caster with their target
-  // (any character; typically a healer in rezz-priority order). Five
-  // default rows mirror the source spreadsheet's priority list; admin
-  // can add more via the per-block + or delete unused ones.
-  { title: "Soulstones · #1",                   iconSlug: "spell_shadow_soulgem",                  rowIconSlug: "spell_shadow_soulgem",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Warlock"] }, undefined] },
-  { title: "Soulstones · #2",                   iconSlug: "spell_shadow_soulgem",                  rowIconSlug: "spell_shadow_soulgem",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Warlock"] }, undefined] },
-  { title: "Soulstones · #3",                   iconSlug: "spell_shadow_soulgem",                  rowIconSlug: "spell_shadow_soulgem",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Warlock"] }, undefined] },
-  { title: "Soulstones · #4",                   iconSlug: "spell_shadow_soulgem",                  rowIconSlug: "spell_shadow_soulgem",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Warlock"] }, undefined] },
-  { title: "Soulstones · #5",                   iconSlug: "spell_shadow_soulgem",                  rowIconSlug: "spell_shadow_soulgem",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Warlock"] }, undefined] },
+  // Soulstones — one row per warlock; target (the rezz recipient) left
+  // empty for manual assignment in rezz-priority order.
+  { title: "Soulstones · 1",                    iconSlug: "spell_shadow_soulgem",                  rowIconSlug: "spell_shadow_soulgem",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Warlock"] }, undefined], expandPerCaster: true },
 
   // ── Warlock curses — Recklessness stays open (any warlock, assigned
   // per-fight, so no auto-fill). Elements + Malediction go on the one
@@ -432,6 +434,8 @@ export function defaultBuffs(): AssignSection[] {
     fixedSlots: b.fixedSlots,
     targetSlots: b.targetSlots,
     noAutoFill: b.noAutoFill,
+    expandPerCaster: b.expandPerCaster,
+    expandFillTargets: b.expandFillTargets,
     characterIds: [],
   }));
 }
@@ -1193,14 +1197,85 @@ export function mergeMissingBossAddOns(
  *   (PI G1-3 grabs Priest A, PI G4-5 grabs Priest B). Roster order is
  *   stable across renders so the suggestion stays deterministic.
  */
-export function suggestFillSections(sections: AssignSection[], roster: EligibleChar[]): AssignSection[] {
+/** Category prefix (text before "·") of a section title. */
+function sectionCategory(title: string): string {
+  const i = title.indexOf("·");
+  return i === -1 ? title.trim() : title.slice(0, i).trim();
+}
+
+/**
+ * Regenerate every `expandPerCaster` category into one paired row per
+ * roster member matching slot 0's eligibility (the caster), distributing
+ * slot 1 "targets" round-robin across those rows. Used for Innervate:
+ * one row per druid, mages split between them. Row ids are reused by
+ * position so re-running with the same roster is stable. When no caster
+ * matches, a single empty row is kept so the block stays visible.
+ */
+export function expandPerCasterRows(sections: AssignSection[], roster: EligibleChar[]): AssignSection[] {
+  const expandCats = new Set(
+    sections.filter(s => s.expandPerCaster).map(s => sectionCategory(s.title)),
+  );
+  if (expandCats.size === 0) return sections;
+
+  const out: AssignSection[] = [];
+  const done = new Set<string>();
+  for (const s of sections) {
+    const cat = sectionCategory(s.title);
+    if (!expandCats.has(cat)) { out.push(s); continue; }
+    if (done.has(cat)) continue; // collapse every existing row of this category
+    done.add(cat);
+
+    const rows = sections.filter(r => sectionCategory(r.title) === cat);
+    const shape = rows[0];
+    const casterElig = shape.slotEligibility?.[0];
+    const targetElig = shape.slotEligibility?.[1];
+    const casters = roster.filter(c => matchesEligibility(c, casterElig));
+    const targets = targetElig ? roster.filter(c => matchesEligibility(c, targetElig)) : [];
+
+    // Preserve any manually-set target (slot 1) keyed by its caster, so a
+    // rezz/protection target survives roster changes and re-Suggest.
+    const targetByCaster = new Map<number, number>();
+    for (const r of rows) {
+      const c0 = r.characterIds[0];
+      const c1 = r.characterIds[1];
+      if (c0 && c1) targetByCaster.set(c0, c1);
+    }
+
+    const count = Math.max(casters.length, 1);
+    for (let i = 0; i < count; i++) {
+      const caster = casters[i];
+      let targetId = caster ? targetByCaster.get(caster.id) : undefined;
+      if (targetId === undefined && caster && shape.expandFillTargets && targets.length) {
+        targetId = targets[i % targets.length].id;
+      }
+      out.push({
+        ...shape,
+        id: rows[i]?.id ?? newSectionId(),
+        title: `${cat} · ${i + 1}`,
+        slotEligibility: shape.slotEligibility ? [...shape.slotEligibility] : undefined,
+        characterIds: caster ? (targetId ? [caster.id, targetId] : [caster.id]) : [],
+      });
+    }
+  }
+  return out;
+}
+
+export function suggestFillSections(sectionsIn: AssignSection[], roster: EligibleChar[]): AssignSection[] {
+  const sections = expandPerCasterRows(sectionsIn, roster);
   const used = new Set<number>();
   for (const s of sections) {
-    for (const id of s.characterIds) used.add(id);
+    // expandPerCaster rows (Innervate) don't consume their druids/mages,
+    // so those raiders stay available for Gift of the Wild / Arcane
+    // Brilliance.
+    if (!s.expandPerCaster) for (const id of s.characterIds) used.add(id);
     for (const a of s.addOns ?? []) for (const id of a.characterIds) used.add(id);
   }
 
   function fillMain(s: AssignSection): AssignSection {
+    // expandPerCaster sections are owned entirely by expandPerCasterRows
+    // (above) — never let the per-section filler touch them, or an empty
+    // caster row would get a headless target.
+    if (s.expandPerCaster) return s;
     if (s.characterIds.length > 0) return s;
     if (s.noAutoFill) return s;
     // fillAllEligible: list every roster member who matches the

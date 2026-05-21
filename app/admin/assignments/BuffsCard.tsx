@@ -72,13 +72,12 @@ export function BuffsCard({
 
   function suggestFills() {
     const next = suggestFillSections(data.buffs, teamRosterChars);
-    const filled = next.filter((s, i) => s.characterIds.length !== data.buffs[i].characterIds.length).length;
-    if (filled === 0) {
+    if (JSON.stringify(next) === JSON.stringify(data.buffs)) {
       toast.message("Nothing to suggest — every eligible buff section is already filled.");
       return;
     }
     updateSections(next);
-    toast.success(`Filled ${filled} buff section${filled === 1 ? "" : "s"} from team roster.`);
+    toast.success("Buff assignments updated from team roster.");
   }
 
   // Group consecutive sections by category (title before " · "). Falls
