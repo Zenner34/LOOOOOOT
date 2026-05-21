@@ -11,6 +11,7 @@ import {
   mergeMissingBossAddOns,
   mergeMissingBossSections,
   mergeMissingBuffBlocks,
+  reconcileBossSectionDefs,
   removeDeprecatedBossSections,
   mondayOfWeek,
   weekOfLabel,
@@ -71,10 +72,12 @@ function hydrateSheetData(data: AssignmentData | null | undefined): AssignmentDa
     // and addOn-merge operate on the single-phase shape, then append any
     // missing sections from the current template (e.g. Void Reaver Orb
     // Eaters coming back), then attach missing addOns to all sections.
-    bosses: mergeMissingBossAddOns(
-      mergeMissingBossSections(
-        removeDeprecatedBossSections(
-          flattenSinglePhaseBosses(base.bosses),
+    bosses: reconcileBossSectionDefs(
+      mergeMissingBossAddOns(
+        mergeMissingBossSections(
+          removeDeprecatedBossSections(
+            flattenSinglePhaseBosses(base.bosses),
+          ),
         ),
       ),
     ),

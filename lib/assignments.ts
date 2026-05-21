@@ -777,10 +777,9 @@ const BOSS_TEMPLATES: Record<BossSlug, BossTemplate> = {
       // Demon Tank takes Leo's inner demon — single MD hunter feeds
       // threat onto the warlock tanking it.
       t("Demon Tank", E.warlock, MISDIRECT_ONE),
-      // WW Threat Wipe is just the post-Whirlwind MD hunter — no
-      // parent chip. addOnsOnly suppresses the empty main slot so
-      // the section reads as a clean [MD][Hunter] row.
-      t("WW Threat Wipe", undefined, { ...MISDIRECT_ONE, addOnsOnly: true }),
+      // WW Threat Wipe — every hunter on the roster MDs to dump threat
+      // after a Whirlwind. fillAllEligible lists one slot per hunter.
+      t("WW Threat Wipe", E.hunter, { fillAllEligible: true }),
     ],
   },
   vashj: {
@@ -1110,6 +1109,44 @@ export function removeDeprecatedBossSections(
  *
  * Match is by section title; renamed sections quietly skip.
  */
+/**
+ * Re-applies template-derived definition fields (eligibility,
+ * fillAllEligible, addOnsOnly) to saved boss sections matched by title,
+ * and drops addOns the template no longer defines (matched by iconSlug).
+ * These fields aren't user-editable in the UI, so re-applying them is
+ * safe and lets boss-template changes reach existing sheets without a
+ * "Reset to defaults" (there is none for bosses). characterIds — and the
+ * picks inside kept addOns — are preserved. Renamed sections (no template
+ * match) are left untouched.
+ */
+export function reconcileBossSectionDefs(
+  bosses: Partial<Record<BossSlug, BossAssignment>>,
+): Partial<Record<BossSlug, BossAssignment>> {
+  const out: Partial<Record<BossSlug, BossAssignment>> = { ...bosses };
+  for (const [slug, current] of Object.entries(out) as [BossSlug, BossAssignment][]) {
+    if (!current) continue;
+    const apply = (s: AssignSection): AssignSection => {
+      const tpl = sectionTemplateForBoss(slug, s.title);
+      if (!tpl) return s;
+      const next: AssignSection = { ...s, eligibility: tpl.eligibility };
+      if (tpl.fillAllEligible) next.fillAllEligible = true; else delete next.fillAllEligible;
+      if (tpl.addOnsOnly) next.addOnsOnly = true; else delete next.addOnsOnly;
+      if (s.addOns?.length) {
+        const tplIcons = new Set((tpl.addOns ?? []).map(a => a.iconSlug));
+        const kept = s.addOns.filter(a => tplIcons.has(a.iconSlug));
+        if (kept.length) next.addOns = kept; else delete next.addOns;
+      }
+      return next;
+    };
+    if (current.sections) {
+      out[slug] = { ...current, sections: current.sections.map(apply) };
+    } else if (current.phases) {
+      out[slug] = { ...current, phases: current.phases.map(p => ({ ...p, sections: p.sections.map(apply) })) };
+    }
+  }
+  return out;
+}
+
 export function mergeMissingBossAddOns(
   bosses: Partial<Record<BossSlug, BossAssignment>>,
 ): Partial<Record<BossSlug, BossAssignment>> {
