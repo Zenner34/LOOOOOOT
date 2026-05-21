@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import {
   BUFF_COLUMNS,
   BUFF_TOOLTIPS,
+  buffCategoryShape,
   defaultBuffs,
   newSectionId,
   suggestFillSections,
@@ -145,23 +146,31 @@ export function BuffsCard({
               onAddSibling={() => {
                 const last = g.sections[g.sections.length - 1];
                 const insertAfter = data.buffs.findIndex(s => s.id === last.id);
-                // Paired sections (Innervate Druid+Mage, Earth Shield
-                // Shaman+Tank, BoP, Soulstones) inherit their split-column
-                // shape so a new row is another caster|target pair, not a
-                // lone slot. Non-paired multi-fill blocks (e.g. PoF · G1-5
-                // with 3 priests) still get a single-slot sibling for the
-                // "split G1-3 / G4-5" case.
-                const lastSlots = last.fixedSlots ?? 0;
-                const isPaired = lastSlots > 1 && (last.slotEligibility?.length ?? 0) === lastSlots;
+                // Determine whether this block is a paired caster|target
+                // section (Innervate, Earth Shield, Blessing of Protection,
+                // Soulstones). The template is the source of truth so a new
+                // row reproduces the pair even when the block's last row is
+                // a stray single slot. Fall back to any paired row already
+                // in the block (admin-renamed categories), else single.
+                const isPairShape = (s: { fixedSlots?: number; slotEligibility?: unknown[] }) =>
+                  (s.fixedSlots ?? 0) > 1 && (s.slotEligibility?.length ?? 0) === (s.fixedSlots ?? 0);
+                const ref =
+                  buffCategoryShape(g.category) ??
+                  g.sections.find(isPairShape) ??
+                  last;
+                const isPaired = isPairShape(ref);
+                // Non-paired multi-fill blocks (e.g. PoF · G1-5 with 3
+                // priests) still get a single-slot sibling for the "split
+                // G1-3 / G4-5" case.
                 const sibling: AssignSection = {
                   id: newSectionId(),
                   title: `${g.category} · `,
-                  iconSlug: last.iconSlug,
-                  rowIconSlug: last.rowIconSlug,
-                  eligibility: last.eligibility,
-                  slotEligibility: isPaired ? [...(last.slotEligibility ?? [])] : undefined,
-                  fixedSlots: isPaired ? lastSlots : 1,
-                  targetSlots: isPaired ? last.targetSlots : undefined,
+                  iconSlug: ref.iconSlug ?? last.iconSlug,
+                  rowIconSlug: ref.rowIconSlug ?? last.rowIconSlug,
+                  eligibility: ref.eligibility ?? last.eligibility,
+                  slotEligibility: isPaired ? [...(ref.slotEligibility ?? [])] : undefined,
+                  fixedSlots: isPaired ? ref.fixedSlots : 1,
+                  targetSlots: isPaired ? ref.targetSlots : undefined,
                   characterIds: [],
                 };
                 const next = [...data.buffs];

@@ -377,6 +377,30 @@ export const BUFF_TOOLTIPS: Record<string, string> = {
   "Debuffs":               "Physical-damage raid debuffs maintained on the boss. Faerie Fire (Druid), Improved Expose Armor (Rogue), Demoralizing Shout / Blood Frenzy / Thunderclap (Warrior).",
 };
 
+/**
+ * The fixed-slot / per-slot-eligibility shape the template defines for a
+ * buff category (prefix before "·"). Used when adding a new row to a
+ * paired block (Innervate, Earth Shield, Blessing of Protection,
+ * Soulstones) so the new row reproduces the caster|target pair — even if
+ * the block's existing rows were saved without the pair shape, or a stray
+ * single-slot row was added earlier. Returns null for categories not in
+ * the template (admin-renamed/custom blocks).
+ */
+export function buffCategoryShape(
+  category: string,
+): Pick<AssignSection, "fixedSlots" | "slotEligibility" | "targetSlots" | "eligibility" | "iconSlug" | "rowIconSlug"> | null {
+  const tpl = BUFF_TEMPLATE.find(b => b.title.split("·")[0].trim() === category);
+  if (!tpl) return null;
+  return {
+    fixedSlots: tpl.fixedSlots,
+    slotEligibility: tpl.slotEligibility,
+    targetSlots: tpl.targetSlots,
+    eligibility: tpl.eligibility,
+    iconSlug: tpl.iconSlug,
+    rowIconSlug: tpl.rowIconSlug,
+  };
+}
+
 export function defaultBuffs(): AssignSection[] {
   return BUFF_TEMPLATE.map(b => ({
     id: newSectionId(),
@@ -432,12 +456,38 @@ export function mergeMissingBuffBlocks(buffs: AssignSection[]): AssignSection[] 
     });
   }
 
-  const all = [...buffs, ...additions];
+  const all = [...buffs, ...additions].map(reconcilePairShape);
   // Stable sort by (template category rank, original index). Admin-added
   // categories not in the template get rank +Infinity → sort to the end.
   const indexed = all.map((s, i) => ({ s, i, rank: tplCategoryRank.get(category(s.title)) ?? Number.POSITIVE_INFINITY }));
   indexed.sort((a, b) => (a.rank - b.rank) || (a.i - b.i));
   return indexed.map(x => x.s);
+}
+
+/**
+ * Heal rows in paired buff categories (Innervate, Earth Shield, Blessing
+ * of Protection, Soulstones) that were saved without the caster|target
+ * pair shape — e.g. rows added before the per-slot eligibility landed, or
+ * single-slot rows created by the old "add row" bug. Restores the
+ * template's fixedSlots/slotEligibility so the row renders as a split
+ * again; any already-assigned character stays in the caster slot.
+ * Non-paired categories (PoF, Greater Blessings, etc.) are left untouched.
+ */
+function reconcilePairShape(section: AssignSection): AssignSection {
+  const cat = section.title.split("·")[0].trim();
+  const shape = buffCategoryShape(cat);
+  const tplPaired = !!shape && (shape.fixedSlots ?? 0) > 1 && (shape.slotEligibility?.length ?? 0) === shape.fixedSlots;
+  if (!tplPaired) return section;
+  const alreadyPaired = (section.fixedSlots ?? 0) > 1 && (section.slotEligibility?.length ?? 0) === section.fixedSlots;
+  if (alreadyPaired) return section;
+  return {
+    ...section,
+    fixedSlots: shape!.fixedSlots,
+    slotEligibility: shape!.slotEligibility ? [...shape!.slotEligibility] : undefined,
+    targetSlots: shape!.targetSlots,
+    rowIconSlug: section.rowIconSlug ?? shape!.rowIconSlug,
+    iconSlug: section.iconSlug ?? shape!.iconSlug,
+  };
 }
 
 /* ────────────────────────────────────────────────────────────────────
