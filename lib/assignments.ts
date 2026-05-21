@@ -55,6 +55,13 @@ export type Eligibility = {
   /** Role buckets. "tank" / "heal" match Character.role; "melee" / "ranged"
    *  split the dps role by spec via specBucket(). */
   roles?: Array<"tank" | "heal" | "melee" | "ranged">;
+  /** Exact spec keys (lib/specs.ts), e.g. "Retribution Paladin", "Arms
+   *  Warrior", "Balance Druid". When set, only those specs are "eligible".
+   *  Auto-fill picks a matching character but — unlike class/role fills —
+   *  does NOT consume them from the cross-section pool, so the same
+   *  raider can take several spec-keyed duties (one paladin does his seal
+   *  AND his greater blessing; one warrior does every warrior debuff). */
+  specs?: string[];
 };
 
 export type AssignSection = {
@@ -68,6 +75,15 @@ export type AssignSection = {
    *  of the navy scope-text bar. Used for Curses where each row IS the
    *  curse type (the icon names the curse, e.g. CoR / CoE / CoS / CoT). */
   rowIconSlug?: string;
+  /** Multiple row-label icons rendered side-by-side, for one slot that
+   *  covers several spells cast by the same raider (Greater Blessings
+   *  Might + Wisdom on one Holy Paladin; Curses Elements + Malediction on
+   *  one Affliction Warlock). Takes precedence over `rowIconSlug`. */
+  rowIconSlugs?: string[];
+  /** When true, auto-fill (Suggest / on-roster-change) skips this section
+   *  so it stays empty for manual assignment (e.g. Curse of Recklessness,
+   *  assigned per-fight). The eligibility hint still drives the picker. */
+  noAutoFill?: boolean;
   /** Optional soft-constraint hint for who can fill this slot. */
   eligibility?: Eligibility;
   /** Per-slot eligibility override. Used for paired sections like
@@ -236,17 +252,22 @@ type BuffTpl = {
   title: string;
   iconSlug: string;
   rowIconSlug?: string;
+  rowIconSlugs?: string[];
   eligibility?: Eligibility;
   slotEligibility?: (Eligibility | undefined)[];
   fixedSlots?: number;
   targetSlots?: number;
+  noAutoFill?: boolean;
 };
 
 const BUFF_TEMPLATE: BuffTpl[] = [
   // ═══ LEFT COLUMN — raid-wide buffs + tank/mana support ════════════════
-  { title: "Prayer of Fortitude · G1-5",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] }, fixedSlots: 1 },
-  { title: "Gift of the Wild · G1-5",           iconSlug: "spell_nature_regeneration",             eligibility: { classes: ["Druid"] }, fixedSlots: 1 },
-  { title: "Arcane Brilliance · G1-5",          iconSlug: "spell_holy_arcaneintellect",            eligibility: { classes: ["Mage"] }, fixedSlots: 1 },
+  { title: "Prayer of Fortitude · G1-3",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] }, fixedSlots: 1 },
+  { title: "Prayer of Fortitude · G4-5",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] }, fixedSlots: 1 },
+  { title: "Gift of the Wild · G1-3",           iconSlug: "spell_nature_regeneration",             eligibility: { classes: ["Druid"] }, fixedSlots: 1 },
+  { title: "Gift of the Wild · G4-5",           iconSlug: "spell_nature_regeneration",             eligibility: { classes: ["Druid"] }, fixedSlots: 1 },
+  { title: "Arcane Brilliance · G1-3",          iconSlug: "spell_holy_arcaneintellect",            eligibility: { classes: ["Mage"] }, fixedSlots: 1 },
+  { title: "Arcane Brilliance · G4-5",          iconSlug: "spell_holy_arcaneintellect",            eligibility: { classes: ["Mage"] }, fixedSlots: 1 },
   // Earth Shield — resto shaman on tank. Each row paired Shaman + Tank.
   { title: "Earth Shield · MT",                 iconSlug: "spell_nature_skinofearth",              rowIconSlug: "spell_nature_skinofearth",
     fixedSlots: 2, slotEligibility: [{ classes: ["Shaman"] }, { roles: ["tank"] }] },
@@ -262,19 +283,20 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   // Each row uses rowIconSlug so the row label is the spell icon
   // itself instead of a text scope. One paladin slot per row.
   // Seals on the boss.
-  { title: "Paladin Seals · Crusader",          iconSlug: "spell_holy_holysmite",                  rowIconSlug: "spell_holy_holysmite",               eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
-  { title: "Paladin Seals · Wisdom",            iconSlug: "spell_holy_holysmite",                  rowIconSlug: "spell_holy_righteousnessaura",       eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
-  { title: "Paladin Seals · Light",             iconSlug: "spell_holy_holysmite",                  rowIconSlug: "spell_holy_healingaura",             eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
+  { title: "Paladin Seals · Crusader",          iconSlug: "spell_holy_holysmite",                  rowIconSlug: "spell_holy_holysmite",               eligibility: { specs: ["Retribution Paladin"] }, fixedSlots: 1 },
+  { title: "Paladin Seals · Wisdom",            iconSlug: "spell_holy_holysmite",                  rowIconSlug: "spell_holy_righteousnessaura",       eligibility: { specs: ["Protection Paladin"] }, fixedSlots: 1 },
+  { title: "Paladin Seals · Light",             iconSlug: "spell_holy_holysmite",                  rowIconSlug: "spell_holy_healingaura",             eligibility: { specs: ["Holy Paladin"] }, fixedSlots: 1 },
   // Save / protection pairs (Paladin + Warlock).
   { title: "Blessing of Protection · Pair 1",   iconSlug: "spell_holy_sealofprotection",           rowIconSlug: "spell_holy_sealofprotection",
     fixedSlots: 2, slotEligibility: [{ classes: ["Paladin"] }, { classes: ["Warlock"] }] },
   { title: "Blessing of Protection · Pair 2",   iconSlug: "spell_holy_sealofprotection",           rowIconSlug: "spell_holy_sealofprotection",
     fixedSlots: 2, slotEligibility: [{ classes: ["Paladin"] }, { classes: ["Warlock"] }] },
-  // Greater Blessings — each row is the Paladin who casts that blessing.
-  { title: "Greater Blessings · Kings",         iconSlug: "spell_magic_greaterblessingofkings",    rowIconSlug: "spell_magic_greaterblessingofkings",    eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
-  { title: "Greater Blessings · Might",         iconSlug: "spell_magic_greaterblessingofkings",    rowIconSlug: "spell_holy_greaterblessingofkings",     eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
-  { title: "Greater Blessings · Wisdom",        iconSlug: "spell_magic_greaterblessingofkings",    rowIconSlug: "spell_holy_greaterblessingofwisdom",    eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
-  { title: "Greater Blessings · Salvation",     iconSlug: "spell_magic_greaterblessingofkings",    rowIconSlug: "spell_holy_greaterblessingofsalvation", eligibility: { classes: ["Paladin"] }, fixedSlots: 1 },
+  // Greater Blessings — Kings on Ret, Might+Wisdom on the Holy paladin
+  // (one slot, two icons), Salvation on Prot. Spec-keyed so the same
+  // paladin can also hold his seal above.
+  { title: "Greater Blessings · Kings",         iconSlug: "spell_magic_greaterblessingofkings",    rowIconSlug: "spell_magic_greaterblessingofkings",    eligibility: { specs: ["Retribution Paladin"] }, fixedSlots: 1 },
+  { title: "Greater Blessings · Might & Wisdom", iconSlug: "spell_magic_greaterblessingofkings",   rowIconSlugs: ["spell_holy_greaterblessingofkings", "spell_holy_greaterblessingofwisdom"], eligibility: { specs: ["Holy Paladin"] }, fixedSlots: 1 },
+  { title: "Greater Blessings · Salvation",     iconSlug: "spell_magic_greaterblessingofkings",    rowIconSlug: "spell_holy_greaterblessingofsalvation", eligibility: { specs: ["Protection Paladin"] }, fixedSlots: 1 },
 
   // ═══ RIGHT COLUMN — warlock utility + raid debuffs ════════════════════
   // Soulstones — each row pairs a Warlock caster with their target
@@ -292,23 +314,20 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   { title: "Soulstones · #5",                   iconSlug: "spell_shadow_soulgem",                  rowIconSlug: "spell_shadow_soulgem",
     fixedSlots: 2, slotEligibility: [{ classes: ["Warlock"] }, undefined] },
 
-  // ── Warlock curses — single block, icon-as-row-label, 1 warlock per ──
-  // Recklessness for physical raids, Elements for caster raids,
-  // Malediction (CoE + Shadow vulnerability via the talent) for
-  // mixed-damage fights. Picker filters to Warlocks; cross-section
-  // dedup spreads multiple warlocks across the three curses.
-  { title: "Curses · Recklessness",             iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_unholystrength",   eligibility: { classes: ["Warlock"] }, fixedSlots: 1 },
-  { title: "Curses · Elements",                 iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_chilltouch",        eligibility: { classes: ["Warlock"] }, fixedSlots: 1 },
-  { title: "Curses · Malediction",              iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_curseofachimonde",  eligibility: { classes: ["Warlock"] }, fixedSlots: 1 },
+  // ── Warlock curses — Recklessness stays open (any warlock, assigned
+  // per-fight, so no auto-fill). Elements + Malediction go on the one
+  // Affliction warlock (single slot, two icons).
+  { title: "Curses · Recklessness",             iconSlug: "spell_shadow_curseofachimonde",         rowIconSlug: "spell_shadow_unholystrength",   eligibility: { classes: ["Warlock"] }, fixedSlots: 1, noAutoFill: true },
+  { title: "Curses · Elements & Malediction",   iconSlug: "spell_shadow_curseofachimonde",         rowIconSlugs: ["spell_shadow_chilltouch", "spell_shadow_curseofachimonde"], eligibility: { specs: ["Affliction Warlock"] }, fixedSlots: 1 },
 
   // ── Physical raid debuffs — one row per boss-side debuff, one eligible
   // class per row (Druid FF, Rogue iEA, Warrior Demo/BF/TC). Same layout
   // as Curses: row icon on the left, one slot on the right.
-  { title: "Debuffs · Faerie Fire",             iconSlug: "ability_warrior_warcry",                rowIconSlug: "spell_nature_faeriefire",        eligibility: { classes: ["Druid"] },   fixedSlots: 1 },
-  { title: "Debuffs · Improved Expose Armor",   iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_warrior_riposte",        eligibility: { classes: ["Rogue"] },   fixedSlots: 1 },
-  { title: "Debuffs · Demoralizing Shout",      iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_warrior_warcry",         eligibility: { classes: ["Warrior"] }, fixedSlots: 1 },
-  { title: "Debuffs · Blood Frenzy",            iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_warrior_bloodfrenzy",    eligibility: { classes: ["Warrior"] }, fixedSlots: 1 },
-  { title: "Debuffs · Thunderclap",             iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_thunderclap",            eligibility: { classes: ["Warrior"] }, fixedSlots: 1 },
+  { title: "Debuffs · Faerie Fire",             iconSlug: "ability_warrior_warcry",                rowIconSlug: "spell_nature_faeriefire",        eligibility: { specs: ["Balance Druid"] }, fixedSlots: 1 },
+  { title: "Debuffs · Improved Expose Armor",   iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_warrior_riposte",        eligibility: { classes: ["Rogue"] },       fixedSlots: 1 },
+  { title: "Debuffs · Demoralizing Shout",      iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_warrior_warcry",         eligibility: { specs: ["Arms Warrior"] },  fixedSlots: 1 },
+  { title: "Debuffs · Blood Frenzy",            iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_warrior_bloodfrenzy",    eligibility: { specs: ["Arms Warrior"] },  fixedSlots: 1 },
+  { title: "Debuffs · Thunderclap",             iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_thunderclap",            eligibility: { specs: ["Arms Warrior"] },  fixedSlots: 1 },
 ];
 
 /**
@@ -407,10 +426,12 @@ export function defaultBuffs(): AssignSection[] {
     title: b.title,
     iconSlug: b.iconSlug,
     rowIconSlug: b.rowIconSlug,
+    rowIconSlugs: b.rowIconSlugs,
     eligibility: b.eligibility,
     slotEligibility: b.slotEligibility,
     fixedSlots: b.fixedSlots,
     targetSlots: b.targetSlots,
+    noAutoFill: b.noAutoFill,
     characterIds: [],
   }));
 }
@@ -512,6 +533,7 @@ export function isMeleeSpec(spec: string): boolean {
 export function matchesEligibility(c: EligibleChar, eligibility?: Eligibility): boolean {
   if (!eligibility) return true;
   const classOK = !eligibility.classes || eligibility.classes.includes(c.class);
+  const specOK = !eligibility.specs || eligibility.specs.includes(c.spec);
   const roleOK = !eligibility.roles || eligibility.roles.some(r => {
     if (r === "tank") return c.role === "tank";
     if (r === "heal") return c.role === "heal";
@@ -519,7 +541,7 @@ export function matchesEligibility(c: EligibleChar, eligibility?: Eligibility): 
     if (r === "ranged") return c.role === "dps" && !isMeleeSpec(c.spec);
     return false;
   });
-  return classOK && roleOK;
+  return classOK && specOK && roleOK;
 }
 
 /**
@@ -1180,6 +1202,7 @@ export function suggestFillSections(sections: AssignSection[], roster: EligibleC
 
   function fillMain(s: AssignSection): AssignSection {
     if (s.characterIds.length > 0) return s;
+    if (s.noAutoFill) return s;
     // fillAllEligible: list every roster member who matches the
     // eligibility, ignore the cross-section dedup pool, and don't add
     // them to `used` (so a hunter Orb-Eater can also MD elsewhere).
@@ -1206,10 +1229,15 @@ export function suggestFillSections(sections: AssignSection[], roster: EligibleC
     }
     if (!s.eligibility) return s;
     const target = s.targetSlots ?? 1;
-    const eligible = roster.filter(c => matchesEligibility(c, s.eligibility!) && !used.has(c.id));
+    // Spec-keyed sections (e.g. Arms Warrior debuffs, Ret-paladin seal +
+    // blessing) pick the matching raider but do NOT consume them, so one
+    // person can fill all of their spec's duties across sections. Class /
+    // role sections still dedup, spreading members across rows.
+    const specMode = (s.eligibility.specs?.length ?? 0) > 0;
+    const eligible = roster.filter(c => matchesEligibility(c, s.eligibility!) && (specMode || !used.has(c.id)));
     if (eligible.length === 0) return s;
     const picks = eligible.slice(0, target).map(c => c.id);
-    picks.forEach(id => used.add(id));
+    if (!specMode) picks.forEach(id => used.add(id));
     return { ...s, characterIds: picks };
   }
 

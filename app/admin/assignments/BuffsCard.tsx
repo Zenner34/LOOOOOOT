@@ -232,7 +232,7 @@ function BuffGroup({
   // Shield, Innervate, Soulstones, Curses, Debuffs). Keeps the header
   // icon for PoF / GotW / Arcane Brilliance, where rows aren't
   // icon-labelled.
-  const allRowsHaveIcons = sections.length > 0 && sections.every(s => !!s.rowIconSlug);
+  const allRowsHaveIcons = sections.length > 0 && sections.every(s => !!s.rowIconSlug || !!s.rowIconSlugs?.length);
   const showHeaderIcon = !allRowsHaveIcons;
   const headerRow = (
     <div className="flex items-center gap-2 cursor-help">
@@ -321,25 +321,31 @@ function BuffRow({
 
   const scope = scopeOf(section.title);
   const isFixed = (section.fixedSlots ?? 0) > 0;
-  const rowIconSrc = section.rowIconSlug ? `${ICON_BASE}${section.rowIconSlug}.jpg` : null;
+  const rowIconSlugList = section.rowIconSlugs?.length
+    ? section.rowIconSlugs
+    : section.rowIconSlug ? [section.rowIconSlug] : [];
+  const hasRowIcons = rowIconSlugList.length > 0;
 
   return (
     <div className="group/row grid grid-cols-[56px_1fr_auto] gap-px items-stretch">
-      {/* Row label (left) — spell icon if rowIconSlug is set, else
-          navy scope-text bar (editable). */}
-      {rowIconSrc ? (
+      {/* Row label (left) — spell icon(s) if set (side-by-side when a
+          single slot covers several spells), else navy scope-text bar. */}
+      {hasRowIcons ? (
         <div
-          className="flex items-center justify-center bg-[#1a2236] border border-[#2c5494]"
+          className="flex items-center justify-center gap-px px-px bg-[#1a2236] border border-[#2c5494]"
           title={scope || section.title}
         >
-          <img
-            src={rowIconSrc}
-            alt={scope || section.title}
-            width={22}
-            height={22}
-            className="rounded-sm"
-            onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
-          />
+          {rowIconSlugList.map((slug, i) => (
+            <img
+              key={i}
+              src={`${ICON_BASE}${slug}.jpg`}
+              alt={i === 0 ? (scope || section.title) : ""}
+              width={22}
+              height={22}
+              className="rounded-sm"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
+            />
+          ))}
         </div>
       ) : editingScope && !readOnly ? (
         <input
