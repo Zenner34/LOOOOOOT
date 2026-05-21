@@ -1514,7 +1514,10 @@ const PLATFORM_INFO: Record<BossSlug, PlatformInfo> = {
       "Boss starts on south side.",
       "Stream-change line in the middle splits Frost ↔ Nature.",
     ],
-    strategyImage: "/bosses/Hydross%20Boss%20Fight.png",
+    strategyImages: [
+      "/bosses/hydross%20p1.png",
+      "/bosses/hydross%20p2.png",
+    ],
   },
   lurker: {
     gradient: "linear-gradient(135deg, #2a1f3a, #5a2e2a)",
