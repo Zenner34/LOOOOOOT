@@ -584,6 +584,55 @@ export function newSectionId(): string {
   return Math.random().toString(36).slice(2, 9);
 }
 
+/**
+ * Strip every character id that isn't on the team roster (i.e. not in
+ * any of Groups 1-5) from all assignment areas — buffs, tank
+ * assignments, and boss sections (incl. phases and addOns). Run whenever
+ * group membership changes so removing a player from the Group Setup
+ * also clears them everywhere they were assigned. Fixed-slot rows keep
+ * their slot positions (a removed id becomes an empty slot); growable
+ * lists just drop the id.
+ */
+export function pruneAssignmentsToRoster(data: AssignmentData): AssignmentData {
+  const roster = new Set(rosterCharacterIds(data));
+  const inRoster = (id: number) => roster.has(id);
+
+  const pruneSection = (s: AssignSection): AssignSection => {
+    let characterIds: number[];
+    if ((s.fixedSlots ?? 0) > 0 || (s.slotEligibility?.length ?? 0) > 0) {
+      // Positional row — keep slot indices, blank out removed ids.
+      characterIds = s.characterIds.map(id => (inRoster(id) ? id : 0));
+      while (characterIds.length && characterIds[characterIds.length - 1] === 0) characterIds.pop();
+    } else {
+      characterIds = s.characterIds.filter(inRoster);
+    }
+    const addOns = s.addOns?.map(a => ({ ...a, characterIds: a.characterIds.filter(inRoster) }));
+    return { ...s, characterIds, ...(addOns ? { addOns } : {}) };
+  };
+
+  const pruneBoss = (b: BossAssignment): BossAssignment => {
+    if (b.sections) return { ...b, sections: b.sections.map(pruneSection) };
+    if (b.phases) return { ...b, phases: b.phases.map(p => ({ ...p, sections: p.sections.map(pruneSection) })) };
+    return b;
+  };
+
+  const bosses: Partial<Record<BossSlug, BossAssignment>> = {};
+  for (const [slug, b] of Object.entries(data.bosses) as [BossSlug, BossAssignment | undefined][]) {
+    bosses[slug] = b ? pruneBoss(b) : b;
+  }
+
+  return {
+    ...data,
+    buffs: data.buffs.map(pruneSection),
+    tankAssignments: data.tankAssignments?.map(t => ({
+      ...t,
+      tankId: t.tankId && inRoster(t.tankId) ? t.tankId : null,
+      healerIds: t.healerIds.filter(inRoster),
+    })),
+    bosses,
+  };
+}
+
 /* ────────────────────────────────────────────────────────────────────
    BOSS TEMPLATES
    ──────────────────────────────────────────────────────────────────── */

@@ -11,6 +11,7 @@ import {
   mergeMissingBossAddOns,
   mergeMissingBossSections,
   mergeMissingBuffBlocks,
+  pruneAssignmentsToRoster,
   reconcileBossSectionDefs,
   removeDeprecatedBossSections,
   mondayOfWeek,
@@ -165,15 +166,18 @@ export default function AssignmentsClient({
     .map(id => charsById.get(id))
     .filter((c): c is AssignableCharacter => Boolean(c));
 
-  // Auto-fill empty buff sections whenever the team roster changes.
-  // suggestFillSections only touches empty + eligible sections, so admin
-  // edits are never overwritten — moving a Priest into Group 3 just
-  // pops them into PoF G1-5 / PI G4-5 if those rows are still blank.
+  // When the team roster (Group Setup) changes, prune anyone no longer
+  // in a group from every assignment area, then auto-fill empty buff
+  // sections from the new roster. Only group members are eligible
+  // anywhere on the sheet.
   const rosterKey = teamRosterIds.join(",");
   useEffect(() => {
-    if (!sheet || !admin || teamRosterChars.length === 0) return;
-    const nextBuffs = suggestFillSections(data.buffs, teamRosterChars);
-    if (JSON.stringify(nextBuffs) !== JSON.stringify(data.buffs)) setData({ ...data, buffs: nextBuffs });
+    if (!sheet || !admin) return;
+    const pruned = pruneAssignmentsToRoster(data);
+    const next = teamRosterChars.length > 0
+      ? { ...pruned, buffs: suggestFillSections(pruned.buffs, teamRosterChars) }
+      : pruned;
+    if (JSON.stringify(next) !== JSON.stringify(data)) setData(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rosterKey, admin]);
 
