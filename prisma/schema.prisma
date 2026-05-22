@@ -93,6 +93,15 @@ model Character {
   // a Player is deleted.
   playerId    Int?
   isMain      Boolean        @default(false)
+  // WarcraftLogs (Fresh) identity + cached parse numbers. realm/region
+  // feed the API lookup; wcl* fields are refreshed by /api/wcl/refresh.
+  realm            String    @default("Nightslayer")
+  region           String    @default("US")
+  wclBestPerfAvg   Float?
+  wclMedianPerfAvg Float?
+  wclKillsLogged   Int?
+  wclData          Json?
+  wclUpdatedAt     DateTime?
   player      Player?        @relation(fields: [playerId], references: [id], onDelete: SetNull)
   memberships RosterMember[]
   attendance  Attendance[]

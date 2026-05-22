@@ -9,6 +9,7 @@ import { WowheadLink } from "@/lib/wowhead";
 import { parsePhaseParam, phaseFilterLabel, isDefaultPhaseFilter } from "@/lib/phases";
 import { ClassIcon } from "@/app/components/ClassIcon";
 import { SpecIcon } from "@/app/components/SpecIcon";
+import { ParseBadge } from "@/app/components/ui/ParseBadge";
 import { Select } from "@/app/components/Select";
 import { PhaseFilter } from "@/app/components/PhaseFilter";
 import { EmptyState } from "@/app/components/ui/EmptyState";
@@ -24,6 +25,10 @@ type Character = {
   playerId: number | null;
   isMain: boolean;
   active: boolean;
+  wclBestPerfAvg?: number | null;
+  wclMedianPerfAvg?: number | null;
+  wclKillsLogged?: number | null;
+  wclUpdatedAt?: string | Date | null;
 };
 type Player = { id: number; displayName: string; active: boolean };
 
@@ -117,6 +122,7 @@ export default function OverviewClient({
   awards,
   phases,
   phaseFilterParam,
+  admin = false,
 }: {
   rosters: Array<{ id: number; name: string }>;
   selectedRosterId: number | "all";
@@ -125,6 +131,7 @@ export default function OverviewClient({
   awards: Award[];
   phases: Array<{ order: number; name: string }>;
   phaseFilterParam: string | null;
+  admin?: boolean;
 }) {
   const phaseFilter = parsePhaseParam(phaseFilterParam);
   const phaseLabel = isDefaultPhaseFilter(phaseFilter) ? null : phaseFilterLabel(phaseFilter);
@@ -358,6 +365,8 @@ export default function OverviewClient({
         subtitle="Who's looted what across every raid we've run, sorted to surface the next-up players first."
       />
 
+      {admin && <RefreshParsesButton />}
+
       <div className="flex flex-wrap items-center gap-2">
         <div ref={filtersRef} className="relative inline-block">
         <button
@@ -568,6 +577,7 @@ export default function OverviewClient({
                         {c.isMain && <span className="text-gold-300 text-[9px]">★</span>}
                         <SpecIcon spec={c.spec} size={12} />
                         <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</span>
+                        <ParseBadge best={c.wclBestPerfAvg} median={c.wclMedianPerfAvg} kills={c.wclKillsLogged} updatedAt={c.wclUpdatedAt} />
                       </span>
                     ))}
                   </div>
@@ -716,6 +726,7 @@ export default function OverviewClient({
                             <SpecIcon spec={c.spec} size={14} />
                             <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</span>
                             <span className="text-neutral-500">· {c.spec}</span>
+                            <ParseBadge best={c.wclBestPerfAvg} median={c.wclMedianPerfAvg} kills={c.wclKillsLogged} updatedAt={c.wclUpdatedAt} />
                           </span>
                         ))}
                       </div>
@@ -799,6 +810,44 @@ export default function OverviewClient({
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────────── */
+
+// Admin-only: kick the WarcraftLogs refresh job and reload once done.
+function RefreshParsesButton() {
+  const router = useRouter();
+  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [msg, setMsg] = useState("");
+  async function run() {
+    setStatus("loading");
+    setMsg("");
+    try {
+      const r = await fetch("/api/wcl/refresh", { method: "POST" });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+      setStatus("done");
+      setMsg(`Updated ${j.updated}/${j.total}${j.noParses ? ` · ${j.noParses} no parses` : ""}${j.failed ? ` · ${j.failed} failed` : ""}`);
+      router.refresh();
+    } catch (e) {
+      setStatus("error");
+      setMsg((e as Error).message);
+    }
+  }
+  return (
+    <div className="flex items-center gap-2 text-xs">
+      <button
+        type="button"
+        onClick={run}
+        disabled={status === "loading"}
+        className="btn-ghost btn-xs inline-flex items-center gap-1 disabled:opacity-50"
+        title="Pull each character's SSC/TK Best Perf. Avg from WarcraftLogs (also runs daily)"
+      >
+        {status === "loading" ? "Refreshing parses…" : "Refresh WCL parses"}
+      </button>
+      {msg && <span className={status === "error" ? "text-rose-300" : "text-neutral-400"}>{msg}</span>}
     </div>
   );
 }

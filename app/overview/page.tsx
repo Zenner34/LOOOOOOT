@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { lootAwardPhaseWhere, parsePhaseParam } from "@/lib/phases";
+import { isAdmin } from "@/lib/auth";
 import OverviewClient from "./OverviewClient";
 
 export const dynamic = "force-dynamic";
@@ -61,8 +62,11 @@ export default async function OverviewPage({
     orderBy: { displayName: "asc" },
   });
 
+  const admin = await isAdmin();
+
   return (
     <OverviewClient
+      admin={admin}
       rosters={rosters.map(r => ({ id: r.id, name: r.name }))}
       selectedRosterId={selectedRosterId}
       characters={characters.map(c => ({
@@ -74,6 +78,10 @@ export default async function OverviewPage({
         playerId: c.playerId,
         isMain: c.isMain,
         active: c.active,
+        wclBestPerfAvg: c.wclBestPerfAvg,
+        wclMedianPerfAvg: c.wclMedianPerfAvg,
+        wclKillsLogged: c.wclKillsLogged,
+        wclUpdatedAt: c.wclUpdatedAt,
       }))}
       players={players.map(p => ({
         id: p.id,
