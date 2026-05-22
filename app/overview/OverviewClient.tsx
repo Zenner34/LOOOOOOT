@@ -829,7 +829,10 @@ function RefreshParsesButton() {
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
       setStatus("done");
-      setMsg(`Updated ${j.updated}/${j.total}${j.noParses ? ` · ${j.noParses} no parses` : ""}${j.failed ? ` · ${j.failed} failed` : ""}`);
+      setMsg(
+        `Updated ${j.updated}/${j.total}${j.noParses ? ` · ${j.noParses} no parses` : ""}${j.failed ? ` · ${j.failed} failed` : ""}` +
+          (j.errors?.length ? ` — e.g. ${j.errors[0]}` : ""),
+      );
       router.refresh();
     } catch (e) {
       setStatus("error");
