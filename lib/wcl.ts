@@ -79,35 +79,59 @@ export async function resolveZoneId(): Promise<number> {
   return cachedZoneId;
 }
 
-/** Diagnostic dump: try several zoneRankings argument combos for one
- *  character and report which one returns real data. */
+/** Diagnostic dump: zone 1010's structure + try zoneRankings per difficulty,
+ *  plus one encounterRankings probe, to find what the API accepts. */
 export async function wclDebug(name: string, realm: string, region: string) {
   const server = serverSlug(realm);
   const zoneId = await resolveZoneId();
 
-  async function tryArgs(label: string, args: string) {
+  const meta = await gql<{
+    worldData: {
+      zone: {
+        id: number; name: string; frozen?: boolean;
+        expansion?: { id: number; name: string };
+        difficulties?: Array<{ id: number; name: string }>;
+        partitions?: Array<{ id: number; name: string; default?: boolean }>;
+        encounters?: Array<{ id: number; name: string }>;
+      } | null;
+    };
+  }>(
+    `query($z:Int!){ worldData{ zone(id:$z){
+       id name frozen expansion{id name}
+       difficulties{id name} partitions{id name default} encounters{id name}
+     } } }`,
+    { z: zoneId },
+  );
+  const zone = meta.worldData?.zone ?? null;
+
+  async function tryArgs(label: string, field: string, args: string) {
     try {
-      const data = await gql<{ characterData: { character: { zoneRankings: unknown } | null } | null }>(
+      const data = await gql<{ characterData: { character: Record<string, unknown> | null } | null }>(
         `query($name:String!,$server:String!,$region:String!){
-           characterData{ character(name:$name, serverSlug:$server, serverRegion:$region){
-             zoneRankings(${args})
-           } }
+           characterData{ character(name:$name, serverSlug:$server, serverRegion:$region){ ${field}(${args}) } }
          }`,
         { name, server, region },
       );
-      return { label, args, result: data.characterData?.character?.zoneRankings ?? null };
+      return { label, args, result: data.characterData?.character?.[field] ?? null };
     } catch (e) {
       return { label, args, error: (e as Error).message };
     }
   }
 
-  const attempts = [
-    await tryArgs("zone+dps", `zoneID: ${zoneId}, metric: dps`),
-    await tryArgs("zone only", `zoneID: ${zoneId}`),
-    await tryArgs("zone+partition-1", `zoneID: ${zoneId}, partition: -1`),
-    await tryArgs("default zone", ``),
-  ];
-  return { base: BASE, queried: { name, server, region, zoneId }, attempts };
+  const attempts: unknown[] = [];
+  const diffs = zone?.difficulties ?? [];
+  if (diffs.length === 0) {
+    attempts.push(await tryArgs("zone+dps (no diff)", "zoneRankings", `zoneID: ${zoneId}, metric: dps`));
+  }
+  for (const d of diffs) {
+    attempts.push(await tryArgs(`zone+diff ${d.name}(${d.id})`, "zoneRankings", `zoneID: ${zoneId}, difficulty: ${d.id}, metric: dps`));
+  }
+  const firstBoss = zone?.encounters?.[0];
+  if (firstBoss) {
+    attempts.push(await tryArgs(`encounter ${firstBoss.name}`, "encounterRankings", `encounterID: ${firstBoss.id}, metric: dps`));
+  }
+
+  return { base: BASE, queried: { name, server, region, zoneId }, zone, attempts };
 }
 
 export type CharacterParse = {
