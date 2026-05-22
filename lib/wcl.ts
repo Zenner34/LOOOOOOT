@@ -79,49 +79,39 @@ export async function resolveZoneId(): Promise<number> {
   return cachedZoneId;
 }
 
-/** Diagnostic dump: probe zone 1010 across every partition + a control
- *  query on a current (unfrozen) zone, to learn what the API accepts. */
+/** Diagnostic dump: confirm which character name+server+region resolves to
+ *  (server identity), and try ranking it both by name and by id. */
 export async function wclDebug(name: string, realm: string, region: string) {
   const server = serverSlug(realm);
-  const zoneId = await resolveZoneId();
 
-  const zonesAll = await gql<{ worldData: { zones: Array<{ id: number; name: string; frozen?: boolean; expansion?: { id: number } }> } }>(
-    `query { worldData { zones { id name frozen expansion { id } } } }`, {},
+  // 1. Who did the name lookup actually match? (server slug + region)
+  const byName = await gql<{ characterData: { character: { id: number; name: string; hidden?: boolean; server?: { slug?: string; name?: string; region?: { slug?: string; name?: string } } } | null } | null }>(
+    `query($name:String!,$server:String!,$region:String!){
+       characterData{ character(name:$name, serverSlug:$server, serverRegion:$region){
+         id name hidden server { slug name region { slug name } }
+       } }
+     }`,
+    { name, server, region },
   );
-  const zones = zonesAll.worldData?.zones ?? [];
-  const unfrozen = zones.find(z => !z.frozen && z.expansion?.id === 1001) ?? zones.find(z => !z.frozen);
+  const char = byName.characterData?.character ?? null;
 
-  async function tryArgs(label: string, field: string, args: string) {
+  // 2. Try zoneRankings BY ID (removes name-matching ambiguity) for SSC/TK.
+  let byIdRanking: unknown = null;
+  if (char?.id) {
     try {
-      const data = await gql<{ characterData: { character: Record<string, unknown> | null } | null }>(
-        `query($name:String!,$server:String!,$region:String!){
-           characterData{ character(name:$name, serverSlug:$server, serverRegion:$region){ ${field}(${args}) } }
-         }`,
-        { name, server, region },
+      const r = await gql<{ characterData: { character: { zoneRankings: unknown } | null } | null }>(
+        `query($id:Int!){ characterData{ character(id:$id){
+           zoneRankings(zoneID: 1010, difficulty: 3, metric: dps)
+         } } }`,
+        { id: char.id },
       );
-      const r = data.characterData?.character?.[field] as { bestPerformanceAverage?: number; error?: string } | null;
-      // Keep the dump small: just the headline + error if any.
-      return { label, args, best: r?.bestPerformanceAverage ?? null, error: r?.error ?? null, hasData: !!r && !r.error };
+      byIdRanking = r.characterData?.character?.zoneRankings ?? null;
     } catch (e) {
-      return { label, args, error: (e as Error).message };
+      byIdRanking = { error: (e as Error).message };
     }
   }
 
-  const attempts: unknown[] = [];
-  for (const p of [1, 2, 3, 4, 5, 6, 7]) {
-    attempts.push(await tryArgs(`1010 P${p}`, "zoneRankings", `zoneID: 1010, difficulty: 3, partition: ${p}, metric: dps`));
-  }
-  if (unfrozen) {
-    attempts.push(await tryArgs(`control ${unfrozen.name}(${unfrozen.id})`, "zoneRankings", `zoneID: ${unfrozen.id}, metric: dps`));
-  }
-
-  return {
-    base: BASE,
-    queried: { name, server, region, zoneId },
-    unfrozenControl: unfrozen ?? null,
-    tbcZones: zones.filter(z => z.expansion?.id === 1001).map(z => ({ id: z.id, name: z.name, frozen: z.frozen })),
-    attempts,
-  };
+  return { base: BASE, queried: { name, server, region }, matchedCharacter: char, byIdRanking };
 }
 
 export type CharacterParse = {
