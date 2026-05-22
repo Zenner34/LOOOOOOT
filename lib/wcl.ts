@@ -79,30 +79,17 @@ export async function resolveZoneId(): Promise<number> {
   return cachedZoneId;
 }
 
-/** Diagnostic dump: zone 1010's structure + try zoneRankings per difficulty,
- *  plus one encounterRankings probe, to find what the API accepts. */
+/** Diagnostic dump: probe zone 1010 across every partition + a control
+ *  query on a current (unfrozen) zone, to learn what the API accepts. */
 export async function wclDebug(name: string, realm: string, region: string) {
   const server = serverSlug(realm);
   const zoneId = await resolveZoneId();
 
-  const meta = await gql<{
-    worldData: {
-      zone: {
-        id: number; name: string; frozen?: boolean;
-        expansion?: { id: number; name: string };
-        difficulties?: Array<{ id: number; name: string }>;
-        partitions?: Array<{ id: number; name: string; default?: boolean }>;
-        encounters?: Array<{ id: number; name: string }>;
-      } | null;
-    };
-  }>(
-    `query($z:Int!){ worldData{ zone(id:$z){
-       id name frozen expansion{id name}
-       difficulties{id name} partitions{id name default} encounters{id name}
-     } } }`,
-    { z: zoneId },
+  const zonesAll = await gql<{ worldData: { zones: Array<{ id: number; name: string; frozen?: boolean; expansion?: { id: number } }> } }>(
+    `query { worldData { zones { id name frozen expansion { id } } } }`, {},
   );
-  const zone = meta.worldData?.zone ?? null;
+  const zones = zonesAll.worldData?.zones ?? [];
+  const unfrozen = zones.find(z => !z.frozen && z.expansion?.id === 1001) ?? zones.find(z => !z.frozen);
 
   async function tryArgs(label: string, field: string, args: string) {
     try {
@@ -112,26 +99,29 @@ export async function wclDebug(name: string, realm: string, region: string) {
          }`,
         { name, server, region },
       );
-      return { label, args, result: data.characterData?.character?.[field] ?? null };
+      const r = data.characterData?.character?.[field] as { bestPerformanceAverage?: number; error?: string } | null;
+      // Keep the dump small: just the headline + error if any.
+      return { label, args, best: r?.bestPerformanceAverage ?? null, error: r?.error ?? null, hasData: !!r && !r.error };
     } catch (e) {
       return { label, args, error: (e as Error).message };
     }
   }
 
   const attempts: unknown[] = [];
-  const diffs = zone?.difficulties ?? [];
-  if (diffs.length === 0) {
-    attempts.push(await tryArgs("zone+dps (no diff)", "zoneRankings", `zoneID: ${zoneId}, metric: dps`));
+  for (const p of [1, 2, 3, 4, 5, 6, 7]) {
+    attempts.push(await tryArgs(`1010 P${p}`, "zoneRankings", `zoneID: 1010, difficulty: 3, partition: ${p}, metric: dps`));
   }
-  for (const d of diffs) {
-    attempts.push(await tryArgs(`zone+diff ${d.name}(${d.id})`, "zoneRankings", `zoneID: ${zoneId}, difficulty: ${d.id}, metric: dps`));
-  }
-  const firstBoss = zone?.encounters?.[0];
-  if (firstBoss) {
-    attempts.push(await tryArgs(`encounter ${firstBoss.name}`, "encounterRankings", `encounterID: ${firstBoss.id}, metric: dps`));
+  if (unfrozen) {
+    attempts.push(await tryArgs(`control ${unfrozen.name}(${unfrozen.id})`, "zoneRankings", `zoneID: ${unfrozen.id}, metric: dps`));
   }
 
-  return { base: BASE, queried: { name, server, region, zoneId }, zone, attempts };
+  return {
+    base: BASE,
+    queried: { name, server, region, zoneId },
+    unfrozenControl: unfrozen ?? null,
+    tbcZones: zones.filter(z => z.expansion?.id === 1001).map(z => ({ id: z.id, name: z.name, frozen: z.frozen })),
+    attempts,
+  };
 }
 
 export type CharacterParse = {
