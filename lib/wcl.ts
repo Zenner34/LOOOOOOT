@@ -22,6 +22,31 @@ export function wclConfigured(): boolean {
   return !!(process.env.WCL_CLIENT_ID && process.env.WCL_CLIENT_SECRET);
 }
 
+/* ── v1 REST API (used for Fresh/Classic parses; v2 rejects these zones) ── */
+const V1_KEY = process.env.WCL_V1_KEY || "";
+export function v1Configured(): boolean {
+  return !!V1_KEY;
+}
+async function v1Get(path: string, params: Record<string, string | number> = {}) {
+  const qs = new URLSearchParams({ ...Object.fromEntries(Object.entries(params).map(([k, v]) => [k, String(v)])), api_key: V1_KEY }).toString();
+  const res = await fetch(`${BASE}/v1${path}?${qs}`);
+  const text = await res.text();
+  let json: unknown;
+  try { json = JSON.parse(text); } catch { json = text.slice(0, 500); }
+  return { status: res.status, json };
+}
+
+/** Diagnostic: dump /v1/zones + raw /v1/parses/character for one character,
+ *  trying both server-name formats, so we can read the real v1 shape. */
+export async function wclDebugV1(name: string) {
+  if (!v1Configured()) return { error: "WCL_V1_KEY not set" };
+  const zones = await v1Get(`/zones`);
+  const enc = encodeURIComponent(name);
+  const parsesSlug = await v1Get(`/parses/character/${enc}/nightslayer/US`, { metric: "dps" });
+  const parsesName = await v1Get(`/parses/character/${enc}/Nightslayer/US`, { metric: "dps" });
+  return { base: BASE, zones, parsesSlug, parsesName };
+}
+
 async function getToken(): Promise<string> {
   if (cachedToken && cachedToken.expiresAt > Date.now() + 60_000) return cachedToken.value;
   const id = process.env.WCL_CLIENT_ID;
