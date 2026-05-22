@@ -22,13 +22,10 @@
 --   (Veile, Glzy, Byung, Girthstorm, Gono, Vspades, Daladed, Xenodank,
 --    Tombradygoat = their mains)
 --
--- ── NOT YET IMPORTED — need info (add and re-run; this script is
---    idempotent so re-running replaces the whole 5/21 night): ──
---   * "Slamchamber" (3 items: Gauntlets of the Sun King, Cord of
---     Screaming Terrors, Leggings of the Vanquished Hero) — not in the
---     roster. Need the player + class this character belongs to.
---   * Sérgo's 2nd item (row 19) — obscured in the screenshot. Need the
---     item name.
+-- "Slamchamber" (3 items) is matched by Character.name directly — its
+-- player/class isn't in our roster sheet, but the toon exists under that
+-- exact name. Sérgo's obscured 2nd item (row 19) is intentionally
+-- skipped per admin.
 --
 -- Idempotent — re-running deletes and re-inserts the May 21 RaidNight
 -- + its awards, so duplicate runs converge.
@@ -83,6 +80,18 @@ FROM awards a
 WHERE (SELECT c.id FROM "Character" c JOIN "Player" p ON c."playerId" = p.id
         WHERE p."displayName" = a.player AND c.class = a.class LIMIT 1) IS NULL
    OR (SELECT id FROM "Item" WHERE name = a.item LIMIT 1) IS NULL;
+
+-- Slamchamber pre-check (matched by name). Any row here = a problem.
+SELECT 'Slamchamber' AS character, v.item,
+  (SELECT id FROM "Character" WHERE name = 'Slamchamber' LIMIT 1) AS character_id,
+  (SELECT id FROM "Item" WHERE name = v.item LIMIT 1) AS item_id
+FROM (VALUES
+  ('Gauntlets of the Sun King'),
+  ('Cord of Screaming Terrors'),
+  ('Leggings of the Vanquished Hero')
+) AS v(item)
+WHERE (SELECT id FROM "Character" WHERE name = 'Slamchamber' LIMIT 1) IS NULL
+   OR (SELECT id FROM "Item" WHERE name = v.item LIMIT 1) IS NULL;
 
 -- ════════════════════════════════════════════════════════════════════
 -- APPLY
@@ -153,7 +162,24 @@ FROM (VALUES
   ('Kalihiwai','Paladin','Scarab of Displacement')
 ) AS v(player, class, item);
 
--- Confirm 36 awards landed on the May 21 night.
+-- Slamchamber's 3 awards — matched by character name.
+INSERT INTO "LootAward" ("itemId", "characterId", "rosterId", "raidNightId", "awardedAt")
+SELECT
+  (SELECT id FROM "Item" WHERE name = v.item LIMIT 1),
+  (SELECT id FROM "Character" WHERE name = 'Slamchamber' LIMIT 1),
+  (SELECT id FROM "Roster" WHERE name = 'Master Roster'),
+  (SELECT id FROM "RaidNight"
+    WHERE date = '2026-05-21'
+      AND "rosterId" = (SELECT id FROM "Roster" WHERE name = 'Master Roster')
+    LIMIT 1),
+  '2026-05-21T00:00:00Z'::timestamp
+FROM (VALUES
+  ('Gauntlets of the Sun King'),
+  ('Cord of Screaming Terrors'),
+  ('Leggings of the Vanquished Hero')
+) AS v(item);
+
+-- Confirm 39 awards landed on the May 21 night.
 SELECT i.name AS item, p."displayName" AS player, c.class, c.name AS character
 FROM "LootAward" la
 JOIN "Item" i ON i.id = la."itemId"
