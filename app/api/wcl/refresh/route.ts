@@ -26,7 +26,7 @@ async function refresh() {
   const errors: string[] = [];
   for (const c of characters) {
     try {
-      const parse = await fetchCharacterParse(c.name, c.realm, c.region, zoneId, metricForRole(c.role));
+      const parse = await fetchCharacterParse(c.name, zoneId, metricForRole(c.role));
       await prisma.character.update({
         where: { id: c.id },
         data: {

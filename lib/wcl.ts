@@ -156,8 +156,6 @@ export function metricForRole(role: string): "dps" | "hps" {
 
 export async function fetchCharacterParse(
   name: string,
-  realm: string,
-  region: string,
   zoneId: number,
   metric: "dps" | "hps" = "dps",
 ): Promise<CharacterParse | null> {
