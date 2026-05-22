@@ -11,6 +11,11 @@
 
 const BASE = process.env.WCL_BASE_URL?.replace(/\/$/, "") || "https://fresh.warcraftlogs.com";
 
+// All our characters are on one Fresh server (Nightslayer = WCL server id
+// 5213). Looking up by serverID pins the exact server/game-version, which
+// serverSlug+serverRegion does not on the shared Fresh host.
+const SERVER_ID = Number(process.env.WCL_SERVER_ID) || 5213;
+
 let cachedToken: { value: string; expiresAt: number } | null = null;
 
 export function wclConfigured(): boolean {
@@ -79,39 +84,41 @@ export async function resolveZoneId(): Promise<number> {
   return cachedZoneId;
 }
 
-/** Diagnostic dump: confirm which character name+server+region resolves to
- *  (server identity), and try ranking it both by name and by id. */
-export async function wclDebug(name: string, realm: string, region: string) {
-  const server = serverSlug(realm);
-
-  // 1. Who did the name lookup actually match? (server slug + region)
-  const byName = await gql<{ characterData: { character: { id: number; name: string; hidden?: boolean; server?: { slug?: string; name?: string; region?: { slug?: string; name?: string } } } | null } | null }>(
-    `query($name:String!,$server:String!,$region:String!){
-       characterData{ character(name:$name, serverSlug:$server, serverRegion:$region){
-         id name hidden server { slug name region { slug name } }
+/** Diagnostic dump: look the character up by serverID (5213) and try SSC/TK
+ *  rankings with and without difficulty. */
+export async function wclDebug(name: string, _realm: string, _region: string) {
+  const byServer = await gql<{ characterData: { character: { id: number; name: string; server?: { slug?: string; name?: string; region?: { slug?: string } } } | null } | null }>(
+    `query($name:String!,$server:Int!){
+       characterData{ character(name:$name, serverID:$server){
+         id name server { slug name region { slug } }
        } }
      }`,
-    { name, server, region },
+    { name, server: SERVER_ID },
   );
-  const char = byName.characterData?.character ?? null;
+  const char = byServer.characterData?.character ?? null;
 
-  // 2. Try zoneRankings BY ID (removes name-matching ambiguity) for SSC/TK.
-  let byIdRanking: unknown = null;
-  if (char?.id) {
+  async function tryArgs(label: string, args: string) {
     try {
       const r = await gql<{ characterData: { character: { zoneRankings: unknown } | null } | null }>(
-        `query($id:Int!){ characterData{ character(id:$id){
-           zoneRankings(zoneID: 1010, difficulty: 3, metric: dps)
-         } } }`,
-        { id: char.id },
+        `query($name:String!,$server:Int!){
+           characterData{ character(name:$name, serverID:$server){ zoneRankings(${args}) } }
+         }`,
+        { name, server: SERVER_ID },
       );
-      byIdRanking = r.characterData?.character?.zoneRankings ?? null;
+      return { label, args, result: r.characterData?.character?.zoneRankings ?? null };
     } catch (e) {
-      byIdRanking = { error: (e as Error).message };
+      return { label, args, error: (e as Error).message };
     }
   }
 
-  return { base: BASE, queried: { name, server, region }, matchedCharacter: char, byIdRanking };
+  const attempts = char
+    ? [
+        await tryArgs("1010+dps", "zoneID: 1010, metric: dps"),
+        await tryArgs("1010+diff3+dps", "zoneID: 1010, difficulty: 3, metric: dps"),
+      ]
+    : [];
+
+  return { base: BASE, serverId: SERVER_ID, queried: { name }, matchedCharacter: char, attempts };
 }
 
 export type CharacterParse = {
@@ -142,12 +149,12 @@ export async function fetchCharacterParse(
   const data = await gql<{
     characterData: { character: { zoneRankings: unknown } | null } | null;
   }>(
-    `query($name:String!,$server:String!,$region:String!,$zone:Int!,$metric:CharacterPageRankingMetricType!){
-       characterData{ character(name:$name, serverSlug:$server, serverRegion:$region){
-         zoneRankings(zoneID:$zone, metric: $metric)
+    `query($name:String!,$server:Int!,$zone:Int!,$metric:CharacterPageRankingMetricType!){
+       characterData{ character(name:$name, serverID:$server){
+         zoneRankings(zoneID:$zone, difficulty: 3, metric: $metric)
        } }
      }`,
-    { name, server: serverSlug(realm), region, zone: zoneId, metric },
+    { name, server: SERVER_ID, zone: zoneId, metric },
   );
 
   const zr = data.characterData?.character?.zoneRankings as
