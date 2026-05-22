@@ -107,7 +107,7 @@ export async function fetchCharacterParse(
   const data = await gql<{
     characterData: { character: { zoneRankings: unknown } | null } | null;
   }>(
-    `query($name:String!,$server:String!,$region:String!,$zone:Int!,$metric:CharacterRankingMetricType!){
+    `query($name:String!,$server:String!,$region:String!,$zone:Int!,$metric:CharacterPageRankingMetricType!){
        characterData{ character(name:$name, serverSlug:$server, serverRegion:$region){
          zoneRankings(zoneID:$zone, metric: $metric)
        } }
