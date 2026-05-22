@@ -79,28 +79,35 @@ export async function resolveZoneId(): Promise<number> {
   return cachedZoneId;
 }
 
-/** Diagnostic dump for one character: all zones (to verify the SSC/TK id),
- *  the resolved zone, and the raw character + zoneRankings response. */
+/** Diagnostic dump: try several zoneRankings argument combos for one
+ *  character and report which one returns real data. */
 export async function wclDebug(name: string, realm: string, region: string) {
-  const zonesData = await gql<{ worldData: { zones: Array<{ id: number; name: string }> } }>(
-    `query { worldData { zones { id name } } }`, {},
-  );
+  const server = serverSlug(realm);
   const zoneId = await resolveZoneId();
-  const charData = await gql<{ characterData: { character: unknown } | null }>(
-    `query($name:String!,$server:String!,$region:String!,$zone:Int!){
-       characterData{ character(name:$name, serverSlug:$server, serverRegion:$region){
-         id name
-         zoneRankings(zoneID:$zone, metric: dps)
-       } }
-     }`,
-    { name, server: serverSlug(realm), region, zone: zoneId },
-  );
-  return {
-    base: BASE,
-    queried: { name, serverSlug: serverSlug(realm), serverRegion: region, zoneId },
-    zones: zonesData.worldData?.zones ?? [],
-    character: charData.characterData?.character ?? null,
-  };
+
+  async function tryArgs(label: string, args: string) {
+    try {
+      const data = await gql<{ characterData: { character: { zoneRankings: unknown } | null } | null }>(
+        `query($name:String!,$server:String!,$region:String!){
+           characterData{ character(name:$name, serverSlug:$server, serverRegion:$region){
+             zoneRankings(${args})
+           } }
+         }`,
+        { name, server, region },
+      );
+      return { label, args, result: data.characterData?.character?.zoneRankings ?? null };
+    } catch (e) {
+      return { label, args, error: (e as Error).message };
+    }
+  }
+
+  const attempts = [
+    await tryArgs("zone+dps", `zoneID: ${zoneId}, metric: dps`),
+    await tryArgs("zone only", `zoneID: ${zoneId}`),
+    await tryArgs("zone+partition-1", `zoneID: ${zoneId}, partition: -1`),
+    await tryArgs("default zone", ``),
+  ];
+  return { base: BASE, queried: { name, server, region, zoneId }, attempts };
 }
 
 export type CharacterParse = {
