@@ -79,6 +79,30 @@ export async function resolveZoneId(): Promise<number> {
   return cachedZoneId;
 }
 
+/** Diagnostic dump for one character: all zones (to verify the SSC/TK id),
+ *  the resolved zone, and the raw character + zoneRankings response. */
+export async function wclDebug(name: string, realm: string, region: string) {
+  const zonesData = await gql<{ worldData: { zones: Array<{ id: number; name: string }> } }>(
+    `query { worldData { zones { id name } } }`, {},
+  );
+  const zoneId = await resolveZoneId();
+  const charData = await gql<{ characterData: { character: unknown } | null }>(
+    `query($name:String!,$server:String!,$region:String!,$zone:Int!){
+       characterData{ character(name:$name, serverSlug:$server, serverRegion:$region){
+         id name
+         zoneRankings(zoneID:$zone, metric: dps)
+       } }
+     }`,
+    { name, server: serverSlug(realm), region, zone: zoneId },
+  );
+  return {
+    base: BASE,
+    queried: { name, serverSlug: serverSlug(realm), serverRegion: region, zoneId },
+    zones: zonesData.worldData?.zones ?? [],
+    character: charData.characterData?.character ?? null,
+  };
+}
+
 export type CharacterParse = {
   bestPerfAvg: number | null;
   medianPerfAvg: number | null;
