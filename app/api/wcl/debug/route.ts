@@ -11,11 +11,10 @@ export async function GET(req: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!wclConfigured()) return NextResponse.json({ error: "WCL not configured" }, { status: 503 });
   const url = new URL(req.url);
-  const name = url.searchParams.get("name") || "Koco";
-  const realm = url.searchParams.get("realm") || "Nightslayer";
-  const region = url.searchParams.get("region") || "US";
+  const charId = Number(url.searchParams.get("id")) || 91183395; // Koco
+  const zoneId = Number(url.searchParams.get("zone")) || 1010;   // SSC / TK
   try {
-    return NextResponse.json(await wclDebug(name, realm, region));
+    return NextResponse.json(await wclDebug(charId, zoneId));
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }

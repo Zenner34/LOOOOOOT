@@ -84,40 +84,31 @@ export async function resolveZoneId(): Promise<number> {
   return cachedZoneId;
 }
 
-/** Diagnostic dump: resolve server 5213 → slug/region, match the character,
- *  and try SSC/TK rankings. */
-export async function wclDebug(name: string, _realm: string, _region: string) {
-  const server = await resolveServer();
-
-  const byName = await gql<{ characterData: { character: { id: number; name: string; server?: { slug?: string; name?: string; region?: { slug?: string } } } | null } | null }>(
-    `query($name:String!,$server:String!,$region:String!){
-       characterData{ character(name:$name, serverSlug:$server, serverRegion:$region){
-         id name server { slug name region { slug } }
-       } }
-     }`,
-    { name, server: server.slug, region: server.region },
-  );
-  const char = byName.characterData?.character ?? null;
-
-  async function tryArgs(label: string, args: string) {
+/** Methodical diagnostic: query the character BY ID (no lookup variance),
+ *  vary one argument at a time (no difficulty — TBC has none), and dump the
+ *  full raw result for each. charId/zoneId overridable via the route. */
+export async function wclDebug(charId: number, zoneId: number) {
+  async function probe(label: string, field: "zoneRankings" | "encounterRankings", args: string) {
     try {
-      const r = await gql<{ characterData: { character: { zoneRankings: unknown } | null } | null }>(
-        `query($name:String!,$server:String!,$region:String!){
-           characterData{ character(name:$name, serverSlug:$server, serverRegion:$region){ zoneRankings(${args}) } }
-         }`,
-        { name, server: server.slug, region: server.region },
+      const r = await gql<{ characterData: { character: Record<string, unknown> | null } | null }>(
+        `query{ characterData{ character(id: ${charId}){ id name ${field}(${args}) } } }`, {},
       );
-      return { label, args, result: r.characterData?.character?.zoneRankings ?? null };
+      const char = r.characterData?.character ?? null;
+      return { label, field, args, character: char ? { id: char.id, name: char.name } : null, result: char?.[field] ?? null };
     } catch (e) {
-      return { label, args, error: (e as Error).message };
+      return { label, field, args, error: (e as Error).message };
     }
   }
 
-  const attempts = char
-    ? [await tryArgs("1010+diff3+dps", "zoneID: 1010, difficulty: 3, metric: dps")]
-    : [];
-
-  return { base: BASE, serverId: SERVER_ID, resolvedServer: server, matchedCharacter: char, attempts };
+  const tests = [
+    await probe("A zone min",        "zoneRankings",      `zoneID: ${zoneId}`),
+    await probe("B zone+dps",        "zoneRankings",      `zoneID: ${zoneId}, metric: dps`),
+    await probe("C zone+P2",         "zoneRankings",      `zoneID: ${zoneId}, partition: 2`),
+    await probe("D zone+P2+dps",     "zoneRankings",      `zoneID: ${zoneId}, partition: 2, metric: dps`),
+    await probe("E encounter min",   "encounterRankings", `encounterID: 623`),
+    await probe("F encounter+dps",   "encounterRankings", `encounterID: 623, metric: dps`),
+  ];
+  return { base: BASE, charId, zoneId, tests };
 }
 
 let cachedServer: { slug: string; region: string } | null = null;
@@ -165,7 +156,7 @@ export async function fetchCharacterParse(
   }>(
     `query($name:String!,$server:String!,$region:String!,$zone:Int!,$metric:CharacterPageRankingMetricType!){
        characterData{ character(name:$name, serverSlug:$server, serverRegion:$region){
-         zoneRankings(zoneID:$zone, difficulty: 3, metric: $metric)
+         zoneRankings(zoneID:$zone, metric: $metric)
        } }
      }`,
     { name, server: slug, region, zone: zoneId, metric },
