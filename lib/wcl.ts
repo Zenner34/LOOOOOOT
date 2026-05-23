@@ -71,15 +71,15 @@ function bestPerfFromParses(json: unknown): { bestPerfAvg: number; medianPerfAvg
 
 /**
  * Fetch a character's SSC/TK Best Perf. Avg from the v1 API.
- * `compare: rankings` + `bracket: 0` matches the WCL character-page figure
- * (finalized, bracket-relative) rather than live estimated parses.
+ * `timeframe: historical` matches the WCL character page (percentiles locked
+ * at kill time) rather than the lower live "today" percentiles.
  */
 export async function fetchCharacterParseV1(
   name: string,
   metric: "dps" | "hps" = "dps",
 ): Promise<CharacterParse | null> {
   const { status, json } = await v1Get(`/parses/character/${encodeURIComponent(name)}/${V1_SERVER}/${V1_REGION}`,
-    { metric, zone: V1_ZONE, compare: "rankings", bracket: 0 });
+    { metric, zone: V1_ZONE, timeframe: "historical" });
   if (status !== 200) return null;
   const computed = bestPerfFromParses(json);
   if (!computed) return null;
