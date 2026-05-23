@@ -101,10 +101,11 @@ export async function wclDebugV1(name: string) {
     base: BASE, v1Zone: V1_ZONE, server: `${V1_SERVER}/${V1_REGION}`,
     combos: [
       await combo("default", {}),
-      await combo("compare=rankings", { compare: "rankings" }),
-      await combo("compare=rankings,bracket=0", { compare: "rankings", bracket: 0 }),
-      await combo("partition=2", { partition: 2 }),
-      await combo("partition=2,compare=rankings", { partition: 2, compare: "rankings" }),
+      await combo("bracket=1", { bracket: 1 }),
+      await combo("bracket=2", { bracket: 2 }),
+      await combo("timeframe=historical", { timeframe: "historical" }),
+      await combo("bracket=1,timeframe=historical", { bracket: 1, timeframe: "historical" }),
+      await combo("compare=rankings,bracket=1", { compare: "rankings", bracket: 1 }),
     ],
   };
 }
