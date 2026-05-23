@@ -2,31 +2,25 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { isAdmin } from "@/lib/auth";
-import {
-  wclConfigured,
-  resolveZoneId,
-  fetchCharacterParse,
-  metricForRole,
-} from "@/lib/wcl";
+import { v1Configured, fetchCharacterParseV1, metricForRole } from "@/lib/wcl";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300; // long-running batch refresh
 
 async function refresh() {
-  if (!wclConfigured()) {
-    return NextResponse.json({ error: "WCL_CLIENT_ID / WCL_CLIENT_SECRET not set" }, { status: 503 });
+  if (!v1Configured()) {
+    return NextResponse.json({ error: "WCL_V1_KEY not set" }, { status: 503 });
   }
-  const zoneId = await resolveZoneId();
   const characters = await prisma.character.findMany({
     where: { active: true },
-    select: { id: true, name: true, realm: true, region: true, role: true },
+    select: { id: true, name: true, role: true },
   });
 
   let updated = 0, noParses = 0, failed = 0;
   const errors: string[] = [];
   for (const c of characters) {
     try {
-      const parse = await fetchCharacterParse(c.name, zoneId, metricForRole(c.role));
+      const parse = await fetchCharacterParseV1(c.name, metricForRole(c.role));
       await prisma.character.update({
         where: { id: c.id },
         data: {
@@ -42,9 +36,9 @@ async function refresh() {
       failed++;
       errors.push(`${c.name}: ${(e as Error).message}`);
     }
-    await new Promise(r => setTimeout(r, 150)); // gentle on the rate limit
+    await new Promise(r => setTimeout(r, 120));
   }
-  return NextResponse.json({ zoneId, total: characters.length, updated, noParses, failed, errors: errors.slice(0, 20) });
+  return NextResponse.json({ total: characters.length, updated, noParses, failed, errors: errors.slice(0, 20) });
 }
 
 // Admin button.

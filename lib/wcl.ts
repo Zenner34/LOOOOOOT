@@ -24,6 +24,9 @@ export function wclConfigured(): boolean {
 
 /* ── v1 REST API (used for Fresh/Classic parses; v2 rejects these zones) ── */
 const V1_KEY = process.env.WCL_V1_KEY || "";
+const V1_ZONE = Number(process.env.WCL_V1_ZONE_ID) || 1056; // SSC / TK (per-boss)
+const V1_SERVER = process.env.WCL_SERVER_SLUG || "nightslayer";
+const V1_REGION = process.env.WCL_REGION || "US";
 export function v1Configured(): boolean {
   return !!V1_KEY;
 }
@@ -34,6 +37,48 @@ async function v1Get(path: string, params: Record<string, string | number> = {})
   let json: unknown;
   try { json = JSON.parse(text); } catch { json = text.slice(0, 500); }
   return { status: res.status, json };
+}
+
+const round1 = (n: number) => Math.round(n * 10) / 10;
+
+type V1Parse = { encounterID: number; encounterName: string; percentile: number };
+
+/**
+ * Fetch a character's SSC/TK parses from the v1 API and compute the
+ * "Best Perf. Avg" = mean of each boss's best percentile. Also returns the
+ * median-per-boss average and total kills logged. metric: dps | hps.
+ * Returns null when the character has no parses.
+ */
+export async function fetchCharacterParseV1(
+  name: string,
+  metric: "dps" | "hps" = "dps",
+): Promise<CharacterParse | null> {
+  const { status, json } = await v1Get(`/parses/character/${encodeURIComponent(name)}/${V1_SERVER}/${V1_REGION}`, { metric, zone: V1_ZONE });
+  if (status !== 200 || !Array.isArray(json) || json.length === 0) return null;
+  const parses = (json as V1Parse[]).filter(p => typeof p?.percentile === "number");
+  if (parses.length === 0) return null;
+
+  const byBoss = new Map<number, { boss: string; pcts: number[] }>();
+  for (const p of parses) {
+    const e = byBoss.get(p.encounterID) ?? { boss: p.encounterName, pcts: [] };
+    e.pcts.push(p.percentile);
+    byBoss.set(p.encounterID, e);
+  }
+  const median = (a: number[]) => {
+    const s = [...a].sort((x, y) => x - y);
+    const m = Math.floor(s.length / 2);
+    return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+  };
+  const bests = [...byBoss.values()].map(e => Math.max(...e.pcts));
+  const meds = [...byBoss.values()].map(e => median(e.pcts));
+
+  return {
+    bestPerfAvg: round1(bests.reduce((s, n) => s + n, 0) / bests.length),
+    medianPerfAvg: round1(meds.reduce((s, n) => s + n, 0) / meds.length),
+    killsLogged: parses.length,
+    byBoss: [...byBoss.values()].map(e => ({ boss: e.boss, best: round1(Math.max(...e.pcts)), kills: e.pcts.length })),
+    raw: null,
+  };
 }
 
 /** Diagnostic: dump /v1/zones + raw /v1/parses/character for one character,
