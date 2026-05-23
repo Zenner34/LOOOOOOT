@@ -31,7 +31,8 @@ export function ParseBadge({
       </span>
     );
   }
-  const color = wclColor(best);
+  const shown = Math.round(best);
+  const color = wclColor(shown);
   const title = [
     `Best Perf. Avg ${best.toFixed(1)}`,
     median != null ? `Median ${median.toFixed(1)}` : null,
@@ -46,7 +47,7 @@ export function ParseBadge({
       style={{ color, borderColor: `${color}66` }}
       className="inline-flex items-center rounded px-1 text-[10px] font-bold tabular-nums border bg-black/30"
     >
-      {Math.round(best)}
+      {shown}
     </span>
   );
 }
