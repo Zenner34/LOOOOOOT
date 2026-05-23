@@ -725,7 +725,6 @@ export default function OverviewClient({
                             {c.isMain && <span className="text-gold-300 text-[9px] leading-none">★</span>}
                             <SpecIcon spec={c.spec} size={14} />
                             <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</span>
-                            <span className="text-neutral-500">· {c.spec}</span>
                             <ParseBadge best={c.wclBestPerfAvg} median={c.wclMedianPerfAvg} kills={c.wclKillsLogged} updatedAt={c.wclUpdatedAt} />
                           </span>
                         ))}
