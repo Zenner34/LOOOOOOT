@@ -43,21 +43,11 @@ const round1 = (n: number) => Math.round(n * 10) / 10;
 
 type V1Parse = { encounterID: number; encounterName: string; percentile: number };
 
-/**
- * Fetch a character's SSC/TK parses from the v1 API and compute the
- * "Best Perf. Avg" = mean of each boss's best percentile. Also returns the
- * median-per-boss average and total kills logged. metric: dps | hps.
- * Returns null when the character has no parses.
- */
-export async function fetchCharacterParseV1(
-  name: string,
-  metric: "dps" | "hps" = "dps",
-): Promise<CharacterParse | null> {
-  const { status, json } = await v1Get(`/parses/character/${encodeURIComponent(name)}/${V1_SERVER}/${V1_REGION}`, { metric, zone: V1_ZONE });
-  if (status !== 200 || !Array.isArray(json) || json.length === 0) return null;
+/** Average of each boss's best percentile, from a v1 parses array. */
+function bestPerfFromParses(json: unknown): { bestPerfAvg: number; medianPerfAvg: number; killsLogged: number; byBoss: Array<{ boss: string; best: number; kills: number }> } | null {
+  if (!Array.isArray(json)) return null;
   const parses = (json as V1Parse[]).filter(p => typeof p?.percentile === "number");
   if (parses.length === 0) return null;
-
   const byBoss = new Map<number, { boss: string; pcts: number[] }>();
   for (const p of parses) {
     const e = byBoss.get(p.encounterID) ?? { boss: p.encounterName, pcts: [] };
@@ -71,25 +61,52 @@ export async function fetchCharacterParseV1(
   };
   const bests = [...byBoss.values()].map(e => Math.max(...e.pcts));
   const meds = [...byBoss.values()].map(e => median(e.pcts));
-
   return {
     bestPerfAvg: round1(bests.reduce((s, n) => s + n, 0) / bests.length),
     medianPerfAvg: round1(meds.reduce((s, n) => s + n, 0) / meds.length),
     killsLogged: parses.length,
     byBoss: [...byBoss.values()].map(e => ({ boss: e.boss, best: round1(Math.max(...e.pcts)), kills: e.pcts.length })),
-    raw: null,
   };
 }
 
-/** Diagnostic: dump /v1/zones + raw /v1/parses/character for one character,
- *  trying both server-name formats, so we can read the real v1 shape. */
+/**
+ * Fetch a character's SSC/TK Best Perf. Avg from the v1 API.
+ * `compare: rankings` + `bracket: 0` matches the WCL character-page figure
+ * (finalized, bracket-relative) rather than live estimated parses.
+ */
+export async function fetchCharacterParseV1(
+  name: string,
+  metric: "dps" | "hps" = "dps",
+): Promise<CharacterParse | null> {
+  const { status, json } = await v1Get(`/parses/character/${encodeURIComponent(name)}/${V1_SERVER}/${V1_REGION}`,
+    { metric, zone: V1_ZONE, compare: "rankings", bracket: 0 });
+  if (status !== 200) return null;
+  const computed = bestPerfFromParses(json);
+  if (!computed) return null;
+  return { ...computed, raw: null };
+}
+
+/** Diagnostic: try several v1 /parses param combos (all SSC/TK, zone 1056)
+ *  and report the computed Best Perf. Avg for each, so we can match the
+ *  number shown on the WCL character page. */
 export async function wclDebugV1(name: string) {
   if (!v1Configured()) return { error: "WCL_V1_KEY not set" };
-  const zones = await v1Get(`/zones`);
   const enc = encodeURIComponent(name);
-  const parsesSlug = await v1Get(`/parses/character/${enc}/nightslayer/US`, { metric: "dps" });
-  const parsesName = await v1Get(`/parses/character/${enc}/Nightslayer/US`, { metric: "dps" });
-  return { base: BASE, zones, parsesSlug, parsesName };
+  async function combo(label: string, params: Record<string, string | number>) {
+    const { status, json } = await v1Get(`/parses/character/${enc}/${V1_SERVER}/${V1_REGION}`, { metric: "dps", zone: V1_ZONE, ...params });
+    const c = bestPerfFromParses(json);
+    return { label, params, status, count: Array.isArray(json) ? json.length : null, bestPerfAvg: c?.bestPerfAvg ?? null, byBoss: c?.byBoss ?? null };
+  }
+  return {
+    base: BASE, v1Zone: V1_ZONE, server: `${V1_SERVER}/${V1_REGION}`,
+    combos: [
+      await combo("default", {}),
+      await combo("compare=rankings", { compare: "rankings" }),
+      await combo("compare=rankings,bracket=0", { compare: "rankings", bracket: 0 }),
+      await combo("partition=2", { partition: 2 }),
+      await combo("partition=2,compare=rankings", { partition: 2, compare: "rankings" }),
+    ],
+  };
 }
 
 async function getToken(): Promise<string> {
