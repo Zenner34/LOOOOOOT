@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CLASS_COLOR, SPECS } from "@/lib/specs";
@@ -9,7 +9,7 @@ import { SpecIcon } from "@/app/components/SpecIcon";
 import { Select } from "@/app/components/Select";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { PageHeader } from "@/app/components/ui/PageHeader";
-import { Shield } from "@/app/components/ui/Icon";
+import { Shield, Pencil } from "@/app/components/ui/Icon";
 
 type Character = {
   id: number;
@@ -182,7 +182,11 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
               <span className="inline-flex items-center gap-2 min-w-0 flex-1">
                 <SpecIcon spec={c.spec} size={22} />
                 <span className="min-w-0">
-                  <div className="font-semibold truncate" style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</div>
+                  {admin ? (
+                    <NameEditor c={c} onSave={n => patch(c.id, { name: n })} />
+                  ) : (
+                    <div className="font-semibold truncate" style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</div>
+                  )}
                   <div className="text-xs text-neutral-400 truncate">{c.spec}</div>
                 </span>
               </span>
@@ -284,7 +288,11 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
                 <td className="font-medium">
                   <span className="inline-flex items-center gap-2">
                     <SpecIcon spec={c.spec} size={20} />
-                    <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</span>
+                    {admin ? (
+                      <NameEditor c={c} onSave={n => patch(c.id, { name: n })} />
+                    ) : (
+                      <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>{c.name}</span>
+                    )}
                   </span>
                 </td>
                 <td className="text-neutral-300 text-sm">
@@ -355,6 +363,48 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
         </table>
       </div>
     </div>
+  );
+}
+
+// Inline rename. Saving PATCHes the same character row, so loot awards
+// (which reference the character id) stay attached — no detach/re-add.
+function NameEditor({ c, onSave }: { c: Character; onSave: (name: string) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(c.name);
+  useEffect(() => { if (!editing) setVal(c.name); }, [c.name, editing]);
+
+  if (editing) {
+    const commit = () => {
+      const next = val.trim();
+      setEditing(false);
+      if (next && next !== c.name) onSave(next);
+      else setVal(c.name);
+    };
+    return (
+      <input
+        autoFocus
+        value={val}
+        onChange={e => setVal(e.target.value)}
+        onBlur={commit}
+        onKeyDown={e => {
+          if (e.key === "Enter") { e.preventDefault(); commit(); }
+          else if (e.key === "Escape") { setVal(c.name); setEditing(false); }
+        }}
+        className="input !h-7 !py-0 w-40 text-sm"
+        aria-label="Character name"
+      />
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => setEditing(true)}
+      className="group/name inline-flex items-center gap-1.5 hover:text-vermillion-200 transition"
+      title="Rename character"
+    >
+      <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }} className="font-medium">{c.name}</span>
+      <Pencil size={11} className="text-neutral-500 opacity-0 group-hover/name:opacity-100 transition" aria-hidden />
+    </button>
   );
 }
 
