@@ -21,7 +21,7 @@ type Item = { id: number; name: string; slot: string | null; itemLevel: number |
 type Boss = { id: number; name: string; items: Item[] };
 type Raid = { id: number; name: string; shortName: string; bosses: Boss[] };
 type Phase = { id: number; name: string; raids: Raid[] };
-type Character = { id: number; name: string; class: string; spec: string; role: string };
+type Character = { id: number; name: string; class: string; spec: string; role: string; player?: { displayName: string } | null };
 type Member = { characterId: number; memberRole: string; character: Character };
 type RaidNight = { id: number; date: string | Date; rosterId: number };
 type Roster = { id: number; name: string; members: Member[]; raidNights: RaidNight[] };
@@ -528,7 +528,7 @@ function ItemCard({ item, roster, onAssign, subtitle }: { item: Item; roster?: R
           triggerClassName="w-full sm:min-w-[260px] sm:flex-1"
           options={ranked.map(({ m }) => ({
             value: String(m.characterId),
-            searchKey: `${m.character.name} ${m.character.spec} ${m.character.class}`,
+            searchKey: `${m.character.name} ${m.character.spec} ${m.character.class} ${m.character.player?.displayName ?? ""}`,
             label: (
               <span className="inline-flex items-center gap-2 w-full">
                 <SpecIcon spec={m.character.spec} size={14} />
@@ -565,6 +565,20 @@ function RecipientCombobox({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const wrapRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Focus the input without the browser scrolling it into view (which would
+  // yank the page when the combobox sits low in the list).
+  useEffect(() => {
+    if (open) inputRef.current?.focus({ preventScroll: true });
+  }, [open]);
+
+  // cmdk keeps the list's scroll position between filters, so after typing the
+  // top matches can sit above the fold. Snap back to the top on every query.
+  useEffect(() => {
+    if (listRef.current) listRef.current.scrollTop = 0;
+  }, [search]);
 
   useEffect(() => {
     if (!open) return;
@@ -610,13 +624,13 @@ function RecipientCombobox({
         <div className="absolute z-40 mt-1 w-full min-w-[260px] rounded-lg border border-white/10 bg-[var(--surface)] shadow-2xl overflow-hidden">
           <Command shouldFilter={true} loop>
             <Command.Input
-              autoFocus
+              ref={inputRef}
               value={search}
               onValueChange={setSearch}
-              placeholder="Search by name, class, or spec…"
+              placeholder="Search by player, name, class, or spec…"
               className="w-full bg-transparent border-b border-white/10 px-3 py-2 text-sm placeholder:text-neutral-500 outline-none"
             />
-            <Command.List className="max-h-60 overflow-y-auto p-1">
+            <Command.List ref={listRef} className="max-h-60 overflow-y-auto p-1">
               <Command.Empty className="px-3 py-4 text-center text-xs text-neutral-500">
                 No matches.
               </Command.Empty>

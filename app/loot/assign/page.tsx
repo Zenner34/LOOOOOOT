@@ -44,7 +44,7 @@ export default async function AssignPage({
     prisma.roster.findMany({
       orderBy: { createdAt: "asc" },
       include: {
-        members: { include: { character: true }, orderBy: { character: { name: "asc" } } },
+        members: { include: { character: { include: { player: true } } }, orderBy: { character: { name: "asc" } } },
         raidNights: { orderBy: { date: "desc" }, take: 25 },
       },
     }),
