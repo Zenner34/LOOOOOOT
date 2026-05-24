@@ -42,7 +42,14 @@ export function CharacterPicker({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
+
+  // cmdk keeps the list's scroll position between filters, so after typing the
+  // top matches can sit above the fold. Snap back to the top on every query.
+  useEffect(() => {
+    if (listRef.current) listRef.current.scrollTop = 0;
+  }, [query]);
 
   // Manually focus the input *without* the browser's default scroll-into-view
   // behaviour. autoFocus on the Command.Input would otherwise yank the page
@@ -113,7 +120,7 @@ export function CharacterPicker({
             className="input pl-7 text-xs h-8 w-full"
           />
         </div>
-        <Command.List className="flex-1 overflow-y-auto p-1">
+        <Command.List ref={listRef} className="flex-1 overflow-y-auto p-1">
           {eligible.length === 0 && other.length === 0 && (
             <Command.Empty className="px-2 py-3 text-center text-xs text-neutral-500">
               No matches
