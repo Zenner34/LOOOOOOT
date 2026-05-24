@@ -57,6 +57,7 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
   const [spec, setSpec] = useState(SPECS[0].key);
   const [busy, setBusy] = useState(false);
   const [search, setSearch] = useState("");
+  const [showInactive, setShowInactive] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
@@ -70,6 +71,7 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
     let rows = q
       ? chars.filter(c => c.name.toLowerCase().includes(q) || c.class.toLowerCase().includes(q) || c.spec.toLowerCase().includes(q))
       : chars;
+    if (!showInactive) rows = rows.filter(c => c.active);
     rows = [...rows].sort((a, b) => {
       const dir = sortDir === "asc" ? 1 : -1;
       switch (sortKey) {
@@ -81,7 +83,9 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
       }
     });
     return rows;
-  }, [chars, search, sortKey, sortDir]);
+  }, [chars, search, showInactive, sortKey, sortDir]);
+
+  const inactiveCount = useMemo(() => chars.filter(c => !c.active).length, [chars]);
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
@@ -172,6 +176,15 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
+        <label className="inline-flex items-center gap-2 text-sm text-neutral-400 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={showInactive}
+            onChange={e => setShowInactive(e.target.checked)}
+            className="accent-vermillion-500 w-4 h-4"
+          />
+          Show inactive{inactiveCount > 0 && <span className="text-neutral-500">({inactiveCount})</span>}
+        </label>
       </div>
 
       {/* Mobile: card list */}

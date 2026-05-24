@@ -47,6 +47,7 @@ export default function PlayersClient({
   const [discord, setDiscord] = useState("");
   const [busy, setBusy] = useState(false);
   const [query, setQuery] = useState("");
+  const [showInactive, setShowInactive] = useState(false);
   const [sort, setSort] = useState<Sort>("activeFirst");
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -69,8 +70,11 @@ export default function PlayersClient({
     [query],
   );
 
+  const inactiveCount = useMemo(() => players.filter(p => !p.active).length, [players]);
+
   const visiblePlayers = useMemo(() => {
     let rows = players;
+    if (!showInactive) rows = rows.filter(p => p.active);
     if (queryTokens.length > 0) {
       rows = rows.filter(p => {
         const hay = [
@@ -91,7 +95,7 @@ export default function PlayersClient({
       return a.displayName.localeCompare(b.displayName);
     });
     return out;
-  }, [players, queryTokens, sort]);
+  }, [players, queryTokens, showInactive, sort]);
 
   const filteredOrphans = useMemo(() => orphans, [orphans]);
 
@@ -162,6 +166,19 @@ export default function PlayersClient({
       ...p,
       characters: p.characters.map(c => ({ ...c, isMain: c.id === characterId })),
     })));
+  }
+
+  async function setActive(id: number, active: boolean) {
+    const r = await fetch(`/api/players/${id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ active }),
+    });
+    if (!r.ok) {
+      toast.error("Update failed.");
+      return;
+    }
+    setPlayers(players.map(p => (p.id === id ? { ...p, active } : p)));
   }
 
   async function removePlayer(id: number) {
@@ -242,6 +259,15 @@ export default function PlayersClient({
             <kbd className="hidden sm:inline-flex absolute right-2 top-1/2 -translate-y-1/2 items-center justify-center min-w-[20px] h-5 px-1.5 rounded border border-white/10 bg-white/5 text-[10px] font-mono text-neutral-500 pointer-events-none">/</kbd>
           )}
         </div>
+        <label className="inline-flex items-center gap-2 text-sm text-neutral-400 cursor-pointer select-none whitespace-nowrap">
+          <input
+            type="checkbox"
+            checked={showInactive}
+            onChange={e => setShowInactive(e.target.checked)}
+            className="accent-vermillion-500 w-4 h-4"
+          />
+          Show inactive{inactiveCount > 0 && <span className="text-neutral-500">({inactiveCount})</span>}
+        </label>
         <div className="sm:w-56">
           <Select
             value={sort}
@@ -267,6 +293,7 @@ export default function PlayersClient({
             onUnbind={unbind}
             onSetMain={setMain}
             onRemove={removePlayer}
+            onSetActive={setActive}
           />
         ))}
 
@@ -316,7 +343,7 @@ export default function PlayersClient({
 }
 
 const PlayerCard = memo(function PlayerCard({
-  player, orphans, admin, onBind, onUnbind, onSetMain, onRemove,
+  player, orphans, admin, onBind, onUnbind, onSetMain, onRemove, onSetActive,
 }: {
   player: Player;
   orphans: Char[];
@@ -325,27 +352,44 @@ const PlayerCard = memo(function PlayerCard({
   onUnbind: (playerId: number, characterId: number) => Promise<void>;
   onSetMain: (playerId: number, characterId: number) => Promise<void>;
   onRemove: (id: number) => Promise<void>;
+  onSetActive: (id: number, active: boolean) => Promise<void>;
 }) {
   const [adding, setAdding] = useState(false);
   const mainChar = player.characters.find(c => c.isMain) ?? player.characters[0];
 
   return (
-    <div className="panel p-4">
+    <div className={`panel p-4 ${player.active ? "" : "opacity-60"}`}>
       <div className="flex items-baseline justify-between flex-wrap gap-2">
         <div className="flex items-center gap-3">
           {mainChar && <ClassIcon cls={mainChar.class} size={20} />}
           <Link href={`/players/${player.id}`} className="text-lg font-semibold text-vermillion-200 hover:text-vermillion-100 transition">
             {player.displayName}
           </Link>
+          {!player.active && (
+            <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/5 text-neutral-400">
+              inactive
+            </span>
+          )}
           {player.discordHandle && <span className="text-xs text-neutral-500">{player.discordHandle}</span>}
         </div>
         {admin && (
-          <button
-            onClick={() => onRemove(player.id)}
-            className="btn-ghost btn-xs text-neutral-500 hover:text-red-400"
-          >
-            Remove
-          </button>
+          <div className="flex items-center gap-3">
+            <label className="inline-flex items-center gap-1.5 text-xs text-neutral-400 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={player.active}
+                onChange={e => onSetActive(player.id, e.target.checked)}
+                className="accent-vermillion-500 w-4 h-4"
+              />
+              active
+            </label>
+            <button
+              onClick={() => onRemove(player.id)}
+              className="btn-ghost btn-xs text-neutral-500 hover:text-red-400"
+            >
+              Remove
+            </button>
+          </div>
         )}
       </div>
 
