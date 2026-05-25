@@ -56,7 +56,7 @@ export async function GET() {
       sheetCount: teamSheets.length,
       sheets: teamSheets.map(s => ({
         sheetId: s.id,
-        weekOf: s.weekOf.toISOString().slice(0, 10),
+        weekOf: s.weekOf ? s.weekOf.toISOString().slice(0, 10) : null,
         updatedAt: s.updatedAt.toISOString().slice(0, 16).replace("T", " "),
         ...summarize(s.data),
       })),

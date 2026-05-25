@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { emptyAssignmentData, mondayOfWeek } from "@/lib/assignments";
+import { emptyAssignmentData } from "@/lib/assignments";
 
 export const dynamic = "force-dynamic";
 
@@ -32,16 +32,15 @@ export async function POST(req: Request) {
     throw e;
   }
 
-  // Best-effort seed of an AssignmentSheet for the current week. If
-  // this fails the team is still usable — the editor lazy-creates one
-  // from emptyAssignmentData() on next open. Log so we can diagnose,
-  // but don't fail the request and confuse the admin with a "Couldn't
-  // create team" toast when the team is right there.
+  // Best-effort seed of the team's AssignmentSheet. If this fails the
+  // team is still usable — the editor lazy-creates one from
+  // emptyAssignmentData() on next save. Log so we can diagnose, but don't
+  // fail the request and confuse the admin with a "Couldn't create team"
+  // toast when the team is right there.
   try {
     await prisma.assignmentSheet.create({
       data: {
         teamId: team.id,
-        weekOf: mondayOfWeek(),
         data: emptyAssignmentData() as any,
       },
     });

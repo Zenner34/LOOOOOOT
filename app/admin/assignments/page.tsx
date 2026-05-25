@@ -2,8 +2,6 @@ import { prisma } from "@/lib/db";
 import { isAdmin } from "@/lib/auth";
 import {
   emptyAssignmentData,
-  mondayOfWeek,
-  weekOfLabel,
   type AssignmentData,
 } from "@/lib/assignments";
 import AssignmentsClient from "./AssignmentsClient";
@@ -13,7 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function AssignmentsPage({
   searchParams,
 }: {
-  searchParams: { team?: string; week?: string };
+  searchParams: { team?: string };
 }) {
   // Page is viewable by anyone — admins get the editor, raiders are
   // forced into the read-only Raider view (no toggle, no edit
@@ -21,10 +19,6 @@ export default async function AssignmentsPage({
   // so a raider hitting the page can't change anything even if they
   // tried via the network tab.
   const admin = await isAdmin();
-
-  const weekOf = searchParams.week
-    ? mondayOfWeek(new Date(searchParams.week))
-    : mondayOfWeek(new Date());
 
   const [teams, characters, players] = await Promise.all([
     prisma.raidTeam.findMany({ orderBy: [{ active: "desc" }, { createdAt: "asc" }] }),
@@ -42,14 +36,13 @@ export default async function AssignmentsPage({
     teams[0]?.id ||
     null;
 
-  let sheet: { teamId: number; weekOf: string; data: AssignmentData } | null = null;
+  let sheet: { teamId: number; data: AssignmentData } | null = null;
   if (selectedTeamId) {
     const existing = await prisma.assignmentSheet.findUnique({
-      where: { teamId_weekOf: { teamId: selectedTeamId, weekOf } },
+      where: { teamId: selectedTeamId },
     });
     sheet = {
       teamId: selectedTeamId,
-      weekOf: weekOfLabel(weekOf),
       data: (existing?.data as unknown as AssignmentData) ?? emptyAssignmentData(),
     };
   }

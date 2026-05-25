@@ -14,8 +14,6 @@ import {
   pruneAssignmentsToRoster,
   reconcileBossSectionDefs,
   removeDeprecatedBossSections,
-  mondayOfWeek,
-  weekOfLabel,
   rosterCharacterIds,
   type AssignmentData,
 } from "@/lib/assignments";
@@ -43,7 +41,6 @@ type Team = {
 
 type Sheet = {
   teamId: number;
-  weekOf: string;          // YYYY-MM-DD (Monday)
   data: AssignmentData;
 };
 
@@ -109,12 +106,11 @@ export default function AssignmentsClient({
   const charsById = useMemo(() => new Map(characters.map(c => [c.id, c])), [characters]);
   const selectedTeam = teams.find(t => t.id === selectedTeamId) ?? null;
 
-  // Reset local state when the server hands us a different sheet
-  // (team or week change).
+  // Reset local state when the server hands us a different team's sheet.
   useEffect(() => {
     setData(hydrateSheetData(sheet?.data));
     setSavingState("idle");
-  }, [sheet?.teamId, sheet?.weekOf]);
+  }, [sheet?.teamId]);
 
   // Debounced save when `data` changes. ~600ms after the last keystroke /
   // pick / remove, we PUT the whole blob. The UI surfaces a small
@@ -131,7 +127,7 @@ export default function AssignmentsClient({
         const r = await fetch("/api/assignment-sheets", {
           method: "PUT",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ teamId: sheet.teamId, weekOf: sheet.weekOf, data }),
+          body: JSON.stringify({ teamId: sheet.teamId, data }),
         });
         if (!r.ok) throw new Error("save failed");
         setSavingState("saved");
@@ -148,12 +144,6 @@ export default function AssignmentsClient({
   function setTeam(id: number) {
     const sp = new URLSearchParams(searchParams.toString());
     sp.set("team", String(id));
-    router.push(`/admin/assignments?${sp.toString()}`);
-  }
-
-  function setWeek(weekIso: string) {
-    const sp = new URLSearchParams(searchParams.toString());
-    sp.set("week", weekIso);
     router.push(`/admin/assignments?${sp.toString()}`);
   }
 
@@ -208,7 +198,6 @@ export default function AssignmentsClient({
             setData={setData}
             savingState={savingState}
             setTeam={setTeam}
-            setWeek={setWeek}
             teamModal={teamModal}
             setTeamModal={setTeamModal}
             characters={characters}
@@ -234,7 +223,6 @@ function AssignmentsBody({
   setData,
   savingState,
   setTeam,
-  setWeek,
   teamModal,
   setTeamModal,
   characters,
@@ -252,7 +240,6 @@ function AssignmentsBody({
   setData: (d: AssignmentData) => void;
   savingState: "idle" | "saving" | "saved" | "error";
   setTeam: (id: number) => void;
-  setWeek: (iso: string) => void;
   teamModal: null | "create" | { team: Team };
   setTeamModal: (m: null | "create" | { team: Team }) => void;
   characters: AssignableCharacter[];
@@ -330,14 +317,6 @@ function AssignmentsBody({
           <SpotlightPicker
             characters={characters}
             teamRosterIds={teamRosterIds}
-          />
-          <label className="text-neutral-500">Week of</label>
-          <input
-            type="date"
-            value={sheet?.weekOf ?? weekOfLabel(mondayOfWeek())}
-            onChange={e => setWeek(e.target.value)}
-            className="input text-xs min-w-[140px] [color-scheme:dark]"
-            aria-label="Week of"
           />
           <SaveIndicator state={savingState} />
         </div>

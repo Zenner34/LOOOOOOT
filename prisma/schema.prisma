@@ -205,16 +205,14 @@ model RaidTeam {
 //     bosses:    { "hydross": { sections: [{ title, characterIds }, ...] }, ... }
 //   }
 model AssignmentSheet {
-  id        Int      @id @default(autoincrement())
-  teamId    Int
-  weekOf    DateTime
-  data      Json     @default("{}")
+  id        Int       @id @default(autoincrement())
+  teamId    Int       @unique
+  // Legacy week key, kept nullable for history. Each team now has exactly
+  // one persistent sheet; weekOf is no longer used for lookups.
+  weekOf    DateTime?
+  data      Json      @default("{}")
   notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  team      RaidTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
-
-  @@unique([teamId, weekOf])
-  @@index([teamId])
-  @@index([weekOf])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  team      RaidTeam  @relation(fields: [teamId], references: [id], onDelete: Cascade)
 }
