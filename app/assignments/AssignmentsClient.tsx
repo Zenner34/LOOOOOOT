@@ -20,7 +20,7 @@ import {
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { ChevronDown, Inbox, Pencil, Plus, X } from "@/app/components/ui/Icon";
-import { ASSIGNMENT_BOSSES, suggestFillSections, defaultTankAssignments } from "@/lib/assignments";
+import { ASSIGNMENT_BOSSES, suggestFillSections, suggestTankRoleSections, defaultTankAssignments } from "@/lib/assignments";
 import { CharacterChip, EmptySlot, type AssignableCharacter } from "./CharacterChip";
 import { CharacterPicker } from "./CharacterPicker";
 import { BuffsCard } from "./BuffsCard";
@@ -164,7 +164,14 @@ export default function AssignmentsClient({
     if (!sheet || !admin) return;
     const pruned = pruneAssignmentsToRoster(data);
     const next = teamRosterChars.length > 0
-      ? { ...pruned, buffs: suggestFillSections(pruned.buffs, teamRosterChars) }
+      ? {
+          ...pruned,
+          buffs: suggestTankRoleSections(
+            suggestFillSections(pruned.buffs, teamRosterChars),
+            pruned.groups,
+            id => charsById.get(id),
+          ),
+        }
       : pruned;
     if (JSON.stringify(next) !== JSON.stringify(data)) setData(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps

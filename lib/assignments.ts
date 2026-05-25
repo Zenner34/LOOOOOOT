@@ -282,6 +282,11 @@ type BuffTpl = {
 
 const BUFF_TEMPLATE: BuffTpl[] = [
   // ═══ LEFT COLUMN — raid-wide buffs + tank/mana support ════════════════
+  // Tank roles. Auto-filled group-aware (see suggestTankRoleSections), so
+  // marked noAutoFill to keep the generic eligibility filler off them.
+  { title: "Tanks · MT",                        iconSlug: "ability_warrior_defensivestance",       eligibility: { roles: ["tank"] }, fixedSlots: 1, noAutoFill: true },
+  { title: "Tanks · OT",                        iconSlug: "ability_warrior_defensivestance",       eligibility: { roles: ["tank"] }, fixedSlots: 1, noAutoFill: true },
+  { title: "Tanks · Adds",                      iconSlug: "ability_warrior_defensivestance",       eligibility: { roles: ["tank"] }, fixedSlots: 1, noAutoFill: true },
   { title: "Prayer of Fortitude · G1-3",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] }, fixedSlots: 1 },
   { title: "Prayer of Fortitude · G4-5",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] }, fixedSlots: 1 },
   { title: "Gift of the Wild · G1-3",           iconSlug: "spell_nature_regeneration",             eligibility: { classes: ["Druid"] }, fixedSlots: 1 },
@@ -350,6 +355,7 @@ const BUFF_TEMPLATE: BuffTpl[] = [
  */
 export const BUFF_COLUMNS: Record<string, "left" | "middle" | "right"> = {
   // LEFT — raid-wide buffs + tank/mana support
+  "Tanks":                         "left",
   "Prayer of Fortitude":           "left",
   "Gift of the Wild":              "left",
   "Arcane Brilliance":             "left",
@@ -390,6 +396,7 @@ export const BUFF_COLUMNS: Record<string, "left" | "middle" | "right"> = {
  * lose the tooltip.
  */
 export const BUFF_TOOLTIPS: Record<string, string> = {
+  "Tanks":                 "Main tank (Group 1), off-tank (Group 2), and the adds/pally tank. Auto-filled from the group setup.",
   "Prayer of Fortitude":   "Priest raid buff — stamina to a class group.",
   "Arcane Brilliance":     "Mage raid buff — intellect to a class group.",
   "Gift of the Wild":      "Druid raid buff — all stats to a class group.",
@@ -478,10 +485,14 @@ export function mergeMissingBuffBlocks(buffs: AssignSection[]): AssignSection[] 
       title: tpl.title,
       iconSlug: tpl.iconSlug,
       rowIconSlug: tpl.rowIconSlug,
+      rowIconSlugs: tpl.rowIconSlugs,
       eligibility: tpl.eligibility,
       slotEligibility: tpl.slotEligibility,
       fixedSlots: tpl.fixedSlots,
       targetSlots: tpl.targetSlots,
+      noAutoFill: tpl.noAutoFill,
+      expandPerCaster: tpl.expandPerCaster,
+      expandFillTargets: tpl.expandFillTargets,
       characterIds: [],
     });
   }
@@ -1421,6 +1432,41 @@ export function suggestFillSections(sectionsIn: AssignSection[], roster: Eligibl
   }
 
   return sections.map(s => fillAddOns(fillMain(s)));
+}
+
+/**
+ * Group-aware auto-fill for the "Tanks" block (MT / OT / Adds):
+ *   MT   = the tank sitting in Group 1
+ *   OT   = the tank sitting in Group 2
+ *   Adds = the Protection Paladin tank, else the next remaining tank
+ * Only empty rows are filled, so manual overrides survive. The Tanks rows
+ * are noAutoFill, so the generic eligibility filler leaves them to this.
+ */
+export function suggestTankRoleSections(
+  sections: AssignSection[],
+  groups: AssignmentData["groups"],
+  getChar: (id: number) => EligibleChar | undefined,
+): AssignSection[] {
+  const isTank = (id: number) => getChar(id)?.role === "tank";
+  const groupKey = (n: number) => String(n) as keyof AssignmentData["groups"];
+  const groupTank = (n: number) => (groups[groupKey(n)] ?? []).find(isTank) ?? null;
+
+  const mt = groupTank(1);
+  const ot = groupTank(2);
+  const allTanks = (Object.values(groups) as number[][]).flat().filter(isTank);
+  const used = new Set<number>([mt, ot].filter((x): x is number => x != null));
+  const protPally = allTanks.find(id => !used.has(id) && getChar(id)?.spec === "Protection Paladin") ?? null;
+  const otherTank = allTanks.find(id => !used.has(id)) ?? null;
+  const adds = protPally ?? otherTank;
+
+  const pick: Record<string, number | null> = { MT: mt, OT: ot, Adds: adds };
+  return sections.map(s => {
+    if (sectionCategory(s.title) !== "Tanks") return s;
+    if (s.characterIds.length > 0) return s;
+    const scope = s.title.split("·")[1]?.trim() ?? "";
+    const id = pick[scope];
+    return id != null ? { ...s, characterIds: [id] } : s;
+  });
 }
 
 /**

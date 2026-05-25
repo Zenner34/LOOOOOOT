@@ -9,6 +9,7 @@ import {
   defaultBuffs,
   newSectionId,
   suggestFillSections,
+  suggestTankRoleSections,
   type AssignSection,
   type AssignmentData,
 } from "@/lib/assignments";
@@ -71,7 +72,11 @@ export function BuffsCard({
   }
 
   function suggestFills() {
-    const next = suggestFillSections(data.buffs, teamRosterChars);
+    const next = suggestTankRoleSections(
+      suggestFillSections(data.buffs, teamRosterChars),
+      data.groups,
+      id => charsById.get(id),
+    );
     if (JSON.stringify(next) === JSON.stringify(data.buffs)) {
       toast.message("Nothing to suggest — every eligible buff section is already filled.");
       return;
