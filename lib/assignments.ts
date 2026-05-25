@@ -553,24 +553,6 @@ export function matchesEligibility(c: EligibleChar, eligibility?: Eligibility): 
   return classOK && specOK && roleOK;
 }
 
-/**
- * Monday-of-week (UTC) for an arbitrary date. We pin AssignmentSheet
- * rows to Mondays so re-creating "this week's sheet" is deterministic
- * regardless of which day the admin opens the page on.
- */
-export function mondayOfWeek(d: Date = new Date()): Date {
-  const dt = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-  const dow = dt.getUTCDay(); // 0=Sun..6=Sat
-  const diff = (dow + 6) % 7; // distance back to Monday
-  dt.setUTCDate(dt.getUTCDate() - diff);
-  return dt;
-}
-
-export function weekOfLabel(d: Date | string): string {
-  const dt = typeof d === "string" ? new Date(d) : d;
-  return dt.toISOString().slice(0, 10);
-}
-
 /** All character ids currently filling a slot in the team's groups. */
 export function rosterCharacterIds(data: AssignmentData): number[] {
   return ([

@@ -17,7 +17,7 @@ const inter = Inter({
 });
 
 // Display serif for raid-y headings (boss names, raid section titles)
-// on /admin/assignments. Used via .font-display utility in globals.css.
+// on /assignments. Used via .font-display utility in globals.css.
 const cinzel = Cinzel({
   subsets: ["latin"],
   display: "swap",

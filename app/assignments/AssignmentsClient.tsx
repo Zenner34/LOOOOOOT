@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CLASS_COLOR } from "@/lib/specs";
 import {
@@ -34,6 +34,7 @@ import { ViewModeProvider, useViewMode, EditOnly } from "./ViewModeContext";
 type Team = {
   id: number;
   name: string;
+  slug: string;
   color: string;
   active: boolean;
   notes: string | null;
@@ -98,7 +99,6 @@ export default function AssignmentsClient({
   admin: boolean;
 }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   // null = closed; "create" = new-team modal; { team } = editing that team
   const [teamModal, setTeamModal] = useState<null | "create" | { team: Team }>(null);
   const [data, setData] = useState<AssignmentData>(hydrateSheetData(sheet?.data));
@@ -142,9 +142,8 @@ export default function AssignmentsClient({
   }, [data, sheet]);
 
   function setTeam(id: number) {
-    const sp = new URLSearchParams(searchParams.toString());
-    sp.set("team", String(id));
-    router.push(`/admin/assignments?${sp.toString()}`);
+    const team = teams.find(t => t.id === id);
+    if (team) router.push(`/assignments/${team.slug}`);
   }
 
   // Roster character ids drawn from the team's group setup. Picker
@@ -254,10 +253,10 @@ function AssignmentsBody({
       <PageHeader
         eyebrow="Admin"
         title="Assignments"
-        subtitle="Set up to three raid teams a week. Pick characters into groups; role tallies, buff-eligibility, and boss-assignment pickers all derive from the team's roster."
+        subtitle="One persistent sheet per raid team. Pick characters into groups; role tallies, buff-eligibility, and boss-assignment pickers all derive from the team's roster."
       />
 
-      {/* Top bar: team tabs + week picker + create button */}
+      {/* Top bar: team tabs + create button */}
       <div className="flex flex-wrap items-center gap-2">
         {teams.length === 0 ? (
           <span className="text-sm text-neutral-500">No teams yet.</span>
@@ -327,7 +326,7 @@ function AssignmentsBody({
         <EmptyState
           icon={Inbox}
           title="Create a raid team to get started"
-          description="Each team is one weekly raid roster. Up to three per week — Sunday Main, Wednesday Alts, Saturday Pug, whatever you run."
+          description="Each team is a persistent raid roster — Tuesday, Thursday, Sunday, whatever you run."
           variant="compact"
         />
       ) : (
@@ -642,7 +641,7 @@ function TeamModal({
 
   async function deleteTeam() {
     if (!isEdit || deleting) return;
-    if (!confirm(`Delete "${existing!.name}" and every weekly assignment sheet attached to it? This can't be undone.`)) return;
+    if (!confirm(`Delete "${existing!.name}" and its assignment sheet? This can't be undone.`)) return;
     setDeleting(true);
     try {
       const r = await fetch(`/api/raid-teams/${existing!.id}`, { method: "DELETE" });

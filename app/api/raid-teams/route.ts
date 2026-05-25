@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { emptyAssignmentData } from "@/lib/assignments";
+import { slugify } from "@/lib/slug";
 
 export const dynamic = "force-dynamic";
 
@@ -20,10 +21,17 @@ export async function POST(req: Request) {
   const notes = body?.notes ? String(body.notes) : null;
   if (!name) return NextResponse.json({ error: "name required" }, { status: 400 });
 
+  // Slug for the URL. Disambiguate against existing slugs so two teams that
+  // slugify the same (e.g. "Sunday!" / "Sunday") don't collide.
+  const base = slugify(name) || "team";
+  const taken = new Set((await prisma.raidTeam.findMany({ select: { slug: true } })).map(t => t.slug));
+  let slug = base;
+  for (let i = 2; taken.has(slug); i++) slug = `${base}-${i}`;
+
   let team;
   try {
     team = await prisma.raidTeam.create({
-      data: { name, color, notes },
+      data: { name, slug, color, notes },
     });
   } catch (e: any) {
     if (e?.code === "P2002") {

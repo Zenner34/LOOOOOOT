@@ -188,6 +188,7 @@ model LootAward {
 model RaidTeam {
   id        Int               @id @default(autoincrement())
   name      String            @unique
+  slug      String            @unique
   color     String            @default("#1e3a5f")
   active    Boolean           @default(true)
   notes     String?
@@ -207,9 +208,6 @@ model RaidTeam {
 model AssignmentSheet {
   id        Int       @id @default(autoincrement())
   teamId    Int       @unique
-  // Legacy week key, kept nullable for history. Each team now has exactly
-  // one persistent sheet; weekOf is no longer used for lookups.
-  weekOf    DateTime?
   data      Json      @default("{}")
   notes     String?
   createdAt DateTime  @default(now())
