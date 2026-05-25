@@ -297,28 +297,28 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   // tank (tanks split round-robin across the shamans).
   { title: "Earth Shield · 1",                  iconSlug: "spell_nature_skinofearth",              rowIconSlug: "spell_nature_skinofearth",
     fixedSlots: 2, slotEligibility: [{ specs: ["Restoration Shaman"] }, { roles: ["tank"] }], expandPerCaster: true, expandFillTargets: true },
-  // Innervate — one row per druid in the raid (any spec), each druid
-  // paired with a mage; mages are split round-robin across the druids.
-  { title: "Innervate · 1",                     iconSlug: "spell_nature_lightning",                rowIconSlug: "spell_nature_lightning",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }], expandPerCaster: true, expandFillTargets: true },
 
-  // ═══ MIDDLE COLUMN — all Paladin assignments ═════════════════════════
+  // ═══ MIDDLE COLUMN — Paladin assignments, then Innervate ═════════════
   // Each row uses rowIconSlug so the row label is the spell icon
   // itself instead of a text scope. One paladin slot per row.
   // Seals on the boss.
   { title: "Paladin Seals · Crusader",          iconSlug: "spell_holy_holysmite",                  rowIconSlug: "spell_holy_holysmite",               eligibility: { specs: ["Retribution Paladin"] }, fixedSlots: 1 },
   { title: "Paladin Seals · Wisdom",            iconSlug: "spell_holy_holysmite",                  rowIconSlug: "spell_holy_righteousnessaura",       eligibility: { specs: ["Protection Paladin"] }, fixedSlots: 1 },
   { title: "Paladin Seals · Light",             iconSlug: "spell_holy_holysmite",                  rowIconSlug: "spell_holy_healingaura",             eligibility: { specs: ["Holy Paladin"] }, fixedSlots: 1 },
-  // Blessing of Protection — one row per paladin; target (the protected
-  // raider) left empty for manual assignment.
-  { title: "Blessing of Protection · 1",        iconSlug: "spell_holy_sealofprotection",           rowIconSlug: "spell_holy_sealofprotection",
-    fixedSlots: 2, slotEligibility: [{ classes: ["Paladin"] }, { classes: ["Warlock"] }], expandPerCaster: true },
   // Greater Blessings — Kings on Ret, Might+Wisdom on the Holy paladin
   // (one slot, two icons), Salvation on Prot. Spec-keyed so the same
   // paladin can also hold his seal above.
   { title: "Greater Blessings · Kings",         iconSlug: "spell_magic_greaterblessingofkings",    rowIconSlug: "spell_magic_greaterblessingofkings",    eligibility: { specs: ["Retribution Paladin"] }, fixedSlots: 1 },
   { title: "Greater Blessings · Might & Wisdom", iconSlug: "spell_magic_greaterblessingofkings",   rowIconSlugs: ["spell_holy_greaterblessingofkings", "spell_holy_greaterblessingofwisdom"], eligibility: { specs: ["Holy Paladin"] }, fixedSlots: 1 },
   { title: "Greater Blessings · Salvation",     iconSlug: "spell_magic_greaterblessingofkings",    rowIconSlug: "spell_holy_greaterblessingofsalvation", eligibility: { specs: ["Protection Paladin"] }, fixedSlots: 1 },
+  // Blessing of Protection — below Greater Blessings. One row per paladin;
+  // target (the protected raider) left empty for manual assignment.
+  { title: "Blessing of Protection · 1",        iconSlug: "spell_holy_sealofprotection",           rowIconSlug: "spell_holy_sealofprotection",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Paladin"] }, { classes: ["Warlock"] }], expandPerCaster: true },
+  // Innervate — directly below Blessing of Protection. One row per druid
+  // (any spec), each druid paired with a mage; mages split round-robin.
+  { title: "Innervate · 1",                     iconSlug: "spell_nature_lightning",                rowIconSlug: "spell_nature_lightning",
+    fixedSlots: 2, slotEligibility: [{ classes: ["Druid"] }, { classes: ["Mage"] }], expandPerCaster: true, expandFillTargets: true },
 
   // ═══ RIGHT COLUMN — warlock utility + raid debuffs ════════════════════
   // Soulstones — one row per warlock; target (the rezz recipient) left
@@ -360,14 +360,14 @@ export const BUFF_COLUMNS: Record<string, "left" | "middle" | "right"> = {
   "Gift of the Wild":              "left",
   "Arcane Brilliance":             "left",
   "Earth Shield":                  "left",
-  "Innervate":                     "left",
   "Power Infusion":                "left",      // legacy
   "Mark of the Wild":              "left",      // legacy
 
-  // MIDDLE — every Paladin assignment
+  // MIDDLE — Paladin assignments, then Innervate
   "Paladin Seals":                 "middle",
   "Blessing of Protection":        "middle",
   "Greater Blessings":             "middle",
+  "Innervate":                     "middle",
   "Greater Blessing of Kings":     "middle",    // legacy
   "Greater Blessing of Might":     "middle",    // legacy
   "Greater Blessing of Wisdom":    "middle",    // legacy
