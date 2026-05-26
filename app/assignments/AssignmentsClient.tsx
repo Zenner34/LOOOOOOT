@@ -476,8 +476,11 @@ function GroupSetup({
   }
 
   function removeFromSlot(group: "1" | "2" | "3" | "4" | "5", slotIdx: number) {
+    // Blank the slot in place (0 = empty) rather than splicing it out, so
+    // the remaining members keep their positions instead of shifting up.
     const current = [...data.groups[group]];
-    current.splice(slotIdx, 1);
+    current[slotIdx] = 0;
+    while (current.length > 0 && current[current.length - 1] === 0) current.pop();
     setData({ ...data, groups: { ...data.groups, [group]: current } });
   }
 
