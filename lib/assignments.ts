@@ -30,9 +30,9 @@ export type BossMeta = {
 export const ASSIGNMENT_BOSSES = [
   { slug: "hydross",    raidShort: "SSC", name: "Hydross the Unstable",         portrait: "/bosses/Hydross%20Frost.jpg",   portraitAlt: "/bosses/Hydross%20Nature.jpg" },
   { slug: "lurker",     raidShort: "SSC", name: "The Lurker Below",             portrait: "/bosses/Lurker%20Below.jpg" },
-  { slug: "morogrim",   raidShort: "SSC", name: "Morogrim Tidewalker",          portrait: "/bosses/Morogrim.png" },
-  { slug: "fathom",     raidShort: "SSC", name: "Fathom-Lord Karathress",       portrait: "/bosses/Fathom%20Lord.png" },
   { slug: "leotheras",  raidShort: "SSC", name: "Leotheras the Blind",          portrait: "/bosses/Leo.png" },
+  { slug: "fathom",     raidShort: "SSC", name: "Fathom-Lord Karathress",       portrait: "/bosses/Fathom%20Lord.png" },
+  { slug: "morogrim",   raidShort: "SSC", name: "Morogrim Tidewalker",          portrait: "/bosses/Morogrim.png" },
   { slug: "vashj",      raidShort: "SSC", name: "Lady Vashj",                   portrait: "/bosses/Lady%20Vashj.png" },
   { slug: "alar",       raidShort: "TK",  name: "Al'ar",                        portrait: "/bosses/Alar.png" },
   { slug: "voidreaver", raidShort: "TK",  name: "Void Reaver",                  portrait: "/bosses/Void%20Reaver.jpg" },
