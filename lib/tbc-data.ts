@@ -451,6 +451,24 @@ const tempestKeep: RaidDef = {
       { name: "Plans: Red Havoc Boots",               wowheadId: 30324, slot: "Plans",    itemLevel: 128, notes: "Blacksmithing 375 — crafts Red Havoc Boots (BoP). World drop, BoP.",          weights: {} },
       { name: "Badge of Justice",                     wowheadId: 29434, slot: "Currency", itemLevel: 0,   notes: "Heroic / raid badge currency. Drops from every boss in SSC and Tempest Keep.", weights: {} },
     ]},
+    // Crafted from Nether Vortex (drops off SSC & TK bosses). Assign these
+    // to the recipient instead of the raw Nether Vortex reagent.
+    { name: "Crafted (Nether Vortex)", items: [
+      { name: "Stormherald",               wowheadId: 28442, slot: "Two-Hand Mace",  itemLevel: 141, archetype: "weapon-2h-str",   notes: "Crafted from Nether Vortex — Blacksmithing 375 (Master Hammersmith). BoP." },
+      { name: "Lionheart Executioner",     wowheadId: 28430, slot: "One-Hand Sword", itemLevel: 141, archetype: "weapon-1h-melee", notes: "Crafted from Nether Vortex — Blacksmithing 375 (Master Swordsmith). BoP." },
+      { name: "Blazefury",                 wowheadId: 28427, slot: "One-Hand Sword", itemLevel: 141, archetype: "weapon-1h-melee", notes: "Crafted from Nether Vortex — Blacksmithing 375 (Master Swordsmith). BoP." },
+      { name: "Bloodmoon",                 wowheadId: 28436, slot: "One-Hand Sword", itemLevel: 141, archetype: "weapon-1h-melee", notes: "Crafted from Nether Vortex — Blacksmithing 375 (Master Swordsmith). BoP." },
+      { name: "Wicked Edge of the Planes", wowheadId: 28433, slot: "One-Hand Axe",   itemLevel: 141, archetype: "weapon-1h-melee", notes: "Crafted from Nether Vortex — Blacksmithing 375 (Master Axesmith). BoP." },
+      { name: "Dragonstrike",              wowheadId: 28439, slot: "One-Hand Axe",   itemLevel: 141, archetype: "weapon-1h-melee", notes: "Crafted from Nether Vortex — Blacksmithing 375 (Master Axesmith). BoP." },
+      { name: "Belt of Blasting",          wowheadId: 30038, slot: "Waist", itemLevel: 115, archetype: "caster-cloth",   notes: "Crafted from Nether Vortex — Tailoring 375. BoE." },
+      { name: "Belt of the Long Road",     wowheadId: 30039, slot: "Waist", itemLevel: 115, archetype: "caster-cloth",   notes: "Crafted from Nether Vortex — Tailoring 375. BoE." },
+      { name: "Belt of Natural Power",     wowheadId: 30040, slot: "Waist", itemLevel: 115, archetype: "caster-leather", notes: "Crafted from Nether Vortex — Leatherworking 375. BoE." },
+      { name: "Belt of Deep Shadow",       wowheadId: 30041, slot: "Waist", itemLevel: 115, archetype: "melee-leather",  notes: "Crafted from Nether Vortex — Leatherworking 375. BoE." },
+      { name: "Belt of the Black Eagle",   wowheadId: 30042, slot: "Waist", itemLevel: 115, archetype: "ranged-hunter",  notes: "Crafted from Nether Vortex — Leatherworking 375. BoE." },
+      { name: "Monsoon Belt",              wowheadId: 30045, slot: "Waist", itemLevel: 115, archetype: "caster-leather", notes: "Crafted from Nether Vortex — Leatherworking 375. BoE." },
+      { name: "Belt of the Guardian",      wowheadId: 30031, slot: "Waist", itemLevel: 115, archetype: "tank-plate",     notes: "Crafted from Nether Vortex — Blacksmithing 375. BoE." },
+      { name: "Red Belt of Battle",        wowheadId: 30032, slot: "Waist", itemLevel: 115, archetype: "melee-plate",    notes: "Crafted from Nether Vortex — Blacksmithing 375. BoE." },
+    ]},
   ],
 };
 
