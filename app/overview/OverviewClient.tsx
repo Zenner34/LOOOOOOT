@@ -522,7 +522,39 @@ export default function OverviewClient({
             </button>
           ))}
         </div>
-        <div className="sm:ml-auto pb-2 sm:pb-2">
+        <div className="sm:ml-auto pb-2 sm:pb-2 flex items-center gap-2 flex-wrap">
+          <div
+            role="tablist"
+            aria-label="Group rows by"
+            className="inline-flex rounded-full border border-white/10 bg-[var(--surface)] p-0.5 text-xs"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={groupBy === "player"}
+              onClick={() => setGroupBy("player")}
+              className={`px-3 py-1 rounded-full transition ${
+                groupBy === "player"
+                  ? "bg-vermillion-500/15 text-vermillion-200"
+                  : "text-neutral-400 hover:text-neutral-200"
+              }`}
+            >
+              By player
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={groupBy === "character"}
+              onClick={() => setGroupBy("character")}
+              className={`px-3 py-1 rounded-full transition ${
+                groupBy === "character"
+                  ? "bg-vermillion-500/15 text-vermillion-200"
+                  : "text-neutral-400 hover:text-neutral-200"
+              }`}
+            >
+              By character
+            </button>
+          </div>
           <div className="relative">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" aria-hidden />
             <input
