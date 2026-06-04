@@ -59,6 +59,10 @@ type Row = {
   characters: Character[];
   /** Counted toward totals — excludes Pattern/Plans drops. */
   count: number;
+  /** Number of this row's characters that have at least one counted (gear)
+   *  award. Used as the divisor for the per-character average so characters
+   *  who haven't been awarded any loot don't deflate the rate. */
+  charactersWithLootCount: number;
   /** All countable (gear) awards, newest-first. */
   awards: Award[];
   /** Recipe drops (Pattern/Plans), shown below the divider in drilldowns,
@@ -293,6 +297,7 @@ export default function OverviewClient({
           displayName: c.name,
           characters: [c],
           count: itemCount(gear),
+          charactersWithLootCount: gear.length > 0 ? 1 : 0,
           awards: gear,
           patternAwards: patterns,
           lastAwardAt: gear[0] ? new Date(gear[0].awardedAt) : null,
@@ -319,11 +324,13 @@ export default function OverviewClient({
       const chars = byPlayer.get(p.id);
       if (!chars || chars.length === 0) continue;
       let count = 0;
+      let charactersWithLootCount = 0;
       const gearAwards: Award[] = [];
       const patternAwards: Award[] = [];
       for (const c of chars) {
         const { gear, patterns } = splitAwards(awardsByChar.get(c.id) ?? []);
         count += itemCount(gear);
+        if (gear.length > 0) charactersWithLootCount++;
         for (const a of gear) gearAwards.push(a);
         for (const a of patterns) patternAwards.push(a);
       }
@@ -337,6 +344,7 @@ export default function OverviewClient({
         displayName: p.displayName,
         characters: chars.sort((a, b) => Number(b.isMain) - Number(a.isMain) || a.name.localeCompare(b.name)),
         count,
+        charactersWithLootCount,
         awards: gearAwards,
         patternAwards,
         lastAwardAt: gearAwards[0] ? new Date(gearAwards[0].awardedAt) : null,
@@ -353,6 +361,7 @@ export default function OverviewClient({
         displayName: c.name,
         characters: [c],
         count: itemCount(gear),
+        charactersWithLootCount: gear.length > 0 ? 1 : 0,
         awards: gear,
         patternAwards: patterns,
         lastAwardAt: gear[0] ? new Date(gear[0].awardedAt) : null,
@@ -656,15 +665,19 @@ export default function OverviewClient({
                 <span
                   className="inline-flex items-center gap-1 text-neutral-400"
                   title={(() => {
-                    if (!(groupBy === "player" && r.kind === "player" && r.characters.length > 1)) return undefined;
-                    const avg = r.count / r.characters.length;
-                    return `${r.count} items across ${r.characters.length} characters (${r.count} ÷ ${r.characters.length} = ${formatAvg(avg)} per character)`;
+                    if (!(groupBy === "player" && r.kind === "player")) return undefined;
+                    if (r.charactersWithLootCount <= 1) return undefined;
+                    const avg = r.count / r.charactersWithLootCount;
+                    const totalChars = r.characters.length;
+                    return totalChars === r.charactersWithLootCount
+                      ? `${r.count} items across ${r.charactersWithLootCount} characters (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per character)`
+                      : `${r.count} items across ${r.charactersWithLootCount} of ${totalChars} characters with loot (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per looted character)`;
                   })()}
                 >
                   <span className="text-neutral-500">items</span>
                   <span className="tabular-nums text-neutral-200 font-semibold">
-                    {groupBy === "player" && r.kind === "player" && r.characters.length > 0
-                      ? formatAvg(r.count / r.characters.length)
+                    {groupBy === "player" && r.kind === "player" && r.charactersWithLootCount > 0
+                      ? formatAvg(r.count / r.charactersWithLootCount)
                       : r.count}
                   </span>
                 </span>
@@ -842,13 +855,17 @@ export default function OverviewClient({
                     <td
                       className="text-right tabular-nums"
                       title={(() => {
-                        if (!(groupBy === "player" && r.kind === "player" && r.characters.length > 1)) return undefined;
-                        const avg = r.count / r.characters.length;
-                        return `${r.count} items across ${r.characters.length} characters (${r.count} ÷ ${r.characters.length} = ${formatAvg(avg)} per character)`;
+                        if (!(groupBy === "player" && r.kind === "player")) return undefined;
+                        if (r.charactersWithLootCount <= 1) return undefined;
+                        const avg = r.count / r.charactersWithLootCount;
+                        const totalChars = r.characters.length;
+                        return totalChars === r.charactersWithLootCount
+                          ? `${r.count} items across ${r.charactersWithLootCount} characters (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per character)`
+                          : `${r.count} items across ${r.charactersWithLootCount} of ${totalChars} characters with loot (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per looted character)`;
                       })()}
                     >
-                      {groupBy === "player" && r.kind === "player" && r.characters.length > 0
-                        ? formatAvg(r.count / r.characters.length)
+                      {groupBy === "player" && r.kind === "player" && r.charactersWithLootCount > 0
+                        ? formatAvg(r.count / r.charactersWithLootCount)
                         : r.count}
                     </td>
                     <td>
