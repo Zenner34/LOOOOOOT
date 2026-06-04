@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CLASS_COLOR, CLASSES, BUCKETS, BUCKET_LABEL, bucketForSpec, type Bucket } from "@/lib/specs";
 import { itemCount, type ScoringAward } from "@/lib/scoring";
+import { isCountableLoot, isPatternItem } from "@/lib/loot";
 import { WowheadLink } from "@/lib/wowhead";
 import { parsePhaseParam, phaseFilterLabel, isDefaultPhaseFilter } from "@/lib/phases";
 import { ClassIcon } from "@/app/components/ClassIcon";
@@ -56,8 +57,13 @@ type Row = {
   id: number; // player.id, or character.id for orphans
   displayName: string;
   characters: Character[];
+  /** Counted toward totals — excludes Pattern/Plans drops. */
   count: number;
+  /** All countable (gear) awards, newest-first. */
   awards: Award[];
+  /** Recipe drops (Pattern/Plans), shown below the divider in drilldowns,
+   *  not included in the count. */
+  patternAwards: Award[];
   lastAwardAt: Date | null;
 };
 
@@ -257,22 +263,39 @@ export default function OverviewClient({
         r.displayName,
         ...r.characters.flatMap(c => [c.name, c.class, c.spec]),
         ...r.awards.map(a => a.item.name),
+        ...r.patternAwards.map(a => a.item.name),
       ].join(" ").toLowerCase();
       return queryTokens.every(t => hay.includes(t));
+    }
+
+    // Split a character's awards into countable gear vs. recipe drops.
+    // Patterns/Plans surface below the divider in the drilldown but don't
+    // bump the player's total or the per-character average.
+    function splitAwards(mine: Award[]): { gear: Award[]; patterns: Award[] } {
+      const gear: Award[] = [];
+      const patterns: Award[] = [];
+      for (const a of mine) {
+        if (isPatternItem(a.item)) patterns.push(a);
+        else if (isCountableLoot(a.item)) gear.push(a);
+        else gear.push(a); // future-proof: any new non-gear slot still surfaces in the main list
+      }
+      return { gear, patterns };
     }
 
     if (groupBy === "character") {
       const rows = filtered.map(c => {
         const mine = awardsByChar.get(c.id) ?? [];
+        const { gear, patterns } = splitAwards(mine);
         return {
           key: `c${c.id}`,
           kind: "orphan" as const,
           id: c.id,
           displayName: c.name,
           characters: [c],
-          count: itemCount(mine),
-          awards: mine,
-          lastAwardAt: mine[0] ? new Date(mine[0].awardedAt) : null,
+          count: itemCount(gear),
+          awards: gear,
+          patternAwards: patterns,
+          lastAwardAt: gear[0] ? new Date(gear[0].awardedAt) : null,
         };
       });
       return rows.filter(matchesQuery);
@@ -296,14 +319,17 @@ export default function OverviewClient({
       const chars = byPlayer.get(p.id);
       if (!chars || chars.length === 0) continue;
       let count = 0;
-      const allAwards: Award[] = [];
+      const gearAwards: Award[] = [];
+      const patternAwards: Award[] = [];
       for (const c of chars) {
-        const mine = awardsByChar.get(c.id) ?? [];
-        count += itemCount(mine);
-        for (const a of mine) allAwards.push(a);
+        const { gear, patterns } = splitAwards(awardsByChar.get(c.id) ?? []);
+        count += itemCount(gear);
+        for (const a of gear) gearAwards.push(a);
+        for (const a of patterns) patternAwards.push(a);
       }
-      // sort each player's awards descending by date so [0] is most recent
-      allAwards.sort((a, b) => new Date(b.awardedAt).getTime() - new Date(a.awardedAt).getTime());
+      // sort each bucket descending by date so [0] is most recent
+      gearAwards.sort((a, b) => new Date(b.awardedAt).getTime() - new Date(a.awardedAt).getTime());
+      patternAwards.sort((a, b) => new Date(b.awardedAt).getTime() - new Date(a.awardedAt).getTime());
       playerRows.push({
         key: `p${p.id}`,
         kind: "player",
@@ -311,22 +337,25 @@ export default function OverviewClient({
         displayName: p.displayName,
         characters: chars.sort((a, b) => Number(b.isMain) - Number(a.isMain) || a.name.localeCompare(b.name)),
         count,
-        awards: allAwards,
-        lastAwardAt: allAwards[0] ? new Date(allAwards[0].awardedAt) : null,
+        awards: gearAwards,
+        patternAwards,
+        lastAwardAt: gearAwards[0] ? new Date(gearAwards[0].awardedAt) : null,
       });
     }
 
     const orphanRows: Row[] = orphans.map(c => {
       const mine = awardsByChar.get(c.id) ?? [];
+      const { gear, patterns } = splitAwards(mine);
       return {
         key: `o${c.id}`,
         kind: "orphan",
         id: c.id,
         displayName: c.name,
         characters: [c],
-        count: itemCount(mine),
-        awards: mine,
-        lastAwardAt: mine[0] ? new Date(mine[0].awardedAt) : null,
+        count: itemCount(gear),
+        awards: gear,
+        patternAwards: patterns,
+        lastAwardAt: gear[0] ? new Date(gear[0].awardedAt) : null,
       };
     });
 
@@ -639,7 +668,7 @@ export default function OverviewClient({
                       : r.count}
                   </span>
                 </span>
-                {r.awards.length > 0 && (
+                {(r.awards.length > 0 || r.patternAwards.length > 0) && (
                   <button
                     className="ml-auto text-xs text-vermillion-300 active:text-vermillion-200 min-h-[32px] px-2 -mr-2"
                     onClick={() => setExpanded(s => ({ ...s, [r.key]: !isOpen }))}
@@ -659,22 +688,54 @@ export default function OverviewClient({
                   ))}
                 </ul>
               )}
-              {isOpen && r.awards.length > 0 && (
-                <ul className="mt-3 space-y-1.5 border-t border-white/5 pt-3">
-                  {r.awards.map(a => (
-                    <li key={a.id} className="text-xs flex items-baseline justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <WowheadLink name={a.item.name} wowheadId={a.item.wowheadId} />
-                        <div className="text-[10px] text-neutral-500 truncate">
-                          {a.item.boss.name} · <span style={{ color: CLASS_COLOR[a.character.class] ?? "#fff" }}>{a.character.name}</span>
-                        </div>
+              {isOpen && (r.awards.length > 0 || r.patternAwards.length > 0) && (
+                <>
+                  {r.awards.length > 0 && (
+                    <ul className="mt-3 space-y-1.5 border-t border-white/5 pt-3">
+                      {r.awards.map(a => (
+                        <li key={a.id} className="text-xs flex items-baseline justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <WowheadLink name={a.item.name} wowheadId={a.item.wowheadId} />
+                            <div className="text-[10px] text-neutral-500 truncate">
+                              {a.item.boss.name} · <span style={{ color: CLASS_COLOR[a.character.class] ?? "#fff" }}>{a.character.name}</span>
+                            </div>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <div className="text-[10px] text-neutral-600 tabular-nums">{new Date(a.awardedAt).toISOString().slice(0,10)}</div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {r.patternAwards.length > 0 && (
+                    <>
+                      <div
+                        className="mt-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500"
+                        title="Patterns and plans don't count toward this player's total — see the Professions tab."
+                      >
+                        <span>Patterns</span>
+                        <span className="text-neutral-600">·</span>
+                        <span className="text-neutral-600">{r.patternAwards.length} (not counted)</span>
+                        <span className="flex-1 h-px bg-white/5" aria-hidden />
                       </div>
-                      <div className="text-right flex-shrink-0">
-                        <div className="text-[10px] text-neutral-600 tabular-nums">{new Date(a.awardedAt).toISOString().slice(0,10)}</div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                      <ul className="mt-1.5 space-y-1.5 opacity-60">
+                        {r.patternAwards.map(a => (
+                          <li key={a.id} className="text-xs flex items-baseline justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <WowheadLink name={a.item.name} wowheadId={a.item.wowheadId} />
+                              <div className="text-[10px] text-neutral-500 truncate">
+                                {a.item.boss.name} · <span style={{ color: CLASS_COLOR[a.character.class] ?? "#fff" }}>{a.character.name}</span>
+                              </div>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <div className="text-[10px] text-neutral-600 tabular-nums">{new Date(a.awardedAt).toISOString().slice(0,10)}</div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </>
               )}
             </div>
           );
@@ -815,7 +876,7 @@ export default function OverviewClient({
                       )}
                     </td>
                     <td className="text-right">
-                      {r.awards.length > 0 && (
+                      {(r.awards.length > 0 || r.patternAwards.length > 0) && (
                         <button
                           className="text-xs text-neutral-400 hover:text-white"
                           onClick={() => setExpanded(s => ({ ...s, [r.key]: !isOpen }))}
@@ -823,33 +884,72 @@ export default function OverviewClient({
                       )}
                     </td>
                   </tr>
-                  {isOpen && r.awards.length > 0 && (
+                  {isOpen && (r.awards.length > 0 || r.patternAwards.length > 0) && (
                     <tr>
                       <td colSpan={6} className="bg-black/30">
-                        <table className="table">
-                          <thead>
-                            <tr>
-                              <th>Item</th>
-                              <th>Awarded to</th>
-                              <th>Boss</th>
-                              <th>Raid</th>
-                              <th>Date</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {r.awards.map(a => (
-                              <tr key={a.id}>
-                                <td><WowheadLink name={a.item.name} wowheadId={a.item.wowheadId} /></td>
-                                <td>
-                                  <span style={{ color: CLASS_COLOR[a.character.class] ?? "#fff" }}>{a.character.name}</span>
-                                </td>
-                                <td className="text-neutral-400">{a.item.boss.name}</td>
-                                <td className="text-neutral-500">{a.item.boss.raid.shortName}</td>
-                                <td className="text-neutral-500 text-xs">{new Date(a.awardedAt).toISOString().slice(0, 10)}</td>
+                        {r.awards.length > 0 && (
+                          <table className="table">
+                            <thead>
+                              <tr>
+                                <th>Item</th>
+                                <th>Awarded to</th>
+                                <th>Boss</th>
+                                <th>Raid</th>
+                                <th>Date</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tbody>
+                              {r.awards.map(a => (
+                                <tr key={a.id}>
+                                  <td><WowheadLink name={a.item.name} wowheadId={a.item.wowheadId} /></td>
+                                  <td>
+                                    <span style={{ color: CLASS_COLOR[a.character.class] ?? "#fff" }}>{a.character.name}</span>
+                                  </td>
+                                  <td className="text-neutral-400">{a.item.boss.name}</td>
+                                  <td className="text-neutral-500">{a.item.boss.raid.shortName}</td>
+                                  <td className="text-neutral-500 text-xs">{new Date(a.awardedAt).toISOString().slice(0, 10)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                        {r.patternAwards.length > 0 && (
+                          <div className="opacity-70">
+                            <div
+                              className="flex items-center gap-2 px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500"
+                              title="Patterns and plans don't count toward this player's total — see the Professions tab."
+                            >
+                              <span>Patterns</span>
+                              <span className="text-neutral-600">·</span>
+                              <span className="text-neutral-600">{r.patternAwards.length} (not counted)</span>
+                              <span className="flex-1 h-px bg-white/5" aria-hidden />
+                            </div>
+                            <table className="table">
+                              <thead>
+                                <tr>
+                                  <th>Item</th>
+                                  <th>Awarded to</th>
+                                  <th>Boss</th>
+                                  <th>Raid</th>
+                                  <th>Date</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {r.patternAwards.map(a => (
+                                  <tr key={a.id}>
+                                    <td><WowheadLink name={a.item.name} wowheadId={a.item.wowheadId} /></td>
+                                    <td>
+                                      <span style={{ color: CLASS_COLOR[a.character.class] ?? "#fff" }}>{a.character.name}</span>
+                                    </td>
+                                    <td className="text-neutral-400">{a.item.boss.name}</td>
+                                    <td className="text-neutral-500">{a.item.boss.raid.shortName}</td>
+                                    <td className="text-neutral-500 text-xs">{new Date(a.awardedAt).toISOString().slice(0, 10)}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   )}

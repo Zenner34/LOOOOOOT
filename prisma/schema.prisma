@@ -102,6 +102,11 @@ model Character {
   wclKillsLogged   Int?
   wclData          Json?
   wclUpdatedAt     DateTime?
+  // Profession specializations chosen in-game (e.g. "Master Hammersmith",
+  // "Master Swordsmith", "Master Axesmith"). Drives the "Can craft" list on
+  // the Professions tab for items that have no dropped pattern. Independent
+  // of class/spec — one character can hold more than one if they switched.
+  craftedSpecializations String[] @default([])
   player      Player?        @relation(fields: [playerId], references: [id], onDelete: SetNull)
   memberships RosterMember[]
   attendance  Attendance[]

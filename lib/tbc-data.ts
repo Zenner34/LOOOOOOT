@@ -468,6 +468,15 @@ const tempestKeep: RaidDef = {
       { name: "Monsoon Belt",              wowheadId: 30045, slot: "Waist", itemLevel: 115, archetype: "caster-leather", notes: "Crafted from Nether Vortex — Leatherworking 375. BoE." },
       { name: "Belt of the Guardian",      wowheadId: 30031, slot: "Waist", itemLevel: 115, archetype: "tank-plate",     notes: "Crafted from Nether Vortex — Blacksmithing 375. BoE." },
       { name: "Red Belt of Battle",        wowheadId: 30032, slot: "Waist", itemLevel: 115, archetype: "melee-plate",    notes: "Crafted from Nether Vortex — Blacksmithing 375. BoE." },
+      // Crafted boots — BoP outputs (Pattern world drops are catalogued separately under TK Trash Loot).
+      { name: "Boots of Blasting",         wowheadId: 30043, slot: "Feet",  itemLevel: 120, archetype: "caster-cloth",   notes: "Crafted from Nether Vortex — Tailoring 375. BoP." },
+      { name: "Boots of the Long Road",    wowheadId: 30044, slot: "Feet",  itemLevel: 120, archetype: "caster-cloth",   notes: "Crafted from Nether Vortex — Tailoring 375. BoP." },
+      { name: "Boots of Natural Grace",    wowheadId: 30046, slot: "Feet",  itemLevel: 120, archetype: "caster-leather", notes: "Crafted from Nether Vortex — Leatherworking 375. BoP." },
+      { name: "Boots of Utter Darkness",   wowheadId: 30047, slot: "Feet",  itemLevel: 120, archetype: "melee-leather",  notes: "Crafted from Nether Vortex — Leatherworking 375. BoP." },
+      { name: "Boots of the Crimson Hawk", wowheadId: 30048, slot: "Feet",  itemLevel: 120, archetype: "ranged-hunter",  notes: "Crafted from Nether Vortex — Leatherworking 375. BoP." },
+      { name: "Hurricane Boots",           wowheadId: 30050, slot: "Feet",  itemLevel: 120, archetype: "caster-leather", notes: "Crafted from Nether Vortex — Leatherworking 375. BoP." },
+      { name: "Boots of the Protector",    wowheadId: 30034, slot: "Feet",  itemLevel: 120, archetype: "tank-plate",     notes: "Crafted from Nether Vortex — Blacksmithing 375. BoP." },
+      { name: "Red Havoc Boots",           wowheadId: 30035, slot: "Feet",  itemLevel: 120, archetype: "melee-plate",    notes: "Crafted from Nether Vortex — Blacksmithing 375. BoP." },
     ]},
   ],
 };
