@@ -371,11 +371,21 @@ export default function OverviewClient({
     return [...playerRows, ...orphanRows].filter(matchesQuery);
   }, [characters, players, tab, groupBy, awardsByChar, classFilter, showInactive, queryTokens]);
 
+  // Single source of truth for the "items" column: what the user sees
+  // is what the sort ranks. By player mode with 2+ looted characters
+  // uses the per-character average; everything else uses the raw count.
+  function displayItemsValue(r: Row): number {
+    if (groupBy === "player" && r.kind === "player" && r.charactersWithLootCount > 1) {
+      return r.count / r.charactersWithLootCount;
+    }
+    return r.count;
+  }
+
   const sortedRows = useMemo(() => {
     const r = [...rows];
     r.sort((a, b) => {
-      if (sort === "countDesc") return b.count - a.count || a.displayName.localeCompare(b.displayName);
-      if (sort === "countAsc")  return a.count - b.count || a.displayName.localeCompare(b.displayName);
+      if (sort === "countDesc") return displayItemsValue(b) - displayItemsValue(a) || a.displayName.localeCompare(b.displayName);
+      if (sort === "countAsc")  return displayItemsValue(a) - displayItemsValue(b) || a.displayName.localeCompare(b.displayName);
       if (sort === "nameAsc")   return a.displayName.localeCompare(b.displayName);
       if (sort === "nameDesc")  return b.displayName.localeCompare(a.displayName);
       // lastLootAsc: stalest (oldest) first; never-looted rows still pinned to bottom.
@@ -389,7 +399,8 @@ export default function OverviewClient({
       return bt - at || a.displayName.localeCompare(b.displayName);
     });
     return r;
-  }, [rows, sort]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, sort, groupBy]);
 
   const bucketCounts = useMemo(() => {
     const counts: Record<Bucket, number> = { all: characters.length, tank: 0, heal: 0, melee: 0, caster: 0 };
@@ -662,25 +673,30 @@ export default function OverviewClient({
                 </span>
               </div>
               <div className="mt-2 flex items-center gap-3 text-xs">
-                <span
-                  className="inline-flex items-center gap-1 text-neutral-400"
-                  title={(() => {
-                    if (!(groupBy === "player" && r.kind === "player")) return undefined;
-                    if (r.charactersWithLootCount <= 1) return undefined;
-                    const avg = r.count / r.charactersWithLootCount;
-                    const totalChars = r.characters.length;
-                    return totalChars === r.charactersWithLootCount
-                      ? `${r.count} items across ${r.charactersWithLootCount} characters (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per character)`
-                      : `${r.count} items across ${r.charactersWithLootCount} of ${totalChars} characters with loot (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per looted character)`;
-                  })()}
-                >
-                  <span className="text-neutral-500">items</span>
-                  <span className="tabular-nums text-neutral-200 font-semibold">
-                    {groupBy === "player" && r.kind === "player" && r.charactersWithLootCount > 0
-                      ? formatAvg(r.count / r.charactersWithLootCount)
-                      : r.count}
-                  </span>
-                </span>
+                {(() => {
+                  const showAvg = groupBy === "player" && r.kind === "player" && r.charactersWithLootCount > 1;
+                  const avg = showAvg ? r.count / r.charactersWithLootCount : 0;
+                  const totalChars = r.characters.length;
+                  const tooltip = showAvg
+                    ? (totalChars === r.charactersWithLootCount
+                        ? `${r.count} items across ${r.charactersWithLootCount} characters (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per character)`
+                        : `${r.count} items across ${r.charactersWithLootCount} of ${totalChars} characters with loot (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per looted character)`)
+                    : undefined;
+                  return (
+                    <span className="inline-flex items-baseline gap-1 text-neutral-400" title={tooltip}>
+                      <span className="text-neutral-500">items</span>
+                      {showAvg ? (
+                        <>
+                          <span className="tabular-nums text-neutral-200 font-semibold">{formatAvg(avg)}</span>
+                          <span className="text-neutral-500">avg.</span>
+                          <span className="tabular-nums text-neutral-500">({r.count})</span>
+                        </>
+                      ) : (
+                        <span className="tabular-nums text-neutral-200 font-semibold">{r.count}</span>
+                      )}
+                    </span>
+                  );
+                })()}
                 {(r.awards.length > 0 || r.patternAwards.length > 0) && (
                   <button
                     className="ml-auto text-xs text-vermillion-300 active:text-vermillion-200 min-h-[32px] px-2 -mr-2"
@@ -852,22 +868,27 @@ export default function OverviewClient({
                         ))}
                       </div>
                     </td>
-                    <td
-                      className="text-right tabular-nums"
-                      title={(() => {
-                        if (!(groupBy === "player" && r.kind === "player")) return undefined;
-                        if (r.charactersWithLootCount <= 1) return undefined;
-                        const avg = r.count / r.charactersWithLootCount;
-                        const totalChars = r.characters.length;
-                        return totalChars === r.charactersWithLootCount
-                          ? `${r.count} items across ${r.charactersWithLootCount} characters (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per character)`
-                          : `${r.count} items across ${r.charactersWithLootCount} of ${totalChars} characters with loot (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per looted character)`;
-                      })()}
-                    >
-                      {groupBy === "player" && r.kind === "player" && r.charactersWithLootCount > 0
-                        ? formatAvg(r.count / r.charactersWithLootCount)
-                        : r.count}
-                    </td>
+                    {(() => {
+                      const showAvg = groupBy === "player" && r.kind === "player" && r.charactersWithLootCount > 1;
+                      const avg = showAvg ? r.count / r.charactersWithLootCount : 0;
+                      const totalChars = r.characters.length;
+                      const tooltip = showAvg
+                        ? (totalChars === r.charactersWithLootCount
+                            ? `${r.count} items across ${r.charactersWithLootCount} characters (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per character)`
+                            : `${r.count} items across ${r.charactersWithLootCount} of ${totalChars} characters with loot (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per looted character)`)
+                        : undefined;
+                      return (
+                        <td className="text-right tabular-nums" title={tooltip}>
+                          {showAvg ? (
+                            <>
+                              {formatAvg(avg)} <span className="text-neutral-500 font-normal">avg. ({r.count})</span>
+                            </>
+                          ) : (
+                            r.count
+                          )}
+                        </td>
+                      );
+                    })()}
                     <td>
                       {(() => {
                         const days = daysAgo(r.lastAwardAt);
