@@ -158,7 +158,7 @@ export default function OverviewClient({
   const [groupBy, setGroupBy] = useState<"player" | "character">("player");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [sort, setSort] = useState<
-    "lastLootDesc" | "lastLootAsc" | "countDesc" | "countAsc" | "nameAsc" | "nameDesc"
+    "lastLootDesc" | "lastLootAsc" | "countDesc" | "countAsc" | "totalDesc" | "totalAsc" | "nameAsc" | "nameDesc"
   >("lastLootDesc");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filtersRef = useRef<HTMLDivElement>(null);
@@ -216,8 +216,10 @@ export default function OverviewClient({
   const sortLabel =
     sort === "lastLootDesc" ? "Recently looted" :
     sort === "lastLootAsc"  ? "Stalest first" :
-    sort === "countDesc"    ? "Most items" :
-    sort === "countAsc"     ? "Fewest items" :
+    sort === "countDesc"    ? "Highest avg" :
+    sort === "countAsc"     ? "Lowest avg" :
+    sort === "totalDesc"    ? "Most total" :
+    sort === "totalAsc"     ? "Least total" :
     sort === "nameAsc"      ? "A → Z" : "Z → A";
   const classLabel = classFilter.size === 0
     ? null
@@ -386,6 +388,8 @@ export default function OverviewClient({
     r.sort((a, b) => {
       if (sort === "countDesc") return displayItemsValue(b) - displayItemsValue(a) || a.displayName.localeCompare(b.displayName);
       if (sort === "countAsc")  return displayItemsValue(a) - displayItemsValue(b) || a.displayName.localeCompare(b.displayName);
+      if (sort === "totalDesc") return b.count - a.count || a.displayName.localeCompare(b.displayName);
+      if (sort === "totalAsc")  return a.count - b.count || a.displayName.localeCompare(b.displayName);
       if (sort === "nameAsc")   return a.displayName.localeCompare(b.displayName);
       if (sort === "nameDesc")  return b.displayName.localeCompare(a.displayName);
       // lastLootAsc: stalest (oldest) first; never-looted rows still pinned to bottom.
@@ -479,8 +483,12 @@ export default function OverviewClient({
                 options={[
                   { value: "lastLootDesc", label: "Recently looted" },
                   { value: "lastLootAsc",  label: "Stalest first" },
-                  { value: "countDesc",    label: "Most items" },
-                  { value: "countAsc",     label: "Fewest items" },
+                  { value: "countDesc",    label: "Highest avg" },
+                  { value: "countAsc",     label: "Lowest avg" },
+                  ...(admin && groupBy === "player" ? [
+                    { value: "totalDesc",  label: "Most total" },
+                    { value: "totalAsc",   label: "Least total" },
+                  ] : []),
                   { value: "nameAsc",      label: "Name A → Z" },
                   { value: "nameDesc",     label: "Name Z → A" },
                 ]}
@@ -677,17 +685,31 @@ export default function OverviewClient({
                   const showAvg = groupBy === "player" && r.kind === "player" && r.charactersWithLootCount > 1;
                   const value = displayItemsValue(r);
                   const totalChars = r.characters.length;
-                  const tooltip = showAvg
+                  const avgTooltip = showAvg
                     ? (totalChars === r.charactersWithLootCount
-                        ? `${r.count} total items across ${r.charactersWithLootCount} characters (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(value)} per character)`
-                        : `${r.count} total items across ${r.charactersWithLootCount} of ${totalChars} characters with loot (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(value)} per looted character)`)
+                        ? `${r.count} ÷ ${r.charactersWithLootCount} characters = ${formatAvg(value)} per character`
+                        : `${r.count} ÷ ${r.charactersWithLootCount} of ${totalChars} characters with loot = ${formatAvg(value)} per looted character`)
                     : undefined;
-                  return (
-                    <span className="inline-flex items-baseline gap-1 text-neutral-400" title={tooltip}>
-                      <span className="text-neutral-500">
-                        {groupBy === "player" ? "items / char" : "items"}
+                  if (groupBy !== "player") {
+                    return (
+                      <span className="inline-flex items-baseline gap-1 text-neutral-400">
+                        <span className="text-neutral-500">items</span>
+                        <span className="tabular-nums text-neutral-200 font-semibold">{r.count}</span>
                       </span>
-                      <span className="tabular-nums text-neutral-200 font-semibold">{formatAvg(value)}</span>
+                    );
+                  }
+                  return (
+                    <span className="inline-flex items-baseline gap-3 text-neutral-400">
+                      <span className="inline-flex items-baseline gap-1" title={avgTooltip}>
+                        <span className="text-neutral-500">avg</span>
+                        <span className="tabular-nums text-neutral-200 font-semibold">{formatAvg(value)}</span>
+                      </span>
+                      {admin && (
+                        <span className="inline-flex items-baseline gap-1">
+                          <span className="text-neutral-500">total</span>
+                          <span className="tabular-nums text-neutral-400">{r.count}</span>
+                        </span>
+                      )}
                     </span>
                   );
                 })()}
@@ -804,14 +826,27 @@ export default function OverviewClient({
                   onClick={() => setSort(s => s === "countDesc" ? "countAsc" : "countDesc")}
                   className="hover:text-vermillion-200 transition inline-flex items-center gap-1"
                   title={groupBy === "player"
-                    ? "Items per looted character. Hover a cell to see total + math."
-                    : "Items per character."}
+                    ? "Items per looted character. Characters with zero awards aren't counted in the denominator."
+                    : "Items awarded to this character."}
                 >
-                  {groupBy === "player" ? "Items / char" : "Items"}
+                  {groupBy === "player" ? "Avg" : "Items"}
                   {sort === "countDesc" && <ArrowDown size={12} aria-hidden />}
                   {sort === "countAsc"  && <ArrowUp   size={12} aria-hidden />}
                 </button>
               </th>
+              {admin && groupBy === "player" && (
+                <th className="text-right">
+                  <button
+                    onClick={() => setSort(s => s === "totalDesc" ? "totalAsc" : "totalDesc")}
+                    className="hover:text-vermillion-200 transition inline-flex items-center gap-1"
+                    title="Total items awarded across all of this player's characters."
+                  >
+                    Total
+                    {sort === "totalDesc" && <ArrowDown size={12} aria-hidden />}
+                    {sort === "totalAsc"  && <ArrowUp   size={12} aria-hidden />}
+                  </button>
+                </th>
+              )}
               <th className="whitespace-nowrap min-w-[7rem]">
                 <button
                   onClick={() => setSort(s => s === "lastLootDesc" ? "lastLootAsc" : "lastLootDesc")}
@@ -868,15 +903,20 @@ export default function OverviewClient({
                       const showAvg = groupBy === "player" && r.kind === "player" && r.charactersWithLootCount > 1;
                       const value = displayItemsValue(r);
                       const totalChars = r.characters.length;
-                      const tooltip = showAvg
+                      const avgTooltip = showAvg
                         ? (totalChars === r.charactersWithLootCount
-                            ? `${r.count} total items across ${r.charactersWithLootCount} characters (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(value)} per character)`
-                            : `${r.count} total items across ${r.charactersWithLootCount} of ${totalChars} characters with loot (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(value)} per looted character)`)
+                            ? `${r.count} ÷ ${r.charactersWithLootCount} characters = ${formatAvg(value)} per character`
+                            : `${r.count} ÷ ${r.charactersWithLootCount} of ${totalChars} characters with loot = ${formatAvg(value)} per looted character`)
                         : undefined;
                       return (
-                        <td className="text-right tabular-nums font-semibold" title={tooltip}>
-                          {formatAvg(value)}
-                        </td>
+                        <>
+                          <td className="text-right tabular-nums font-semibold" title={avgTooltip}>
+                            {formatAvg(value)}
+                          </td>
+                          {admin && groupBy === "player" && (
+                            <td className="text-right tabular-nums text-neutral-400">{r.count}</td>
+                          )}
+                        </>
                       );
                     })()}
                     <td>
@@ -914,7 +954,7 @@ export default function OverviewClient({
                   </tr>
                   {isOpen && (r.awards.length > 0 || r.patternAwards.length > 0) && (
                     <tr>
-                      <td colSpan={6} className="bg-black/30">
+                      <td colSpan={admin && groupBy === "player" ? 7 : 6} className="bg-black/30">
                         {r.awards.length > 0 && (
                           <table className="table">
                             <thead>
@@ -986,7 +1026,7 @@ export default function OverviewClient({
             })}
             {sortedRows.length === 0 && (
               <tr>
-                <td colSpan={6} className="py-10 text-center text-neutral-500">
+                <td colSpan={admin && groupBy === "player" ? 7 : 6} className="py-10 text-center text-neutral-500">
                   {queryTokens.length > 0
                     ? <>No matches for &ldquo;{query.trim()}&rdquo;.</>
                     : <>No {EMPTY_LABEL[tab]} in this roster yet.</>}
