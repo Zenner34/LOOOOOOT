@@ -62,6 +62,11 @@ type Row = {
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+/** Integers render plain ("2"); fractions show one decimal ("2.3"). */
+function formatAvg(n: number): string {
+  return n % 1 === 0 ? String(n) : n.toFixed(1);
+}
+
 function daysAgo(d: Date | string | null | undefined): number | null {
   if (!d) return null;
   const t = new Date(d).getTime();
@@ -619,9 +624,20 @@ export default function OverviewClient({
                 </span>
               </div>
               <div className="mt-2 flex items-center gap-3 text-xs">
-                <span className="inline-flex items-center gap-1 text-neutral-400">
+                <span
+                  className="inline-flex items-center gap-1 text-neutral-400"
+                  title={(() => {
+                    if (!(groupBy === "player" && r.kind === "player" && r.characters.length > 1)) return undefined;
+                    const avg = r.count / r.characters.length;
+                    return `${r.count} items across ${r.characters.length} characters (${r.count} ÷ ${r.characters.length} = ${formatAvg(avg)} per character)`;
+                  })()}
+                >
                   <span className="text-neutral-500">items</span>
-                  <span className="tabular-nums text-neutral-200 font-semibold">{r.count}</span>
+                  <span className="tabular-nums text-neutral-200 font-semibold">
+                    {groupBy === "player" && r.kind === "player" && r.characters.length > 0
+                      ? formatAvg(r.count / r.characters.length)
+                      : r.count}
+                  </span>
                 </span>
                 {r.awards.length > 0 && (
                   <button
@@ -762,7 +778,18 @@ export default function OverviewClient({
                         ))}
                       </div>
                     </td>
-                    <td className="text-right tabular-nums">{r.count}</td>
+                    <td
+                      className="text-right tabular-nums"
+                      title={(() => {
+                        if (!(groupBy === "player" && r.kind === "player" && r.characters.length > 1)) return undefined;
+                        const avg = r.count / r.characters.length;
+                        return `${r.count} items across ${r.characters.length} characters (${r.count} ÷ ${r.characters.length} = ${formatAvg(avg)} per character)`;
+                      })()}
+                    >
+                      {groupBy === "player" && r.kind === "player" && r.characters.length > 0
+                        ? formatAvg(r.count / r.characters.length)
+                        : r.count}
+                    </td>
                     <td>
                       {(() => {
                         const days = daysAgo(r.lastAwardAt);
