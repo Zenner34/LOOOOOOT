@@ -34,6 +34,9 @@ export type CraftedCard = {
   canCraftLabel: string | null;
   canCraft: Crafter[];
   crafted: Crafter[];
+  /** Active raiders whose spec is eligible for the item (from ItemWeight) and
+   *  who haven't been awarded the crafted output yet. */
+  needsCrafting: Crafter[];
 };
 
 export type ProfessionGroup = {
@@ -43,12 +46,13 @@ export type ProfessionGroup = {
   items: CraftedCard[];
 };
 
-type Lens = "all" | "hasCrafter" | "hasOwner";
+type Lens = "all" | "hasCrafter" | "hasOwner" | "hasNeed";
 
 const LENS_OPTIONS: Array<{ value: Lens; label: string; hint: string }> = [
   { value: "all",        label: "All",          hint: "Every crafted item we track." },
   { value: "hasCrafter", label: "Has a crafter", hint: "Someone in the guild can make this one." },
   { value: "hasOwner",   label: "Crafted",      hint: "Someone in the guild has been awarded a crafted copy." },
+  { value: "hasNeed",    label: "Needs crafting", hint: "At least one eligible raider still doesn't have one." },
 ];
 
 export default function ProfessionsClient({ groups, totalItems }: {
@@ -64,6 +68,7 @@ export default function ProfessionsClient({ groups, totalItems }: {
       items: g.items.filter(it => {
         if (lens === "hasCrafter") return it.canCraft.length > 0;
         if (lens === "hasOwner")   return it.crafted.length > 0;
+        if (lens === "hasNeed")    return it.needsCrafting.length > 0;
         return true;
       }),
     }));
@@ -151,7 +156,7 @@ export default function ProfessionsClient({ groups, totalItems }: {
                     />
                   </header>
 
-                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <CrafterList
                       heading="Can craft"
                       count={item.canCraft.length}
@@ -165,6 +170,13 @@ export default function ProfessionsClient({ groups, totalItems }: {
                       count={item.crafted.length}
                       crafters={item.crafted}
                       empty="No one has been awarded this yet."
+                    />
+                    <CrafterList
+                      heading="Needs crafting"
+                      count={item.needsCrafting.length}
+                      crafters={item.needsCrafting}
+                      empty="No eligible raider is missing this item."
+                      tone="needs"
                     />
                   </div>
                 </article>
@@ -197,15 +209,18 @@ function CrafterList({
   count,
   crafters,
   empty,
+  tone,
 }: {
   heading: string;
   count: number;
   crafters: Crafter[];
   empty: string;
+  tone?: "needs";
 }) {
+  const headingColor = tone === "needs" ? "text-amber-300/80" : "text-neutral-500";
   return (
     <div>
-      <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500 mb-1.5">
+      <div className={`text-[10px] font-semibold uppercase tracking-[0.12em] ${headingColor} mb-1.5`}>
         {heading} · {count}
       </div>
       {crafters.length === 0 ? (

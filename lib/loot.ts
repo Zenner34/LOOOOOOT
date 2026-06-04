@@ -54,3 +54,25 @@ export function specializationForCraftedItem(itemName: string): Specialization |
     default:                          return null;
   }
 }
+
+// ────────────────────────────────────────────────────────────────────────
+// "Needs crafting" eligibility — per-item overrides.
+//
+// The Professions tab's "Needs crafting" column defaults to each item's
+// ItemWeight rows (seeded from the archetype). Guild policy sometimes
+// broadens that — Belt of Blasting is a cloth +hit belt that mages /
+// warlocks / shadow priests roll on by default, but Elemental Shamans and
+// Balance Druids also chase it as an off-piece for hit-rating. Add named
+// overrides here when the strict archetype list undercounts who should be
+// on a card's "Needs crafting" list. Items without an entry fall back to
+// archetype eligibility.
+
+export const CRAFTING_ELIGIBILITY_OVERRIDES: Record<string, readonly string[]> = {
+  "Belt of Blasting": [
+    "Arcane Mage", "Fire Mage", "Frost Mage",
+    "Affliction Warlock", "Demonology Warlock", "Destruction Warlock",
+    "Shadow Priest",
+    "Elemental Shaman",
+    "Balance Druid",
+  ],
+};

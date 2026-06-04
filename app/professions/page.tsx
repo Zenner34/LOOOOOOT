@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { specializationForCraftedItem } from "@/lib/loot";
+import { specializationForCraftedItem, CRAFTING_ELIGIBILITY_OVERRIDES } from "@/lib/loot";
 import ProfessionsClient, {
   type ProfessionGroup,
   type Crafter,
@@ -50,7 +50,7 @@ export default async function ProfessionsPage() {
   // The crafted-output side is matched by name = craftedItemName(pattern.name)
   // OR by appearing under the "Crafted (Nether Vortex)" boss section (for
   // weapons that have no dropped pattern).
-  const [patterns, craftedFromVortex, charsWithSpecs] = await Promise.all([
+  const [patterns, craftedFromVortex, charsWithSpecs, charsWithLoot] = await Promise.all([
     prisma.item.findMany({
       where: { slot: { in: ["Pattern", "Plans"] } },
       orderBy: { name: "asc" },
@@ -65,6 +65,7 @@ export default async function ProfessionsPage() {
       where: { boss: { name: "Crafted (Nether Vortex)" } },
       orderBy: { name: "asc" },
       include: {
+        weights: true,
         awards: {
           orderBy: { awardedAt: "asc" },
           include: { character: { include: { player: true } } },
@@ -74,6 +75,17 @@ export default async function ProfessionsPage() {
     prisma.character.findMany({
       where: { craftedSpecializations: { isEmpty: false } },
       include: { player: true },
+    }),
+    // Active characters who've been awarded at least one gear item (anything
+    // that isn't a Pattern/Plans recipe). These are the candidates for the
+    // "Needs crafting" list on each item card.
+    prisma.character.findMany({
+      where: {
+        active: true,
+        awards: { some: { item: { slot: { notIn: ["Pattern", "Plans"] } } } },
+      },
+      include: { player: true },
+      orderBy: { name: "asc" },
     }),
   ]);
 
@@ -86,6 +98,25 @@ export default async function ProfessionsPage() {
   const cards: CraftedCard[] = [];
   const seenCraftedNames = new Set<string>();
 
+  // Helper: derive the "Needs crafting" list for an item. Default eligibility
+  // is the item's ItemWeight rows (seeded from the archetype). Named overrides
+  // in CRAFTING_ELIGIBILITY_OVERRIDES take precedence — see lib/loot.ts.
+  // Excluded: characters who've already been awarded the crafted item.
+  function buildNeedsCrafting(
+    itemName: string,
+    weights: Array<{ spec: string; weight: number }>,
+    craftedIds: Set<number>,
+  ): Crafter[] {
+    const override = CRAFTING_ELIGIBILITY_OVERRIDES[itemName];
+    const eligible = override
+      ? new Set(override)
+      : new Set(weights.filter(w => w.weight > 0).map(w => w.spec));
+    if (eligible.size === 0) return [];
+    return dedupeCharacters(
+      charsWithLoot.filter(c => eligible.has(c.spec) && !craftedIds.has(c.id)),
+    );
+  }
+
   for (const p of patterns) {
     const profession = professionOfNotes(p.notes);
     if (!profession) continue; // ignore patterns that don't tag a profession
@@ -95,6 +126,8 @@ export default async function ProfessionsPage() {
 
     const canCraft = dedupeCharacters(p.awards.map(a => a.character));
     const crafted = output ? dedupeCharacters(output.awards.map(a => a.character)) : [];
+    const craftedIds = new Set(crafted.map(c => c.id));
+    const needsCrafting = output ? buildNeedsCrafting(craftName, output.weights, craftedIds) : [];
 
     cards.push({
       key: `pattern-${p.id}`,
@@ -105,6 +138,7 @@ export default async function ProfessionsPage() {
       canCraftLabel: null, // pattern-gated
       canCraft,
       crafted,
+      needsCrafting,
     });
   }
 
@@ -120,6 +154,8 @@ export default async function ProfessionsPage() {
       ? dedupeCharacters(charsWithSpecs.filter(c => c.craftedSpecializations.includes(spec)))
       : [];
     const crafted = dedupeCharacters(o.awards.map(a => a.character));
+    const craftedIds = new Set(crafted.map(c => c.id));
+    const needsCrafting = buildNeedsCrafting(o.name, o.weights, craftedIds);
     cards.push({
       key: `crafted-${o.id}`,
       profession,
@@ -129,6 +165,7 @@ export default async function ProfessionsPage() {
       canCraftLabel: spec ?? null,
       canCraft,
       crafted,
+      needsCrafting,
     });
   }
 
