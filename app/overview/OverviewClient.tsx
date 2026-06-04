@@ -675,29 +675,19 @@ export default function OverviewClient({
               <div className="mt-2 flex items-center gap-3 text-xs">
                 {(() => {
                   const showAvg = groupBy === "player" && r.kind === "player" && r.charactersWithLootCount > 1;
-                  const avg = showAvg ? r.count / r.charactersWithLootCount : 0;
+                  const value = displayItemsValue(r);
                   const totalChars = r.characters.length;
                   const tooltip = showAvg
                     ? (totalChars === r.charactersWithLootCount
-                        ? `${r.count} items across ${r.charactersWithLootCount} characters (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per character)`
-                        : `${r.count} items across ${r.charactersWithLootCount} of ${totalChars} characters with loot (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per looted character)`)
+                        ? `${r.count} total items across ${r.charactersWithLootCount} characters (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(value)} per character)`
+                        : `${r.count} total items across ${r.charactersWithLootCount} of ${totalChars} characters with loot (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(value)} per looted character)`)
                     : undefined;
-                  if (!showAvg) {
-                    return (
-                      <span className="inline-flex items-baseline gap-1 text-neutral-400">
-                        <span className="text-neutral-500">items</span>
-                        <span className="tabular-nums text-neutral-200 font-semibold">{r.count}</span>
-                      </span>
-                    );
-                  }
                   return (
-                    <span className="inline-flex items-baseline gap-1.5 text-neutral-400" title={tooltip}>
-                      <span className="text-neutral-500">items</span>
-                      <span className="tabular-nums text-neutral-200 font-semibold">{formatAvg(avg)}</span>
-                      <span className="text-[10px] uppercase tracking-wider text-neutral-500">avg</span>
-                      <span className="text-neutral-600">·</span>
-                      <span className="tabular-nums text-neutral-500">{r.count}</span>
-                      <span className="text-[10px] uppercase tracking-wider text-neutral-500">total</span>
+                    <span className="inline-flex items-baseline gap-1 text-neutral-400" title={tooltip}>
+                      <span className="text-neutral-500">
+                        {groupBy === "player" ? "items / char" : "items"}
+                      </span>
+                      <span className="tabular-nums text-neutral-200 font-semibold">{formatAvg(value)}</span>
                     </span>
                   );
                 })()}
@@ -813,9 +803,11 @@ export default function OverviewClient({
                 <button
                   onClick={() => setSort(s => s === "countDesc" ? "countAsc" : "countDesc")}
                   className="hover:text-vermillion-200 transition inline-flex items-center gap-1"
-                  title="Sort by item count"
+                  title={groupBy === "player"
+                    ? "Items per looted character. Hover a cell to see total + math."
+                    : "Items per character."}
                 >
-                  Items
+                  {groupBy === "player" ? "Items / char" : "Items"}
                   {sort === "countDesc" && <ArrowDown size={12} aria-hidden />}
                   {sort === "countAsc"  && <ArrowUp   size={12} aria-hidden />}
                 </button>
@@ -874,25 +866,16 @@ export default function OverviewClient({
                     </td>
                     {(() => {
                       const showAvg = groupBy === "player" && r.kind === "player" && r.charactersWithLootCount > 1;
-                      const avg = showAvg ? r.count / r.charactersWithLootCount : 0;
+                      const value = displayItemsValue(r);
                       const totalChars = r.characters.length;
                       const tooltip = showAvg
                         ? (totalChars === r.charactersWithLootCount
-                            ? `${r.count} items across ${r.charactersWithLootCount} characters (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per character)`
-                            : `${r.count} items across ${r.charactersWithLootCount} of ${totalChars} characters with loot (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per looted character)`)
+                            ? `${r.count} total items across ${r.charactersWithLootCount} characters (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(value)} per character)`
+                            : `${r.count} total items across ${r.charactersWithLootCount} of ${totalChars} characters with loot (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(value)} per looted character)`)
                         : undefined;
-                      if (!showAvg) {
-                        return <td className="text-right tabular-nums">{r.count}</td>;
-                      }
                       return (
-                        <td className="text-right tabular-nums leading-tight" title={tooltip}>
-                          <div>
-                            <span className="font-semibold text-neutral-100">{formatAvg(avg)}</span>{" "}
-                            <span className="text-[10px] uppercase tracking-wider text-neutral-500">avg</span>
-                          </div>
-                          <div className="text-[10px] text-neutral-500 mt-0.5">
-                            {r.count} <span className="uppercase tracking-wider">total</span>
-                          </div>
+                        <td className="text-right tabular-nums font-semibold" title={tooltip}>
+                          {formatAvg(value)}
                         </td>
                       );
                     })()}
