@@ -65,7 +65,6 @@ export default async function ProfessionsPage() {
       where: { boss: { name: "Crafted (Nether Vortex)" } },
       orderBy: { name: "asc" },
       include: {
-        weights: true,
         awards: {
           orderBy: { awardedAt: "asc" },
           include: { character: { include: { player: true } } },
@@ -98,20 +97,15 @@ export default async function ProfessionsPage() {
   const cards: CraftedCard[] = [];
   const seenCraftedNames = new Set<string>();
 
-  // Helper: derive the "Needs crafting" list for an item. Default eligibility
-  // is the item's ItemWeight rows (seeded from the archetype). Named overrides
-  // in CRAFTING_ELIGIBILITY_OVERRIDES take precedence — see lib/loot.ts.
-  // Excluded: characters who've already been awarded the crafted item.
-  function buildNeedsCrafting(
-    itemName: string,
-    weights: Array<{ spec: string; weight: number }>,
-    craftedIds: Set<number>,
-  ): Crafter[] {
+  // Helper: derive the "Needs crafting" list for an item. Only items listed
+  // in CRAFTING_ELIGIBILITY_OVERRIDES get a list — guild policy decides which
+  // ones are worth surfacing (currently only Belt of Blasting). Other cards
+  // hide the column entirely. The eligible spec set comes from the override;
+  // anyone already on the Crafted list is filtered out.
+  function buildNeedsCrafting(itemName: string, craftedIds: Set<number>): Crafter[] {
     const override = CRAFTING_ELIGIBILITY_OVERRIDES[itemName];
-    const eligible = override
-      ? new Set(override)
-      : new Set(weights.filter(w => w.weight > 0).map(w => w.spec));
-    if (eligible.size === 0) return [];
+    if (!override || override.length === 0) return [];
+    const eligible = new Set(override);
     return dedupeCharacters(
       charsWithLoot.filter(c => eligible.has(c.spec) && !craftedIds.has(c.id)),
     );
@@ -127,7 +121,7 @@ export default async function ProfessionsPage() {
     const canCraft = dedupeCharacters(p.awards.map(a => a.character));
     const crafted = output ? dedupeCharacters(output.awards.map(a => a.character)) : [];
     const craftedIds = new Set(crafted.map(c => c.id));
-    const needsCrafting = output ? buildNeedsCrafting(craftName, output.weights, craftedIds) : [];
+    const needsCrafting = buildNeedsCrafting(craftName, craftedIds);
 
     cards.push({
       key: `pattern-${p.id}`,
@@ -155,7 +149,7 @@ export default async function ProfessionsPage() {
       : [];
     const crafted = dedupeCharacters(o.awards.map(a => a.character));
     const craftedIds = new Set(crafted.map(c => c.id));
-    const needsCrafting = buildNeedsCrafting(o.name, o.weights, craftedIds);
+    const needsCrafting = buildNeedsCrafting(o.name, craftedIds);
     cards.push({
       key: `crafted-${o.id}`,
       profession,

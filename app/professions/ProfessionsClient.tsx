@@ -156,29 +156,36 @@ export default function ProfessionsClient({ groups, totalItems }: {
                     />
                   </header>
 
-                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <CrafterList
-                      heading="Can craft"
-                      count={item.canCraft.length}
-                      crafters={item.canCraft}
-                      empty={item.canCraftLabel
-                        ? `No characters tagged ${item.canCraftLabel} yet.`
-                        : "No one has this pattern yet."}
-                    />
-                    <CrafterList
-                      heading="Crafted"
-                      count={item.crafted.length}
-                      crafters={item.crafted}
-                      empty="No one has been awarded this yet."
-                    />
-                    <CrafterList
-                      heading="Needs crafting"
-                      count={item.needsCrafting.length}
-                      crafters={item.needsCrafting}
-                      empty="No eligible raider is missing this item."
-                      tone="needs"
-                    />
-                  </div>
+                  {(() => {
+                    const showNeeds = item.needsCrafting.length > 0;
+                    return (
+                      <div className={`flex-1 grid grid-cols-1 gap-3 ${showNeeds ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
+                        <CrafterList
+                          heading="Can craft"
+                          count={item.canCraft.length}
+                          crafters={item.canCraft}
+                          empty={item.canCraftLabel
+                            ? `No characters tagged ${item.canCraftLabel} yet.`
+                            : "No one has this pattern yet."}
+                        />
+                        <CrafterList
+                          heading="Crafted"
+                          count={item.crafted.length}
+                          crafters={item.crafted}
+                          empty="No one has been awarded this yet."
+                        />
+                        {showNeeds && (
+                          <CrafterList
+                            heading="Needs crafting"
+                            count={item.needsCrafting.length}
+                            crafters={item.needsCrafting}
+                            empty="No eligible raider is missing this item."
+                            tone="needs"
+                          />
+                        )}
+                      </div>
+                    );
+                  })()}
                 </article>
               ))}
             </div>
@@ -255,11 +262,9 @@ function CrafterLabel({ c }: { c: Crafter }) {
       <span className="font-semibold" style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>
         {c.name}
       </span>
-      <span className="text-xs text-neutral-500">
-        {c.playerName && c.playerName !== c.name
-          ? `${c.playerName} · ${c.spec}`
-          : c.spec}
-      </span>
+      {c.playerName && c.playerName !== c.name && (
+        <span className="text-xs text-neutral-500">{c.playerName}</span>
+      )}
     </>
   );
 }
