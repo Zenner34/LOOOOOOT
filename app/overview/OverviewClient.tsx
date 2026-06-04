@@ -682,18 +682,22 @@ export default function OverviewClient({
                         ? `${r.count} items across ${r.charactersWithLootCount} characters (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per character)`
                         : `${r.count} items across ${r.charactersWithLootCount} of ${totalChars} characters with loot (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per looted character)`)
                     : undefined;
-                  return (
-                    <span className="inline-flex items-baseline gap-1 text-neutral-400" title={tooltip}>
-                      <span className="text-neutral-500">items</span>
-                      {showAvg ? (
-                        <>
-                          <span className="tabular-nums text-neutral-200 font-semibold">{formatAvg(avg)}</span>
-                          <span className="text-neutral-500">avg.</span>
-                          <span className="tabular-nums text-neutral-500">({r.count})</span>
-                        </>
-                      ) : (
+                  if (!showAvg) {
+                    return (
+                      <span className="inline-flex items-baseline gap-1 text-neutral-400">
+                        <span className="text-neutral-500">items</span>
                         <span className="tabular-nums text-neutral-200 font-semibold">{r.count}</span>
-                      )}
+                      </span>
+                    );
+                  }
+                  return (
+                    <span className="inline-flex items-baseline gap-1.5 text-neutral-400" title={tooltip}>
+                      <span className="text-neutral-500">items</span>
+                      <span className="tabular-nums text-neutral-200 font-semibold">{formatAvg(avg)}</span>
+                      <span className="text-[10px] uppercase tracking-wider text-neutral-500">avg</span>
+                      <span className="text-neutral-600">·</span>
+                      <span className="tabular-nums text-neutral-500">{r.count}</span>
+                      <span className="text-[10px] uppercase tracking-wider text-neutral-500">total</span>
                     </span>
                   );
                 })()}
@@ -877,15 +881,18 @@ export default function OverviewClient({
                             ? `${r.count} items across ${r.charactersWithLootCount} characters (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per character)`
                             : `${r.count} items across ${r.charactersWithLootCount} of ${totalChars} characters with loot (${r.count} ÷ ${r.charactersWithLootCount} = ${formatAvg(avg)} per looted character)`)
                         : undefined;
+                      if (!showAvg) {
+                        return <td className="text-right tabular-nums">{r.count}</td>;
+                      }
                       return (
-                        <td className="text-right tabular-nums" title={tooltip}>
-                          {showAvg ? (
-                            <>
-                              {formatAvg(avg)} <span className="text-neutral-500 font-normal">avg. ({r.count})</span>
-                            </>
-                          ) : (
-                            r.count
-                          )}
+                        <td className="text-right tabular-nums leading-tight" title={tooltip}>
+                          <div>
+                            <span className="font-semibold text-neutral-100">{formatAvg(avg)}</span>{" "}
+                            <span className="text-[10px] uppercase tracking-wider text-neutral-500">avg</span>
+                          </div>
+                          <div className="text-[10px] text-neutral-500 mt-0.5">
+                            {r.count} <span className="uppercase tracking-wider">total</span>
+                          </div>
                         </td>
                       );
                     })()}
