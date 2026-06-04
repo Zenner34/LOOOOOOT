@@ -17,70 +17,79 @@ export type Crafter = {
   playerName: string | null;
 };
 
-export type PatternCard = {
-  id: number;
-  name: string;
-  craftedItemName: string;
+/**
+ * One row per *crafted output*. Belts/boots are gated by who owns the
+ * pattern (canCraftLabel = null); weapons are gated by an in-game
+ * specialization (canCraftLabel = "Master Hammersmith" etc.). Both kinds
+ * expose the same Can-craft / Crafted pair of lists.
+ */
+export type CraftedCard = {
+  key: string;
+  profession: string;
+  itemName: string;
   wowheadId: number | null;
-  crafters: Crafter[];
-  /** Whether the *crafted* item is BoE (tradeable) or BoP (soulbound
-   *  to the crafter). All current SSC/TK profession drops produce BoE
-   *  gear, but the filter exists for future BoP-output recipes. */
   binding: "boe" | "bop";
+  /** When set, "Can craft" entries come from this Blacksmithing specialization
+   *  (no dropped pattern). Surface it as a hint on the card. */
+  canCraftLabel: string | null;
+  canCraft: Crafter[];
+  crafted: Crafter[];
 };
 
 export type ProfessionGroup = {
   key: string;
   label: string;
   blurb: string;
-  items: PatternCard[];
+  items: CraftedCard[];
 };
 
-type BindingFilter = "boe" | "bop" | "all";
+type Lens = "all" | "hasCrafter" | "hasOwner";
 
-const BINDING_OPTIONS: Array<{ value: BindingFilter; label: string; hint: string }> = [
-  { value: "boe", label: "Crafts BoE", hint: "Recipe makes a tradeable item — the crafter can mail it to you." },
-  { value: "bop", label: "Crafts BoP", hint: "Recipe makes a soulbound item — only the crafter can use it." },
-  { value: "all", label: "All",        hint: "Every catalog recipe regardless of what its output binds as." },
+const LENS_OPTIONS: Array<{ value: Lens; label: string; hint: string }> = [
+  { value: "all",        label: "All",          hint: "Every crafted item we track." },
+  { value: "hasCrafter", label: "Has a crafter", hint: "Someone in the guild can make this one." },
+  { value: "hasOwner",   label: "Crafted",      hint: "Someone in the guild has been awarded a crafted copy." },
 ];
 
 export default function ProfessionsClient({ groups, totalItems }: {
   groups: ProfessionGroup[];
   totalItems: number;
 }) {
-  // Default to BoE — guild's primary use case is "who can craft a
-  // tradeable belt/boots and send it to me".
-  const [binding, setBinding] = useState<BindingFilter>("boe");
+  const [lens, setLens] = useState<Lens>("all");
 
   const filteredGroups = useMemo(() => {
-    if (binding === "all") return groups;
+    if (lens === "all") return groups;
     return groups.map(g => ({
       ...g,
-      items: g.items.filter(it => it.binding === binding),
+      items: g.items.filter(it => {
+        if (lens === "hasCrafter") return it.canCraft.length > 0;
+        if (lens === "hasOwner")   return it.crafted.length > 0;
+        return true;
+      }),
     }));
-  }, [groups, binding]);
+  }, [groups, lens]);
 
   const filteredItemCount = filteredGroups.reduce((sum, g) => sum + g.items.length, 0);
-  const activeHint = BINDING_OPTIONS.find(o => o.value === binding)?.hint;
+  const activeHint = LENS_OPTIONS.find(o => o.value === lens)?.hint;
 
   return (
     <div className="space-y-8 animate-fade-in">
       <PageHeader
         eyebrow="Crafters"
         title="Professions"
-        subtitle="Who in the guild can craft each belt / boots recipe from SSC and Tempest Keep. Filter by whether the crafted item is tradeable (BoE) or soulbound to the crafter (BoP)."
+        subtitle="Who can craft each SSC/TK profession item and who's already had one made. Belts and boots are gated by patterns; weapons are gated by the in-game Blacksmithing specialization."
       />
 
       {totalItems > 0 && (
         <div className="flex flex-wrap items-center gap-3">
           <div className="inline-flex rounded-full border border-white/10 bg-black/30 p-1">
-            {BINDING_OPTIONS.map(opt => {
-              const active = binding === opt.value;
+            {LENS_OPTIONS.map(opt => {
+              const active = lens === opt.value;
               return (
                 <button
                   key={opt.value}
                   type="button"
-                  onClick={() => setBinding(opt.value)}
+                  onClick={() => setLens(opt.value)}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-full transition ${
                     active
                       ? "bg-white/10 text-white shadow-inner"
@@ -109,7 +118,7 @@ export default function ProfessionsClient({ groups, totalItems }: {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {g.items.map(item => (
-                <article key={item.id} className="panel p-4 flex flex-col gap-3">
+                <article key={item.key} className="panel p-4 flex flex-col gap-3">
                   <header>
                     <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-vermillion-300/90 mb-0.5 flex items-center gap-1.5">
                       <span>Crafts</span>
@@ -125,43 +134,38 @@ export default function ProfessionsClient({ groups, totalItems }: {
                       >
                         {item.binding === "boe" ? "BoE" : "BoP"}
                       </span>
+                      {item.canCraftLabel && (
+                        <span
+                          className="px-1.5 py-px rounded text-[9px] bg-amber-500/10 text-amber-300/90"
+                          title="In-game Blacksmithing specialization required — set on the Characters tab."
+                        >
+                          {item.canCraftLabel}
+                        </span>
+                      )}
                     </div>
                     <WowheadLink
-                      name={item.craftedItemName}
+                      name={item.itemName}
                       wowheadId={item.wowheadId}
                       iconSize={24}
                       className="text-base font-semibold"
                     />
                   </header>
 
-                  <div className="flex-1">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500 mb-1.5">
-                      Crafted by · {item.crafters.length}
-                    </div>
-                    {item.crafters.length === 0 ? (
-                      <p className="text-xs text-neutral-500 italic">
-                        No one has this pattern yet.
-                      </p>
-                    ) : (
-                      <ul className="space-y-1">
-                        {item.crafters.map(c => (
-                          <li key={c.id}>
-                            {c.playerId !== null ? (
-                              <Link
-                                href={`/players/${c.playerId}`}
-                                className="inline-flex items-center gap-2 text-sm hover:underline"
-                              >
-                                <CrafterLabel c={c} />
-                              </Link>
-                            ) : (
-                              <span className="inline-flex items-center gap-2 text-sm">
-                                <CrafterLabel c={c} />
-                              </span>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <CrafterList
+                      heading="Can craft"
+                      count={item.canCraft.length}
+                      crafters={item.canCraft}
+                      empty={item.canCraftLabel
+                        ? `No characters tagged ${item.canCraftLabel} yet.`
+                        : "No one has this pattern yet."}
+                    />
+                    <CrafterList
+                      heading="Crafted"
+                      count={item.crafted.length}
+                      crafters={item.crafted}
+                      empty="No one has been awarded this yet."
+                    />
                   </div>
                 </article>
               ))}
@@ -173,17 +177,59 @@ export default function ProfessionsClient({ groups, totalItems }: {
       {totalItems === 0 ? (
         <EmptyState
           icon={Hammer}
-          title="No patterns in the catalog yet"
-          description="Patterns drop from SSC and TK trash. Run data/corrections-008.sql to seed the catalog, then award them via the loot page as they drop."
+          title="No profession items in the catalog yet"
+          description="Patterns drop from SSC and TK trash; crafted outputs live under the Crafted (Nether Vortex) catalog section. Award them via the loot page as they drop."
         />
       ) : filteredItemCount === 0 ? (
         <EmptyState
           icon={Hammer}
-          title={`No ${binding === "boe" ? "BoE" : "BoP"} recipes in the catalog`}
-          description="Try the other binding, or All to see every recipe."
+          title="Nothing matches this filter"
+          description="Try the other lenses or All to see every item."
           variant="compact"
         />
       ) : null}
+    </div>
+  );
+}
+
+function CrafterList({
+  heading,
+  count,
+  crafters,
+  empty,
+}: {
+  heading: string;
+  count: number;
+  crafters: Crafter[];
+  empty: string;
+}) {
+  return (
+    <div>
+      <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500 mb-1.5">
+        {heading} · {count}
+      </div>
+      {crafters.length === 0 ? (
+        <p className="text-xs text-neutral-500 italic">{empty}</p>
+      ) : (
+        <ul className="space-y-1">
+          {crafters.map(c => (
+            <li key={c.id}>
+              {c.playerId !== null ? (
+                <Link
+                  href={`/players/${c.playerId}`}
+                  className="inline-flex items-center gap-2 text-sm hover:underline"
+                >
+                  <CrafterLabel c={c} />
+                </Link>
+              ) : (
+                <span className="inline-flex items-center gap-2 text-sm">
+                  <CrafterLabel c={c} />
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

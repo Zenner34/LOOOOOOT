@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { SPEC_BY_KEY, ROLES } from "@/lib/specs";
+import { SPECIALIZATIONS } from "@/lib/loot";
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const id = Number(params.id);
@@ -19,6 +20,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   if (typeof body.isMain === "boolean") patch.isMain = body.isMain;
   if ("playerId" in body) {
     patch.playerId = body.playerId === null ? null : Number(body.playerId);
+  }
+  if (Array.isArray(body.craftedSpecializations)) {
+    const allowed = new Set<string>(SPECIALIZATIONS);
+    patch.craftedSpecializations = Array.from(new Set(
+      body.craftedSpecializations.filter((s: unknown): s is string => typeof s === "string" && allowed.has(s)),
+    ));
   }
   const updated = await prisma.character.update({ where: { id }, data: patch });
   return NextResponse.json(updated);

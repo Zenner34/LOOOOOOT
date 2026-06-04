@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CLASS_COLOR, SPECS } from "@/lib/specs";
+import { SPECIALIZATIONS, type Specialization } from "@/lib/loot";
 import { ClassIcon } from "@/app/components/ClassIcon";
 import { SpecIcon } from "@/app/components/SpecIcon";
 import { Select } from "@/app/components/Select";
@@ -19,6 +20,7 @@ type Character = {
   role: string;
   active: boolean;
   isMain: boolean;
+  craftedSpecializations: string[];
 };
 
 type SortKey = "name" | "class" | "role" | "active" | "main";
@@ -250,6 +252,14 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
                 <button className="btn-danger btn-xs ml-auto" onClick={() => remove(c.id)}>Delete</button>
               </div>
             )}
+            {admin && (
+              <div className="mt-2">
+                <SpecializationChips
+                  value={c.craftedSpecializations}
+                  onChange={next => patch(c.id, { craftedSpecializations: next })}
+                />
+              </div>
+            )}
           </div>
         ))}
         {visible.length === 0 && (
@@ -292,6 +302,7 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
                   Active {sortIndicator("active")}
                 </button>
               </th>
+              {admin && <th title="Blacksmithing specialization — gates the &quot;Can craft&quot; list on the Professions tab.">Crafts</th>}
               {admin && <th></th>}
             </tr>
           </thead>
@@ -359,6 +370,14 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
                   ) : (c.active ? "yes" : "no")}
                 </td>
                 {admin && (
+                  <td>
+                    <SpecializationChips
+                      value={c.craftedSpecializations}
+                      onChange={next => patch(c.id, { craftedSpecializations: next })}
+                    />
+                  </td>
+                )}
+                {admin && (
                   <td className="text-right">
                     <button className="btn-danger btn-xs" onClick={() => remove(c.id)}>Delete</button>
                   </td>
@@ -367,7 +386,7 @@ export default function CharactersClient({ initial, admin }: { initial: Characte
             ))}
             {visible.length === 0 && (
               <tr>
-                <td colSpan={admin ? 6 : 5} className="py-10 text-center text-neutral-500">
+                <td colSpan={admin ? 7 : 5} className="py-10 text-center text-neutral-500">
                   {search ? `No characters match "${search}".` : "No characters yet."}
                 </td>
               </tr>
@@ -418,6 +437,52 @@ function NameEditor({ c, onSave }: { c: Character; onSave: (name: string) => voi
       <span style={{ color: CLASS_COLOR[c.class] ?? "#fff" }} className="font-medium">{c.name}</span>
       <Pencil size={11} className="text-neutral-500 opacity-0 group-hover/name:opacity-100 transition" aria-hidden />
     </button>
+  );
+}
+
+// Short label so the chips don't blow up the table column.
+const SPEC_SHORT: Record<Specialization, string> = {
+  "Master Hammersmith": "Hammer",
+  "Master Swordsmith":  "Sword",
+  "Master Axesmith":    "Axe",
+};
+
+function SpecializationChips({
+  value,
+  onChange,
+}: {
+  value: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const set = new Set(value);
+  function toggle(s: Specialization) {
+    const next = new Set(set);
+    if (next.has(s)) next.delete(s);
+    else next.add(s);
+    onChange(Array.from(next));
+  }
+  return (
+    <div className="inline-flex flex-wrap gap-1 items-center">
+      {SPECIALIZATIONS.map(s => {
+        const on = set.has(s);
+        return (
+          <button
+            key={s}
+            type="button"
+            onClick={() => toggle(s)}
+            title={s}
+            aria-pressed={on}
+            className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border transition ${
+              on
+                ? "bg-vermillion-500/15 text-vermillion-200 border-vermillion-500/40"
+                : "bg-white/[0.03] text-neutral-500 border-white/10 hover:text-neutral-300 hover:border-white/20"
+            }`}
+          >
+            {SPEC_SHORT[s]}
+          </button>
+        );
+      })}
+    </div>
   );
 }
 

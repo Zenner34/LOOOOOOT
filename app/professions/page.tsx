@@ -1,101 +1,166 @@
 import { prisma } from "@/lib/db";
-import ProfessionsClient, { type ProfessionGroup, type Crafter } from "./ProfessionsClient";
+import { specializationForCraftedItem } from "@/lib/loot";
+import ProfessionsClient, {
+  type ProfessionGroup,
+  type Crafter,
+  type CraftedCard,
+} from "./ProfessionsClient";
 
 export const dynamic = "force-dynamic";
 
-// Which profession a pattern belongs to is encoded in its `notes`
-// field (e.g. "Tailoring 375 — crafts Belt of Blasting (BoE).").
-// We parse that prefix to bucket the items.
+// Which profession a crafted output / pattern belongs to is encoded in its
+// `notes` field (e.g. "Tailoring 375 — crafts Belt of Blasting (BoE)." or
+// "Crafted from Nether Vortex — Blacksmithing 375. BoE."). Parsing the
+// notes is the only signal we have, so we look for the profession name
+// anywhere in the string rather than insisting on a prefix.
 const PROFESSIONS = [
-  { key: "Tailoring",       label: "Tailoring",       blurb: "Cloth belts and boots — best in slot for casters." },
-  { key: "Leatherworking",  label: "Leatherworking",  blurb: "Leather and mail patterns for rogues, druids, hunters, shaman." },
-  { key: "Blacksmithing",   label: "Blacksmithing",   blurb: "Plate plans — tank and DPS belts and boots for warriors and paladins." },
+  { key: "Tailoring",      label: "Tailoring",      blurb: "Cloth belts and boots — best in slot for casters." },
+  { key: "Leatherworking", label: "Leatherworking", blurb: "Leather and mail patterns for rogues, druids, hunters, shaman." },
+  { key: "Blacksmithing",  label: "Blacksmithing",  blurb: "Plate plans, BoE belts, and the Master-specialization weapons." },
 ] as const;
+type ProfKey = (typeof PROFESSIONS)[number]["key"];
 
-function professionOfNotes(notes: string | null): string | null {
+function professionOfNotes(notes: string | null): ProfKey | null {
   if (!notes) return null;
-  for (const p of PROFESSIONS) if (notes.startsWith(p.key)) return p.key;
+  for (const p of PROFESSIONS) if (notes.includes(p.key)) return p.key;
   return null;
 }
 
-// "Pattern: Boots of Blasting" → "Boots of Blasting".
-// "Plans: Red Belt of Battle" → "Red Belt of Battle".
+/** "Pattern: Boots of Blasting" → "Boots of Blasting"; otherwise unchanged. */
 function craftedItemName(patternName: string): string {
   return patternName.replace(/^(Pattern|Plans):\s*/i, "");
 }
 
-/**
- * Reads the binding of the *crafted* item out of the pattern's notes
- * (e.g. "Tailoring 375 — crafts Belt of Blasting (BoE). World drop,
- * BoP." → "boe"). Defaults to "boe" when no marker is found, since the
- * vast majority of profession patterns produce BoE gear.
- */
+/** Look at a pattern or crafted-output's notes and return the binding of the
+ *  *crafted* item (BoE vs BoP). Defaults to BoE when no marker matches. */
 function craftedBinding(notes: string | null): "boe" | "bop" {
   if (!notes) return "boe";
-  // Match the first "(BoE)" or "(BoP)" inside the "crafts …" portion —
-  // ignore the trailing "BoP" that just notes the pattern's own bind.
-  const m = notes.match(/crafts[^.]*?\((BoE|BoP)\)/i);
-  if (!m) return "boe";
-  return m[1].toLowerCase() === "bop" ? "bop" : "boe";
+  // For patterns the marker lives inside "crafts ... (BoE|BoP)".
+  const craftsMatch = notes.match(/crafts[^.]*?\((BoE|BoP)\)/i);
+  if (craftsMatch) return craftsMatch[1].toLowerCase() === "bop" ? "bop" : "boe";
+  // For crafted-output items the binding is the last token in the notes
+  // (e.g. "Crafted from Nether Vortex — Blacksmithing 375. BoP.").
+  const tail = notes.match(/\b(BoE|BoP)\b\.?\s*$/);
+  if (tail) return tail[1].toLowerCase() === "bop" ? "bop" : "boe";
+  return "boe";
 }
 
 export default async function ProfessionsPage() {
-  const patterns = await prisma.item.findMany({
-    where: { slot: { in: ["Pattern", "Plans"] } },
-    orderBy: { name: "asc" },
-    include: {
-      awards: {
-        orderBy: { awardedAt: "asc" },
-        include: {
-          character: { include: { player: true } },
+  // Load patterns (recipe drops) and crafted-output items in parallel.
+  // The crafted-output side is matched by name = craftedItemName(pattern.name)
+  // OR by appearing under the "Crafted (Nether Vortex)" boss section (for
+  // weapons that have no dropped pattern).
+  const [patterns, craftedFromVortex, charsWithSpecs] = await Promise.all([
+    prisma.item.findMany({
+      where: { slot: { in: ["Pattern", "Plans"] } },
+      orderBy: { name: "asc" },
+      include: {
+        awards: {
+          orderBy: { awardedAt: "asc" },
+          include: { character: { include: { player: true } } },
         },
       },
-    },
-  });
+    }),
+    prisma.item.findMany({
+      where: { boss: { name: "Crafted (Nether Vortex)" } },
+      orderBy: { name: "asc" },
+      include: {
+        awards: {
+          orderBy: { awardedAt: "asc" },
+          include: { character: { include: { player: true } } },
+        },
+      },
+    }),
+    prisma.character.findMany({
+      where: { craftedSpecializations: { isEmpty: false } },
+      include: { player: true },
+    }),
+  ]);
 
-  // Bucket patterns into the three professions. Items whose notes
-  // don't start with a known profession name (or have no notes at
-  // all) are silently dropped — they shouldn't exist post
-  // corrections-008.sql.
-  const bucket: Record<string, typeof patterns> = {
-    Tailoring: [],
-    Leatherworking: [],
-    Blacksmithing: [],
-  };
-  for (const item of patterns) {
-    const prof = professionOfNotes(item.notes);
-    if (prof) bucket[prof].push(item);
+  // Index crafted outputs by name for cheap "what's the output of this pattern" lookups.
+  const outputByName = new Map(craftedFromVortex.map(o => [o.name, o]));
+
+  // Build one card per *crafted item*. Start from patterns (so belts/boots
+  // both get a card even if no one has been awarded the output yet), then
+  // add the vortex weapons that have no corresponding pattern.
+  const cards: CraftedCard[] = [];
+  const seenCraftedNames = new Set<string>();
+
+  for (const p of patterns) {
+    const profession = professionOfNotes(p.notes);
+    if (!profession) continue; // ignore patterns that don't tag a profession
+    const craftName = craftedItemName(p.name);
+    const output = outputByName.get(craftName);
+    seenCraftedNames.add(craftName);
+
+    const canCraft = dedupeCharacters(p.awards.map(a => a.character));
+    const crafted = output ? dedupeCharacters(output.awards.map(a => a.character)) : [];
+
+    cards.push({
+      key: `pattern-${p.id}`,
+      profession,
+      itemName: craftName,
+      wowheadId: output?.wowheadId ?? p.wowheadId, // prefer the crafted-item wowhead
+      binding: craftedBinding(p.notes),
+      canCraftLabel: null, // pattern-gated
+      canCraft,
+      crafted,
+    });
   }
 
+  // Weapons: items in the Crafted (Nether Vortex) section whose name has no
+  // matching pattern (Stormherald, Lionheart Executioner, etc.). "Can craft"
+  // comes from Character.craftedSpecializations.
+  for (const o of craftedFromVortex) {
+    if (seenCraftedNames.has(o.name)) continue;
+    const profession = professionOfNotes(o.notes);
+    if (!profession) continue;
+    const spec = specializationForCraftedItem(o.name);
+    const canCraft: Crafter[] = spec
+      ? dedupeCharacters(charsWithSpecs.filter(c => c.craftedSpecializations.includes(spec)))
+      : [];
+    const crafted = dedupeCharacters(o.awards.map(a => a.character));
+    cards.push({
+      key: `crafted-${o.id}`,
+      profession,
+      itemName: o.name,
+      wowheadId: o.wowheadId,
+      binding: craftedBinding(o.notes),
+      canCraftLabel: spec ?? null,
+      canCraft,
+      crafted,
+    });
+  }
+
+  // Group by profession; preserve PROFESSIONS order and alphabetical items.
   const groups: ProfessionGroup[] = PROFESSIONS.map(p => ({
     key: p.key,
     label: p.label,
     blurb: p.blurb,
-    items: (bucket[p.key] ?? []).map(item => {
-      // Dedupe crafters by characterId so re-awards (rare) don't
-      // double-count.
-      const owners = new Map<number, Crafter>();
-      for (const a of item.awards) {
-        if (owners.has(a.characterId)) continue;
-        owners.set(a.characterId, {
-          id: a.character.id,
-          name: a.character.name,
-          class: a.character.class,
-          spec: a.character.spec,
-          playerId: a.character.playerId,
-          playerName: a.character.player?.displayName ?? null,
-        });
-      }
-      return {
-        id: item.id,
-        name: item.name,
-        craftedItemName: craftedItemName(item.name),
-        wowheadId: item.wowheadId,
-        crafters: [...owners.values()],
-        binding: craftedBinding(item.notes),
-      };
-    }),
+    items: cards
+      .filter(c => c.profession === p.key)
+      .sort((a, b) => a.itemName.localeCompare(b.itemName)),
   }));
 
-  return <ProfessionsClient groups={groups} totalItems={patterns.length} />;
+  const totalItems = cards.length;
+  return <ProfessionsClient groups={groups} totalItems={totalItems} />;
+}
+
+// Deduplicate by character id and shape to Crafter for the client. Handles
+// inputs whose awards landed multiple times to the same character (rare for
+// patterns, more common if a crafted item is re-awarded by mistake).
+function dedupeCharacters(input: Array<{ id: number; name: string; class: string; spec: string; playerId: number | null; player?: { displayName: string } | null }>): Crafter[] {
+  const seen = new Map<number, Crafter>();
+  for (const c of input) {
+    if (seen.has(c.id)) continue;
+    seen.set(c.id, {
+      id: c.id,
+      name: c.name,
+      class: c.class,
+      spec: c.spec,
+      playerId: c.playerId,
+      playerName: c.player?.displayName ?? null,
+    });
+  }
+  return [...seen.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
