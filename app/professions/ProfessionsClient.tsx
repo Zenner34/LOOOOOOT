@@ -258,13 +258,8 @@ function CrafterList({
 
 function CrafterLabel({ c }: { c: Crafter }) {
   return (
-    <>
-      <span className="font-semibold" style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>
-        {c.name}
-      </span>
-      {c.playerName && c.playerName !== c.name && (
-        <span className="text-xs text-neutral-500">{c.playerName}</span>
-      )}
-    </>
+    <span className="font-semibold" style={{ color: CLASS_COLOR[c.class] ?? "#fff" }}>
+      {c.name}
+    </span>
   );
 }
