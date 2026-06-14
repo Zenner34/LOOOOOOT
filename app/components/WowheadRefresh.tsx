@@ -9,11 +9,13 @@ import { useEffect } from "react";
  *
  * Wowhead's widgets/power.js (loaded with `defer` in app/layout.tsx)
  * scans the DOM on initial document-load, finds every `<a
- * data-wowhead="…">`, fetches that item's metadata, and replaces
- * the icon + adds a hover tooltip. On Next.js client navigation the
- * document doesn't reload, so newly-mounted links keep whatever
- * fallback we server-rendered (often the inv_misc_questionmark.jpg
- * "?" icon) until the user hard refreshes.
+ * data-wowhead="…">`, and attaches the on-hover item tooltip. We run
+ * with colorLinks/iconizeLinks/renameLinks all OFF — the icon, epic
+ * colour, and name are rendered by WowheadLink itself (out of
+ * lib/wowhead-ids.json) so the script never rewrites our links (which
+ * caused cards to swap/rename on filter re-renders). On Next.js client
+ * navigation the document doesn't reload, so newly-mounted links need a
+ * manual refresh pass to get their tooltips.
  *
  * The widget exposes a few different refresh API surfaces depending
  * on its version. We try them in order, polling for the global to

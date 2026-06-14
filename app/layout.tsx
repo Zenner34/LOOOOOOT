@@ -47,7 +47,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en" className={`${inter.variable} ${cinzel.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: `
-          var whTooltips = {colorLinks: true, iconizeLinks: true, renameLinks: true, domain: "tbc"};
+          var whTooltips = {colorLinks: false, iconizeLinks: false, renameLinks: false, domain: "tbc"};
         `}} />
         <script src="https://wow.zamimg.com/widgets/power.js" defer></script>
       </head>
