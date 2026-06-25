@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { CLASS_COLOR } from "@/lib/specs";
 import {
   emptyAssignmentData,
   flattenSinglePhaseBosses,
@@ -211,6 +210,7 @@ export default function AssignmentsClient({
             teamRosterIds={teamRosterIds}
             teamRosterChars={teamRosterChars}
             roleCounts={roleCounts}
+            players={players}
             router={router}
           />
         </div>
@@ -236,6 +236,7 @@ function AssignmentsBody({
   teamRosterIds,
   teamRosterChars,
   roleCounts,
+  players,
   router,
 }: {
   teams: Team[];
@@ -253,6 +254,7 @@ function AssignmentsBody({
   teamRosterIds: number[];
   teamRosterChars: AssignableCharacter[];
   roleCounts: Array<{ key: string; label: string; chars: AssignableCharacter[] }>;
+  players: Array<{ id: number; displayName: string }>;
   router: ReturnType<typeof useRouter>;
 }) {
   return (
@@ -320,9 +322,9 @@ function AssignmentsBody({
 
         <div className="ml-auto inline-flex items-center gap-2 text-xs flex-wrap justify-end">
           <ViewModeToggle />
-          <SpotlightPicker
+          <PlayerSpotlightPicker
+            players={players}
             characters={characters}
-            teamRosterIds={teamRosterIds}
           />
           <SaveIndicator state={savingState} />
         </div>
@@ -752,18 +754,78 @@ function TeamModal({
  * Scoped to the team's roster so the dropdown stays manageable; the
  * search input lets you filter further.
  */
-function SpotlightPicker({
+function PlayerSpotlightPicker({
+  players,
   characters,
-  teamRosterIds,
 }: {
+  players: Array<{ id: number; displayName: string }>;
   characters: AssignableCharacter[];
-  teamRosterIds: number[];
 }) {
-  const { lockedId, setLocked } = useHighlight();
+  const { lockedIds, setLocked } = useHighlight();
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const anchorRef = useRef<HTMLButtonElement>(null);
-  const charsById = useMemo(() => new Map(characters.map(c => [c.id, c])), [characters]);
-  const locked = lockedId != null ? charsById.get(lockedId) ?? null : null;
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // playerId → list of that player's character ids. Drives both "which
+  // ids do we lock when this player is picked" and the per-row char-count
+  // hint in the dropdown.
+  const charsByPlayer = useMemo(() => {
+    const m = new Map<number, number[]>();
+    for (const c of characters) {
+      if (c.playerId == null) continue;
+      const arr = m.get(c.playerId) ?? [];
+      arr.push(c.id);
+      m.set(c.playerId, arr);
+    }
+    return m;
+  }, [characters]);
+
+  // Which player (if any) is currently fully locked. A player counts as
+  // locked when every one of their character ids is present in lockedIds;
+  // that lets a returning raider see their pill light up after reload.
+  const lockedPlayer = useMemo(() => {
+    if (lockedIds.size === 0) return null;
+    for (const p of players) {
+      const ids = charsByPlayer.get(p.id);
+      if (!ids || ids.length === 0) continue;
+      if (ids.every(id => lockedIds.has(id))) return p;
+    }
+    return null;
+  }, [lockedIds, players, charsByPlayer]);
+
+  const visiblePlayers = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return players
+      .filter(p => (charsByPlayer.get(p.id)?.length ?? 0) > 0)
+      .filter(p => q === "" || p.displayName.toLowerCase().includes(q))
+      .sort((a, b) => a.displayName.localeCompare(b.displayName));
+  }, [players, charsByPlayer, query]);
+
+  useEffect(() => {
+    if (!open) return;
+    inputRef.current?.focus({ preventScroll: true });
+    function onDoc(e: MouseEvent) {
+      if (popoverRef.current?.contains(e.target as Node)) return;
+      if (anchorRef.current?.contains(e.target as Node)) return;
+      setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") setOpen(false); }
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  function pick(player: { id: number; displayName: string }) {
+    const ids = charsByPlayer.get(player.id) ?? [];
+    setLocked(ids);
+    setOpen(false);
+    setQuery("");
+  }
 
   return (
     <span className="relative inline-flex items-center gap-1">
@@ -772,31 +834,67 @@ function SpotlightPicker({
         type="button"
         onClick={() => setOpen(o => !o)}
         className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-[var(--surface)] px-3 py-1 text-xs text-neutral-200 hover:border-white/20 hover:bg-white/[0.03] transition min-h-[28px]"
-        title="Lock a character to spotlight every assignment they appear in"
+        title="Lock the highlight on a player — every chip across the sheet for any of their characters lights up. Persists in this browser."
       >
-        <span aria-hidden className="inline-block w-2 h-2 rounded-full" style={{ background: locked ? CLASS_COLOR[locked.class] ?? "#888" : "#444" }} />
+        <span aria-hidden className="inline-block w-2 h-2 rounded-full" style={{ background: lockedPlayer ? "#d4af37" : "#444" }} />
         <span className="font-medium">
-          {locked ? `Spotlight: ${locked.name}` : "Spotlight someone"}
+          {lockedPlayer ? `Highlighting: ${lockedPlayer.displayName}` : "Highlight me"}
         </span>
       </button>
-      {locked && (
+      {lockedPlayer && (
         <button
           type="button"
           onClick={() => setLocked(null)}
           className="text-neutral-500 hover:text-vermillion-200 transition text-xs"
-          title="Clear spotlight"
+          title="Clear highlight"
         >
           <X size={12} aria-hidden />
         </button>
       )}
       {open && (
-        <CharacterPicker
-          characters={characters}
-          scopeIds={teamRosterIds.length > 0 ? teamRosterIds : null}
-          onPick={c => { setLocked(c.id); setOpen(false); }}
-          onClose={() => setOpen(false)}
-          anchorRef={anchorRef}
-        />
+        <div
+          ref={popoverRef}
+          role="dialog"
+          aria-label="Pick a player to highlight"
+          className="absolute z-40 mt-1 top-full right-0 w-64 rounded-xl border border-white/10 bg-[var(--surface-2)] shadow-2xl animate-fade-in overflow-hidden"
+        >
+          <div className="p-2 border-b border-white/5">
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search players…"
+              className="input text-xs h-8 w-full"
+              aria-label="Search players"
+            />
+          </div>
+          <ul className="max-h-72 overflow-y-auto p-1">
+            {visiblePlayers.length === 0 ? (
+              <li className="px-2 py-3 text-center text-xs text-neutral-500">No players</li>
+            ) : visiblePlayers.map(p => {
+              const charCount = charsByPlayer.get(p.id)?.length ?? 0;
+              const isLocked = lockedPlayer?.id === p.id;
+              return (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    onClick={() => pick(p)}
+                    className={`flex items-center justify-between w-full text-left px-2.5 py-1.5 rounded-md text-sm transition ${
+                      isLocked
+                        ? "bg-[#d4af37]/15 text-[#d4af37]"
+                        : "text-neutral-200 hover:bg-vermillion-500/12 hover:text-vermillion-100"
+                    }`}
+                  >
+                    <span className="font-medium truncate">{p.displayName}</span>
+                    <span className="text-[10px] text-neutral-500 ml-2 flex-shrink-0">
+                      {charCount} char{charCount === 1 ? "" : "s"}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       )}
     </span>
   );

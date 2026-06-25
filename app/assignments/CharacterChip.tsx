@@ -44,10 +44,10 @@ export function CharacterChip({
   size?: "sm" | "md";
   inline?: boolean;
 }) {
-  const { effectiveId, setHover } = useHighlight();
+  const { isHighlighted, anyHighlight, setHover } = useHighlight();
   const { readOnly } = useViewMode();
-  const highlighted = effectiveId === character.id;
-  const dimmed = effectiveId !== null && effectiveId !== character.id;
+  const highlighted = isHighlighted(character.id);
+  const dimmed = anyHighlight && !highlighted;
   // Suppress the remove × in read-only / raider view.
   const showRemove = !!onRemove && !readOnly;
   // Raider view: hover/highlight still works, but the chip is no longer a

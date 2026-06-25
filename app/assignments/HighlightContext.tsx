@@ -5,69 +5,88 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 const STORAGE_KEY = "assignments.lockedHighlight";
 
 /**
- * Hover-highlight shared state. Any CharacterChip on the page reads
- * `effectiveId` and lights up if its character id matches; every other
- * chip dims. Two layers compose into `effectiveId`:
+ * Highlight state for the assignment sheet. Two layers compose:
  *
- * - `lockedId` — sticky selection from the top-bar "Spotlight" picker.
- *   Persists across reloads via localStorage, ignored when the admin
- *   hovers something else.
- * - `hoverId` — transient, set on chip mouseenter, cleared on
- *   mouseleave.
+ * - `lockedIds` — sticky *set* of character ids. The top-bar player
+ *   picker locks all of a player's characters at once so a raider sees
+ *   their main + alts light up together. Persists across reloads via
+ *   localStorage; the stored value is a comma-separated id list, and we
+ *   still accept the legacy single-integer encoding so old admins don't
+ *   lose their existing lock.
+ * - `hoverId` — transient, set on chip mouseenter, cleared on mouseleave.
+ *   Single character only.
  *
- * Hover wins when present; otherwise the locked id is used. This keeps
- * the "what am I doing tonight?" use case (lock yourself, then hover
- * other people to compare) feeling natural.
+ * Hover wins for the highlight when present (so the raider can briefly
+ * peek elsewhere without losing their lock). Use `isHighlighted(id)` to
+ * render the gold ring; use `anyHighlight` to know whether to desaturate
+ * non-matching chips.
  */
 type HighlightCtx = {
   hoverId: number | null;
-  lockedId: number | null;
-  effectiveId: number | null;
+  lockedIds: ReadonlySet<number>;
+  anyHighlight: boolean;
+  isHighlighted: (id: number) => boolean;
   setHover: (id: number | null) => void;
-  setLocked: (id: number | null) => void;
+  setLocked: (ids: number[] | null) => void;
 };
 
 const Ctx = createContext<HighlightCtx | null>(null);
 
+const EMPTY_SET: ReadonlySet<number> = new Set();
+
 export function HighlightProvider({ children }: { children: ReactNode }) {
   const [hoverId, setHoverId] = useState<number | null>(null);
-  const [lockedId, setLockedIdRaw] = useState<number | null>(null);
+  const [lockedIds, setLockedIdsRaw] = useState<ReadonlySet<number>>(EMPTY_SET);
 
-  // Hydrate locked id from localStorage on mount so a returning raider
-  // stays focused on themselves. Wrapped in a try/catch because the
-  // typed value can be invalid (other origin, manual edit, etc.).
+  // Hydrate lock from localStorage on mount so a returning raider stays
+  // focused on themselves. Accepts the comma-separated format AND the
+  // legacy single-integer string so old saved locks still work.
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const n = Number(raw);
-        if (Number.isFinite(n) && n > 0) setLockedIdRaw(n);
-      }
+      if (!raw) return;
+      const ids = raw
+        .split(",")
+        .map(s => Number(s.trim()))
+        .filter(n => Number.isFinite(n) && n > 0);
+      if (ids.length > 0) setLockedIdsRaw(new Set(ids));
     } catch {}
   }, []);
 
-  function setLocked(id: number | null) {
-    setLockedIdRaw(id);
+  function setLocked(ids: number[] | null) {
+    const next: ReadonlySet<number> = ids && ids.length > 0 ? new Set(ids) : EMPTY_SET;
+    setLockedIdsRaw(next);
     try {
-      if (id == null) window.localStorage.removeItem(STORAGE_KEY);
-      else window.localStorage.setItem(STORAGE_KEY, String(id));
+      if (next.size === 0) window.localStorage.removeItem(STORAGE_KEY);
+      else window.localStorage.setItem(STORAGE_KEY, [...next].join(","));
     } catch {}
   }
 
-  const value = useMemo<HighlightCtx>(() => ({
-    hoverId,
-    lockedId,
-    effectiveId: hoverId ?? lockedId,
-    setHover: setHoverId,
-    setLocked,
-  }), [hoverId, lockedId]);
+  const value = useMemo<HighlightCtx>(() => {
+    const anyHighlight = hoverId != null || lockedIds.size > 0;
+    return {
+      hoverId,
+      lockedIds,
+      anyHighlight,
+      isHighlighted: (id: number) =>
+        hoverId != null ? hoverId === id : lockedIds.has(id),
+      setHover: setHoverId,
+      setLocked,
+    };
+  }, [hoverId, lockedIds]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
-export function useHighlight() {
+export function useHighlight(): HighlightCtx {
   const v = useContext(Ctx);
-  // No-op fallback so chips outside the provider still render fine.
-  if (!v) return { hoverId: null, lockedId: null, effectiveId: null, setHover: () => {}, setLocked: () => {} } satisfies HighlightCtx;
+  if (!v) return {
+    hoverId: null,
+    lockedIds: EMPTY_SET,
+    anyHighlight: false,
+    isHighlighted: () => false,
+    setHover: () => {},
+    setLocked: () => {},
+  };
   return v;
 }
