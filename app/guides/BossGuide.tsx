@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Shield, Eye, Swords, Sparkles, Info, Crown, Check, X, ArrowRight, Trophy, ListOrdered } from "@/app/components/ui/Icon";
-import type { Boss, Mechanic, RoleNote, Section } from "./black-temple/bosses";
+import type { Boss, Mechanic, RoleNote, Section } from "./types";
 
 /* Renders one boss: hero banner + sticky section tabs + section content.
    Fully driven by the Boss data in ./black-temple/bosses.ts. */
