@@ -12,6 +12,7 @@ const NAV = [
   { href: "/loot/assign",        label: "Assign",      adminOnly: true },
   { href: "/admin/loot",         label: "All loot",    adminOnly: true },
   { href: "/assignments",        label: "Assignments"                  },
+  { href: "/guides",             label: "Guides"                       },
   { href: "/rosters",     label: "Roster"                    },
   { href: "/players",     label: "Players"                   },
   { href: "/characters",  label: "Characters"                },
