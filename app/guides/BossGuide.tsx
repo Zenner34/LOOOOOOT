@@ -54,6 +54,29 @@ export default function BossGuide({ boss }: { boss: Boss }) {
           </div>
         )}
 
+        {section.image && (
+          <figure className="space-y-2">
+            <a
+              href={section.image}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block overflow-hidden rounded-xl border transition hover:brightness-110"
+              style={{ borderColor: `${accent}33` }}
+              title="Open full size"
+            >
+              <img
+                src={section.image}
+                alt={section.imageAlt ?? `${boss.name} strategy diagram`}
+                loading="lazy"
+                className="w-full h-auto block bg-black/30"
+              />
+            </a>
+            {section.imageCaption && (
+              <figcaption className="text-[11px] text-neutral-500 text-center">{section.imageCaption}</figcaption>
+            )}
+          </figure>
+        )}
+
         {section.callout && <Callout accent={accent} {...section.callout} />}
 
         {section.roles?.map((r, i) => <RoleCallout key={i} accent={accent} role={r} />)}

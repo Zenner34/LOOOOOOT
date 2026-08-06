@@ -11,6 +11,10 @@ export type Section = {
   tag: string;
   title: string;
   subtitle?: string;
+  /** Optional strategy diagram/screenshot shown near the top of the section. */
+  image?: string;
+  imageAlt?: string;
+  imageCaption?: string;
   lead?: string[];
   callout?: Callout;
   roles?: RoleNote[];

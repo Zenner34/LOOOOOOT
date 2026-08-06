@@ -19,6 +19,8 @@ const RAGE: Boss = {
       tab: "Overview",
       tag: "First Boss",
       title: "Overview",
+      image: "/guides/mount-hyjal/rage-winterchill.png",
+      imageCaption: "Rage Winterchill — raid spread & positioning",
       lead: [
         "Rage Winterchill opens Mount Hyjal and serves as a positioning and awareness check. The mechanics are simple, but poor movement or delayed reactions quickly overwhelm healers.",
         "The encounter rewards disciplined positioning and immediate responses to targeted mechanics rather than raw DPS.",
@@ -104,6 +106,8 @@ const ANETHERON: Boss = {
       tab: "Overview",
       tag: "Second Boss",
       title: "Overview",
+      image: "/guides/mount-hyjal/anetheron.png",
+      imageCaption: "Anetheron — Infernal control & spread",
       lead: [
         "Anetheron is primarily an add-management encounter. The boss has dangerous abilities, but Infernal control is what determines success.",
         "Stay calm during Infernal spawns and don't sacrifice positioning while switching targets.",
@@ -198,6 +202,8 @@ const KAZROGAL: Boss = {
       tab: "Overview",
       tag: "Third Boss",
       title: "Overview",
+      image: "/guides/mount-hyjal/kazrogal.png",
+      imageCaption: "Kaz'rogal — positioning near the entrance",
       lead: [
         "Kaz'rogal is a resource-management encounter that heavily punishes mana users. The mechanics are simple, but poor mana management or overextended cooldowns can wipe the raid fast.",
         "The fight gets easier the faster it ends — efficient DPS and proper cooldown usage matter, without sacrificing execution.",
@@ -242,7 +248,7 @@ const KAZROGAL: Boss = {
         },
       ],
       positioning: [
-        "Tank Kaz'rogal near the center of the encounter area.",
+        "Tank Kaz'rogal near the entrance.",
         "Face the boss away from the raid.",
         "Melee remain behind the boss.",
         "Ranged and healers spread while staying in healing range.",
@@ -285,6 +291,8 @@ const AZGALOR: Boss = {
       tab: "Overview",
       tag: "Fourth Boss",
       title: "Overview",
+      image: "/guides/mount-hyjal/azgalor.png",
+      imageCaption: "Azgalor — Doom & Doom Guard handling",
       lead: [
         "Azgalor is the final encounter before Archimonde and a positioning and personal-responsibility check. Every player must execute correctly.",
         "Doom and Rain of Fire punish individual mistakes, and Howl of Azgalor pressures healers constantly. The fight is controlled through discipline and clean movement.",
@@ -386,6 +394,8 @@ const ARCHIMONDE: Boss = {
       tab: "Overview",
       tag: "Final Boss",
       title: "Overview",
+      image: "/guides/mount-hyjal/archimonde.png",
+      imageCaption: "Archimonde — raid spread & Doomfire lanes",
       lead: [
         "Archimonde is the final encounter of Mount Hyjal and one of the most punishing fights in The Burning Crusade. He is not a DPS check — he dies when every player consistently executes the mechanics.",
         "Almost every mechanic can wipe the raid if handled incorrectly. Surviving matters more than maximizing damage. Stay calm, trust the strategy, and execute one mechanic at a time.",
