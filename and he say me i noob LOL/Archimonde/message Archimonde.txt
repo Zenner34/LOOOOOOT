@@ -1,0 +1,253 @@
+==================================================
+MOUNT HYJAL V3
+BOSS STRATEGY HANDBOOK
+ARCHIMONDE
+==================================================
+
+
+==================================================
+ARCHIMONDE
+==================================================
+
+Creature Type:
+Demon
+
+Demonslaying Elixir:
+Yes
+
+
+OVERVIEW
+==================================================
+
+Archimonde is the final encounter of Mount Hyjal and one of
+the most punishing fights in The Burning Crusade.
+
+Unlike previous encounters, Archimonde is not a DPS check.
+The boss dies when every player consistently executes the
+mechanics correctly.
+
+Almost every mechanic can wipe the raid if handled
+incorrectly. Surviving is more important than maximizing
+damage.
+
+Stay calm, trust the strategy, and execute one mechanic at
+a time.
+
+
+KEY MECHANICS
+==================================================
+
+AIR BURST
+
+Effect:
+
+Launches a random player high into the air, dealing heavy
+fall damage upon landing.
+
+Execution:
+
+- Use Tears of the Goddess before landing.
+- Activate Tears near the peak of the knock-up to negate
+  fall damage.
+- Return to your assigned position immediately after
+  landing.
+- Every player should have Tears of the Goddess on their
+  action bars before the pull.
+
+
+DOOMFIRE
+
+Effect:
+
+Summons a moving trail of fire that follows random players.
+
+Execution:
+
+- Move early.
+- Kite the Doomfire away from the raid.
+- Never run Doomfire through melee or healers.
+- Small movements are preferred over large panic movements.
+- Once safe, immediately return to your original position.
+- Maintain awareness of nearby Doomfire while repositioning.
+
+
+FEAR
+
+Effect:
+
+Mass fear cast throughout the encounter.
+
+Execution:
+
+- Tremor Totems should be rotated to provide continuous
+  coverage for melee and tanks.
+- Fear Ward should be maintained on the active tank whenever
+  available.
+- Do not spread farther than necessary from Tremor Totems.
+- Recover positioning immediately after every Fear.
+
+
+GRIP OF THE LEGION
+
+Effect:
+
+Applies a Shadow damage-over-time effect to a random
+player.
+
+Execution:
+
+- Healers quickly stabilize affected players.
+- Continue normal positioning.
+- Do not force unnecessary movement.
+
+
+FINGER OF DEATH
+
+Effect:
+
+Massive damage if no player is within melee range.
+
+Execution:
+
+- Tanks must maintain contact with Archimonde at all times.
+- Never allow Archimonde to lose his primary target.
+- Prevent unnecessary tank movement during mechanics.
+
+
+SOUL CHARGE
+
+Effect:
+
+Whenever a player dies, Archimonde gains a powerful buff
+based on that player's class.
+
+Execution:
+
+- Deaths are not recoverable mistakes.
+- Every player should prioritize survival over DPS.
+- Avoid unnecessary risks throughout the encounter.
+
+
+POSITIONING
+==================================================
+
+- Tank Archimonde near the center of the encounter area.
+- Face the boss away from the raid.
+- Melee remain behind the boss.
+- Ranged and healers spread evenly around the encounter
+  while remaining within healing range.
+- Avoid creating large gaps that make Doomfire movement
+  unpredictable.
+- Return to your assigned location after every mechanic.
+- Clean positioning makes every subsequent mechanic easier.
+
+
+ENCOUNTER FLOW
+==================================================
+
+Pull
+
+↓
+
+Establish boss positioning.
+
+↓
+
+Maintain consistent DPS while preserving clean raid
+spacing.
+
+↓
+
+Handle Doomfire without disrupting raid positioning.
+
+↓
+
+Players affected by Air Burst safely land using Tears of
+the Goddess.
+
+↓
+
+Recover after Fear.
+
+↓
+
+Repeat until Archimonde reaches low health.
+
+↓
+
+Continue executing every mechanic exactly the same during
+the final burn.
+
+↓
+
+Victory.
+
+
+FINAL BURN
+==================================================
+
+Archimonde does not become more mechanically difficult at
+low health.
+
+The temptation is to ignore mechanics and finish the boss.
+
+Do not.
+
+Continue handling:
+
+- Doomfire.
+- Air Burst.
+- Fear.
+- Grip of the Legion.
+- Positioning.
+
+A clean final minute is far more valuable than attempting
+to rush the kill.
+
+If everyone survives, Archimonde dies.
+
+
+COMMON WIPE CAUSES
+==================================================
+
+- Forgetting to use Tears of the Goddess after Air Burst.
+- Doomfire being dragged through the raid.
+- Players panicking during Doomfire movement.
+- Poor Tremor Totem or Fear Ward coverage.
+- Tank losing contact with Archimonde.
+- Deaths causing dangerous Soul Charge buffs.
+- Players sacrificing mechanics for additional DPS.
+- Raid collapsing into poor positions after movement.
+- Chain deaths during the final burn.
+
+
+FINAL NOTES
+==================================================
+
+Archimonde rewards discipline more than damage.
+
+Every mechanic has a solution.
+
+Trust the strategy.
+
+Respect every mechanic.
+
+Stay alive.
+
+If everyone executes consistently, Archimonde will fall.
+
+
+==================================================
+MOUNT HYJAL COMPLETE
+==================================================
+
+Congratulations.
+
+You have successfully completed every encounter in Mount
+Hyjal.
+
+Clean positioning, disciplined movement, and consistent
+execution will make Hyjal one of the most reliable raids in
+Tier 6.
+
+Good luck, and enjoy the loot.

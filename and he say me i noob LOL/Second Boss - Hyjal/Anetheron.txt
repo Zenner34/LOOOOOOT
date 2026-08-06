@@ -1,0 +1,104 @@
+
+==================================================
+ANETHERON
+==================================================
+
+Creature Type:
+Demon
+
+Demonslaying Elixir:
+Yes
+
+
+OVERVIEW
+==================================================
+
+Anetheron is primarily an add management encounter. While
+the boss has dangerous abilities, Infernal control is what
+determines whether the raid succeeds.
+
+The raid should remain calm during Infernal spawns and
+avoid sacrificing positioning while switching targets.
+
+
+KEY MECHANICS
+==================================================
+
+INFERNO
+
+Effect:
+
+Summons an Infernal that deals heavy Fire damage and
+creates constant raid pressure.
+
+Execution:
+
+- Immediately identify the Infernal landing location.
+- Tanks establish control quickly.
+- Ranged DPS immediately eliminate the Infernal.
+- Resume boss damage once the Infernal dies.
+
+
+CARRION SWARM
+
+Effect:
+
+Heavy frontal Shadow damage.
+
+Execution:
+
+- Boss must remain faced away from the raid.
+- Never stand in front of Anetheron.
+
+
+SLEEP
+
+Effect:
+
+Places multiple players into a magical sleep.
+
+Execution:
+
+- Healers should anticipate temporary healing gaps.
+- Tanks must remain prepared for incoming damage while
+  portions of the raid are incapacitated.
+
+
+VAMPIRIC AURA
+
+Effect:
+
+Anetheron heals through melee attacks.
+
+Execution:
+
+- Maintain steady DPS.
+- Minimize unnecessary encounter length.
+
+
+POSITIONING
+==================================================
+
+- Tank the boss facing away from the raid.
+- Melee remain behind the boss.
+- Ranged spread enough to avoid Infernal overlap.
+- Maintain awareness of Infernal landing locations.
+
+
+ENCOUNTER FLOW
+==================================================
+
+1. Establish positioning.
+2. Maintain boss damage.
+3. Swap immediately to Infernals.
+4. Return to boss DPS.
+5. Repeat until defeated.
+
+
+COMMON WIPE CAUSES
+==================================================
+
+- Ignoring Infernal spawns.
+- Standing inside Infernal fire.
+- Carrion Swarm hitting the raid.
+- Tanks losing control after Sleep.

@@ -1,0 +1,302 @@
+==================================================
+GURTOGG BLOODBOIL
+==================================================
+
+Creature Type:
+Humanoid
+
+Demonslaying Elixir:
+No
+
+
+==================================================
+OVERVIEW
+==================================================
+
+Gurtogg Bloodboil is one of the first major progression
+checks inside Black Temple.
+
+The encounter is won through clean Bloodboil rotations,
+proper tank swaps, and disciplined healing during Fel Rage.
+
+This is primarily a healing and execution fight rather than
+a DPS check. Consistent positioning and communication will
+result in a much smoother kill. :contentReference[oaicite:0]{index=0}
+
+
+==================================================
+PREPARATION
+==================================================
+
+- Three Bloodboil soak groups (5 players each) are required.
+- Four groups are ideal if your raid composition allows.
+- Three tanks are strongly recommended for progression.
+- Assign Bloodboil groups before the pull.
+- Assign tank swap order.
+- Assign healer coverage for each tank and the Fel Rage
+  target.
+- Heroism/Bloodlust is recommended during the first Fel Rage
+  for maximum raid DPS. :contentReference[oaicite:1]{index=1}
+
+
+==================================================
+PHASE ONE
+==================================================
+
+OVERVIEW
+
+Phase One lasts approximately 60 seconds and revolves around
+Bloodboil rotations, tank management, and positioning.
+
+This phase repeats after every Fel Rage.
+
+
+==================================================
+KEY MECHANICS
+==================================================
+
+BLOODBOIL
+
+Effect:
+
+Every 10-12 seconds, Gurtogg applies Bloodboil to the five
+players furthest away from him.
+
+The debuff stacks and quickly becomes lethal if rotations
+are missed.
+
+Execution:
+
+- Assigned Bloodboil group moves to the soak position.
+- After receiving Bloodboil, immediately return to the raid.
+- The next group rotates into position.
+- Repeat until Fel Rage begins.
+- Never accidentally become one of the five furthest
+  players unless assigned. :contentReference[oaicite:2]{index=2}
+
+
+ACIDIC WOUND
+
+Effect:
+
+Heavy armor reduction and bleed applied to the active tank.
+
+Execution:
+
+- Tanks rotate around 8-10 stacks depending on healer
+  comfort.
+- Allow previous tank's stacks to expire before taunting
+  again.
+- Protection Paladins may Divine Shield to remove stacks if
+  assigned. :contentReference[oaicite:3]{index=3}
+
+
+BEWILDERING STRIKE
+
+Effect:
+
+Reduces the current tank's threat significantly.
+
+Execution:
+
+- Off tanks remain high on threat throughout Phase One.
+- Be prepared for immediate threat changes.
+- Paladins may use Blessing of Protection on the affected
+  tank if needed, then immediately replace the blessing so
+  Gurtogg returns to the tank instead of chasing the raid. :contentReference[oaicite:4]{index=4}
+
+
+EJECT
+
+Effect:
+
+Knocks back the active tank and reduces their threat.
+
+Execution:
+
+- Tanks maintain strong threat throughout the phase.
+- Off tanks should always remain second and third on threat.
+- Be prepared for immediate boss movement after Eject. :contentReference[oaicite:5]{index=5}
+
+
+ARCING SMASH
+
+Effect:
+
+Heavy frontal attack that reduces healing received.
+
+Execution:
+
+- Keep Gurtogg faced away from the raid.
+- Only the active tank should ever be struck.
+
+
+FEL ACID BREATH
+
+Effect:
+
+Heavy frontal Nature damage and damage-over-time effect.
+
+Execution:
+
+- Only the active tank should be hit.
+- If targeted as melee, quickly move to the opposite side of
+  the boss and return once safe.
+- Rogues can Cloak of Shadows to remove the debuff. :contentReference[oaicite:6]{index=6}
+
+
+==================================================
+POSITIONING
+==================================================
+
+Tank
+
+- Position Gurtogg near the center of the room.
+- Face him away from the raid.
+
+Melee
+
+- Stack behind one side of the boss.
+- Swap sides only if necessary to avoid Fel Acid Breath.
+
+Ranged
+
+- Maintain assigned Bloodboil positions.
+- Rotate only when your soak group is active.
+
+Healers
+
+- Keep assigned tanks covered.
+- Prepare for heavy Bloodboil damage on soaking groups.
+
+
+==================================================
+PHASE TWO
+FEL RAGE
+==================================================
+
+OVERVIEW
+
+After the fifth Bloodboil, Gurtogg enters Fel Rage for 30
+seconds.
+
+Threat is ignored during this phase as Gurtogg fixates on a
+random player.
+
+This is the highest healing requirement of the encounter.
+
+
+==================================================
+KEY MECHANICS
+==================================================
+
+FEL GEYSER
+
+Effect:
+
+Fel Rage begins with Fel Geyser, dealing Nature damage and
+knocking back nearby players.
+
+Execution:
+
+- Spread before the fifth Bloodboil.
+- Minimize splash damage.
+- Return to assigned positions once the knockback resolves. :contentReference[oaicite:7]{index=7}
+
+
+FEL RAGE
+
+Execution:
+
+- The targeted player immediately moves to the Main Tank's
+  previous position.
+- All healers except one assigned tank healer should swap to
+  healing the Fel Rage target.
+- Use personal defensives immediately.
+- Healthstones, potions, and class defensives should be used
+  proactively.
+- Hunters, Rogues, and Warlocks should use their defensive
+  abilities to help survive if targeted. :contentReference[oaicite:8]{index=8}
+
+
+INSIGNIFICANCE
+
+Effect:
+
+All other players lose threat during Fel Rage.
+
+Execution:
+
+- Tanks contribute DPS.
+- DPS players use offensive cooldowns.
+- Heroism/Bloodlust is typically used during the first Fel
+  Rage.
+- Threat is irrelevant until Phase One resumes. :contentReference[oaicite:9]{index=9}
+
+
+==================================================
+POSITIONING
+==================================================
+
+Fel Rage Target
+
+- Move to the Main Tank position.
+- Remain predictable for healers.
+
+Raid
+
+- Spread around the Fel Rage player.
+- Avoid unnecessary Fel Geyser splash damage.
+
+Healers
+
+- Commit almost all healing to the Fel Rage target.
+- Continue healing aggressively until the phase ends.
+
+
+==================================================
+ENCOUNTER FLOW
+==================================================
+
+1. Establish Phase One positioning.
+2. Begin Bloodboil rotations.
+3. Rotate tanks as Acidic Wound stacks increase.
+4. Maintain strong threat through Bewildering Strike and
+   Eject.
+5. Spread before the fifth Bloodboil.
+6. Fel Rage begins.
+7. Fel Rage target moves to the Main Tank position.
+8. Raid uses offensive cooldowns.
+9. Keep the Fel Rage target alive.
+10. Resume Phase One positioning.
+11. Repeat until Gurtogg dies.
+
+
+==================================================
+COMMON WIPE CAUSES
+==================================================
+
+- Incorrect Bloodboil rotations.
+- Players accidentally soaking Bloodboil.
+- Tanks too low on threat after Bewildering Strike or Eject.
+- Poor Acidic Wound tank swaps.
+- Fel Rage target dying.
+- Raid stacked for Fel Geyser.
+- Players standing in front of Gurtogg.
+- Healers failing to swap quickly during Fel Rage.
+
+
+==================================================
+PROGRESSION NOTES
+==================================================
+
+- Three tanks make the encounter substantially more stable.
+- Communication between Bloodboil groups is essential.
+- Tanks should intentionally manage threat so off tanks
+  remain close throughout Phase One.
+- Heroism/Bloodlust and personal DPS cooldowns are most
+  effective during Fel Rage since threat is no longer a
+  concern.
+- This encounter rewards consistency over greed. Clean
+  Bloodboil rotations and disciplined healing are more
+  valuable than squeezing out extra DPS. :contentReference[oaicite:10]{index=10}

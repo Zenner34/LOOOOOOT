@@ -1,0 +1,411 @@
+==================================================
+
+MOTHER SHAHRAZ
+
+==================================================
+
+
+
+Creature Type:
+
+Demon
+
+
+
+Demonslaying Elixir:
+
+Yes
+
+
+
+
+
+==================================================
+
+OVERVIEW
+
+==================================================
+
+
+
+Mother Shahraz is one of the final encounters in Black
+
+Temple and serves as a major execution check.
+
+
+
+Rather than relying on Shadow Resistance gear, our strategy
+
+focuses on maximizing raid DPS while using Rocket Boots to
+
+consistently handle Fatal Attraction.
+
+
+
+Success depends on disciplined movement, proper positioning,
+
+and quick reactions to mechanics.
+
+
+
+This fight is won through execution, not raw healing or DPS.
+
+
+
+
+
+==================================================
+
+RAID PREPARATION
+
+==================================================
+
+
+
+REQUIRED
+
+
+
+- Every raider must bring Rocket Boots.
+
+- Rocket Boots are mandatory for this strategy.
+
+- Healthstones should be available for every player.
+
+- Personal defensive cooldowns should be saved for Fatal
+
+  Attraction when possible.
+
+
+
+RECOMMENDED
+
+
+
+- Demonslaying Elixir.
+
+- Free Action Potion (optional).
+
+- Standard DPS consumables.
+
+
+
+
+
+==================================================
+
+POSITIONING
+
+==================================================
+
+
+
+Tank
+
+
+
+- Position Mother Shahraz in the fountain. Raid get under your statues ASAP 
+
+- Face her away from the raid.
+
+- Maintain consistent positioning throughout the encounter.
+
+
+
+Melee
+
+
+
+- Stack behind the boss.
+
+- Minimize unnecessary movement.
+
+- Return quickly after mechanics.
+
+
+
+Ranged
+
+
+
+- Spread around the rear of the boss while remaining within
+
+  healer range.
+
+- Avoid excessive spacing that complicates healing.
+
+
+
+Healers
+
+
+
+- Maintain coverage across the raid.
+
+- Be prepared for large bursts of raid damage following
+
+  Fatal Attraction.
+
+
+
+
+
+==================================================
+
+KEY MECHANICS
+
+==================================================
+
+
+
+FATAL ATTRACTION
+
+
+
+Effect:
+
+
+
+Three random players are teleported together and linked,
+
+taking heavy Shadow damage based on their proximity.
+
+
+
+Execution:
+
+
+
+- Immediately activate Rocket Boots.
+
+- Sprint directly away from the other two affected players.
+
+- Continue separating until all three players are safely
+
+  spread apart.
+
+- Once the debuff expires, return to your assigned position.
+
+- Use Healthstones or personal defensives if necessary.
+
+
+
+Rocket Boots are mandatory for this strategy and replace the
+
+need for Shadow Resistance gear.
+
+
+
+
+
+SINFUL BEAM
+
+
+
+Effect:
+
+
+
+Mother Shahraz periodically casts one of several beams that
+
+infairlict raid-wide magical effects.
+
+
+
+Possible Beams
+
+
+
+Sinful Beam
+
+- Heavy Shadow damage.
+
+
+
+Vile Beam
+
+- Poison damage over time.
+
+
+
+Wicked Beam
+
+- Arcane damage and mana burn.
+
+
+
+Sinister Beam
+
+- Fire damage over time.
+
+
+
+Execution
+
+
+
+- Healers react quickly to affected players.
+
+- Continue normal positioning.
+
+- Avoid unnecessary movement.
+
+- Personal defensives may be used during dangerous overlaps.
+
+
+
+
+
+SABER LASH
+
+
+
+Effect:
+
+
+
+Massive Physical damage split between players in front of
+
+the boss.
+
+
+
+Execution:
+
+
+
+- Maintain the assigned tank stack at all times.
+
+- Tanks remain tightly grouped.
+
+- Never allow Saber Lash to strike a single player.
+
+- DPS and healers must never stand in front of the boss.
+
+
+
+
+
+PRISMATIC AURAS
+
+
+
+Effect:
+
+
+
+Mother cycles through different magical resistance auras
+
+throughout the encounter.
+
+
+
+Execution
+
+
+
+- Continue normal execution.
+
+- No changes in positioning are required.
+
+- Maintain maximum DPS uptime regardless of the active aura.
+
+
+
+
+
+==================================================
+
+ENCOUNTER FLOW
+
+==================================================
+
+
+
+1. Tanks establish Mother Shahraz in the center of the room.
+
+2. Raid establishes normal positioning.
+
+3. Handle Saber Lash with the tank group.
+
+4. Continue steady DPS while avoiding unnecessary movement.
+
+5. Fatal Attraction occurs.
+
+6. Affected players immediately Rocket Boot away from each
+
+   other.
+
+7. Heal through beam damage.
+
+8. Return to assigned positions.
+
+9. Repeat until Mother Shahraz is defeated.
+
+
+
+
+
+==================================================
+
+COMMON WIPE CAUSES
+
+==================================================
+
+
+
+- Delayed Rocket Boot usage.
+
+- Players remaining stacked after Fatal Attraction.
+
+- Tank group failing Saber Lash positioning.
+
+- Standing in front of the boss.
+
+- Slow recovery after Fatal Attraction.
+
+- Healers falling behind following beam combinations.
+
+- Players panicking instead of moving directly away.
+
+
+
+
+
+==================================================
+
+PROGRESSION NOTES
+
+==================================================
+
+
+
+- Rocket Boots are required for every raid member.
+
+- Shadow Resistance gear is not required for this strategy.
+
+- The faster Fatal Attraction is resolved, the easier the
+
+  encounter becomes.
+
+- Movement should always be deliberate. Running through
+
+  other players during Fatal Attraction creates unnecessary
+
+  damage.
+
+- Save personal defensives for dangerous overlaps or poor
+
+  Fatal Attraction positioning.
+
+- This is one of the easiest fights in Black Temple once
+
+  Fatal Attraction execution becomes consistent.
+
+
+
+==================================================
+
+END OF MOTHER SHAHRAZ
+
+==================================================

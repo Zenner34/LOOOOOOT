@@ -1,0 +1,311 @@
+==================================================
+ILLIDAN STORMRAGE
+==================================================
+
+Creature Type:
+Demon
+
+Demonslaying Elixir:
+Yes
+
+
+==================================================
+OVERVIEW
+==================================================
+
+Illidan is the final encounter of Black Temple and rewards
+discipline more than raw DPS.
+
+The encounter consists of multiple phases that build on one
+another, but the majority of progression wipes occur during
+Flames of Azzinoth.
+
+Our goal is to execute every phase cleanly, minimize
+movement, and push Illidan hard enough to eliminate or
+significantly shorten Demon Phase.
+
+Clean mechanics kill this boss.
+
+
+==================================================
+PREPARATION
+==================================================
+
+Required
+
+- Demonslaying Elixir
+- Healthstone
+- Standard DPS consumables
+
+Recommended
+
+- Free Action Potion (optional)
+- Rocket Boots (useful during progression)
+- Personal defensive cooldowns assigned
+
+
+==================================================
+PHASE ONE
+==================================================
+
+Overview
+
+A straightforward tank-and-spank encounter.
+
+The objective is to maximize uptime while keeping the arena
+clean before the most dangerous phase begins.
+
+
+KEY MECHANICS
+==================================================
+
+SHEAR
+
+Effect
+
+Massively reduces the tank's maximum health.
+
+Execution
+
+- Tanks must avoid being hit by Shear.
+- Defensive cooldowns should be planned.
+- A successful Shear will usually result in a tank death.
+
+
+FLAME CRASH
+
+Effect
+
+Creates a fire patch beneath a player's location.
+
+Execution
+
+- Move immediately.
+- Return to position once safe.
+- Never drag fire through the raid.
+
+
+PARASITIC SHADOWFIEND
+
+Effect
+
+Infests a random player.
+
+Execution
+
+- The affected player immediately moves away from the raid.
+- Parasites are picked up and killed immediately.
+- Never allow Parasites to spawn inside the raid.
+
+
+POSITIONING
+==================================================
+
+Tank
+
+- Keep Illidan near the center.
+- Face him away from the raid.
+
+Melee
+
+- Maximum uptime behind the boss.
+
+Ranged
+
+- Spread naturally while remaining in healer range.
+
+Raid
+
+- Minimize unnecessary movement.
+
+
+==================================================
+PHASE TWO
+FLAMES OF AZZINOTH
+==================================================
+
+Overview
+
+This is the progression phase.
+
+The encounter is won or lost here.
+
+The objective is to control Blaze, avoid Eye Beam, and kill
+the Flames as quickly as possible.
+
+
+FLAME TANKS
+==================================================
+
+Each Flame receives its own dedicated tank.
+
+Execution
+
+- Tanks continuously kite their Flame around the outside of
+  the platform.
+- Blaze is dropped wherever a Flame stands.
+- Never allow Blaze to stack in one location.
+- Kite smoothly and preserve as much room as possible.
+- Never over-kite.
+
+
+EYE BEAM
+
+Execution
+
+- Move immediately.
+- Rotate around the outside edge.
+- Never run through the middle.
+- Resume DPS immediately after reaching safety.
+
+
+BLAZE
+
+Execution
+
+- Blaze permanently removes usable space.
+- Tanks are responsible for managing platform space.
+- Smooth movement is always better than panic movement.
+
+
+DPS STRATEGY
+==================================================
+
+Our Strategy
+
+- Entire raid hard commits to Flame #1.
+- Kill Flame #1.
+- Immediately hard swap to Flame #2.
+- Never split DPS.
+
+This shortens the most dangerous phase of the encounter and
+reduces overall Blaze coverage.
+
+
+COMMON MISTAKES
+==================================================
+
+- Splitting DPS.
+- Standing in Blaze.
+- Crossing Eye Beam.
+- Tanks allowing Flames to sit still.
+- Panic movement.
+
+
+==================================================
+PHASE THREE
+==================================================
+
+Overview
+
+Illidan returns to normal mechanics.
+
+This phase should feel identical to Phase One with continued
+Parasite management.
+
+Execution
+
+- Continue handling Flame Crash.
+- Parasite targets move away immediately.
+- Kill Parasites quickly.
+- Maximize boss uptime.
+
+
+==================================================
+DEMON PHASE
+==================================================
+
+Goal
+
+Skip this phase whenever possible through strong raid DPS.
+
+If Demon Phase occurs:
+
+Warlock Tank
+
+- Equip Shadow Resistance gear.
+- Maintain threat using Searing Pain.
+- Stay within healer range.
+- Maintain consistent positioning.
+
+Raid
+
+- Kill Shadow Demons immediately.
+- Continue normal positioning.
+- Return to Illidan as soon as Demons are dead.
+
+A clean raid should spend very little time in this phase.
+
+
+==================================================
+FINAL PHASE
+==================================================
+
+Overview
+
+Illidan combines previous mechanics into one final burn.
+
+Execution
+
+- Continue handling Flame Crash.
+- Continue handling Parasites.
+- Kill Shadow Demons immediately if they appear.
+- Maintain positioning.
+- Use remaining offensive cooldowns.
+- Do not greed mechanics for extra DPS.
+
+
+==================================================
+ENCOUNTER FLOW
+==================================================
+
+Phase One
+
+↓
+
+Flames of Azzinoth
+
+↓
+
+Phase Three
+
+↓
+
+(Optional Demon Phase)
+
+↓
+
+Final Burn
+
+
+==================================================
+COMMON WIPE CAUSES
+==================================================
+
+- Tank dying to Shear.
+- Parasites spawning inside the raid.
+- Splitting DPS on Flames.
+- Poor Flame kiting.
+- Eye Beam deaths.
+- Blaze covering too much of the platform.
+- Panic during transitions.
+- Greeding DPS instead of respecting mechanics.
+
+
+==================================================
+PROGRESSION NOTES
+==================================================
+
+- Flames of Azzinoth determine the outcome of the encounter.
+- Hard commit to one Flame before swapping.
+- Blaze management is more important than maximizing DPS.
+- Every player should prioritize mechanics over personal
+  damage.
+- A clean Flames phase makes the remainder of the fight
+  significantly easier.
+- With strong execution and raid DPS, Demon Phase becomes
+  extremely short or can be skipped entirely.
+
+==================================================
+END OF ILLIDAN STORMRAGE
+==================================================

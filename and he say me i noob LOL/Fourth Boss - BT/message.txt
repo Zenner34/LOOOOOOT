@@ -1,0 +1,256 @@
+==================================================
+TERON GOREFIEND
+==================================================
+
+Creature Type:
+Humanoid
+
+Demonslaying Elixir:
+No
+
+
+==================================================
+OVERVIEW
+==================================================
+
+Teron Gorefiend is primarily a personal responsibility
+encounter.
+
+The boss himself is mechanically simple, but players chosen
+for Shadow of Death must successfully control their Spirit
+to prevent the raid from being overwhelmed.
+
+One player failing the Spirit phase can quickly result in a
+wipe.
+
+The goal is to maintain clean positioning, maximize uptime,
+and execute every Shadow of Death correctly.
+
+
+==================================================
+RAID PREPARATION
+==================================================
+
+REQUIRED
+
+- Every player should understand the Spirit phase before the
+  pull.
+- Players assigned Shadow of Death should know the Spirit
+  abilities.
+- Tanks establish a clean taunt rotation if required.
+- Healthstones should be available for every raider.
+
+RECOMMENDED
+
+- Personal defensive cooldowns.
+- Standard DPS consumables.
+- Demonslaying Elixir is NOT required.
+
+
+==================================================
+POSITIONING
+==================================================
+
+Tank
+
+- Position Teron near the center of the room.
+- Face him away from the raid.
+- Maintain consistent positioning throughout the encounter.
+
+Melee
+
+- Stack behind the boss.
+- Maintain maximum uptime.
+- Return immediately after mechanics.
+
+Ranged
+
+- Spread loosely around the boss.
+- Stay within healer range.
+- Avoid unnecessary movement.
+
+Healers
+
+- Maintain full raid coverage.
+- Prepare for Shadow of Death targets.
+- Be ready for Incinerate damage.
+
+
+==================================================
+KEY MECHANICS
+==================================================
+
+SHADOW OF DEATH
+
+Effect:
+
+Every 30 seconds Teron selects four random non-tank players.
+
+After 55 seconds they die, becoming a Vengeful Spirit.
+
+Execution:
+
+- If selected, continue normal DPS until death.
+- Prepare to immediately control your Spirit.
+- Do not panic.
+- Continue executing Spirit mechanics until your timer
+  expires.
+
+This mechanic determines whether the raid kills the boss.
+
+
+==================================================
+VENGEFUL SPIRIT
+==================================================
+
+OVERVIEW
+
+Upon death you become a Vengeful Spirit.
+
+Your only responsibility is eliminating the Shadowy
+Constructs before they reach the raid.
+
+
+SPIRIT ABILITIES
+==================================================
+
+SPIRIT STRIKE
+
+- Primary attack.
+- High Physical damage.
+- Use on every Construct.
+
+SPIRIT CHAINS
+
+- Roots Constructs in place.
+- Use to control multiple Constructs.
+
+SPIRIT LANCE
+
+- Heavy ranged damage.
+- Use whenever available.
+
+SPIRIT VOLLEY
+
+- AoE damage.
+- Useful when several Constructs are grouped together.
+
+
+SPIRIT PRIORITY
+==================================================
+
+1. Root incoming Constructs.
+2. Kill nearest Construct.
+3. Continue eliminating every Construct.
+4. Never allow Constructs to reach the raid.
+
+
+==================================================
+SHADOWY CONSTRUCTS
+==================================================
+
+Effect:
+
+Constructs spawn only for Vengeful Spirits.
+
+If they reach the raid they will rapidly kill players.
+
+Execution:
+
+- Root first.
+- Kill immediately.
+- Continue moving while attacking.
+- Never allow Constructs to stack together.
+
+
+==================================================
+INCINERATE
+==================================================
+
+Effect:
+
+Random Fire damage on a raid member.
+
+Execution:
+
+- Healers react quickly.
+- Continue normal positioning.
+- No special movement required.
+
+
+==================================================
+CRUSHING SHADOWS
+==================================================
+
+Effect:
+
+Shadow damage debuff applied to random players.
+
+Execution:
+
+- Healers monitor affected players.
+- Continue normal execution.
+
+
+==================================================
+POSITIONING DURING SHADOW OF DEATH
+==================================================
+
+Raid
+
+- Continue normal positioning.
+- Do not chase Spirit players.
+- Continue DPS.
+
+Spirit Players
+
+- Focus exclusively on killing Constructs.
+- Ignore the raid.
+- Keep Constructs controlled until Spirit expires.
+
+
+==================================================
+ENCOUNTER FLOW
+==================================================
+
+1. Tank establishes Teron.
+2. Raid spreads into assigned positions.
+3. Maintain maximum DPS uptime.
+4. Shadow of Death targets continue normal play until
+   death.
+5. Dead players immediately control their Spirit.
+6. Kill every Shadowy Construct.
+7. Continue boss damage.
+8. Repeat until Teron dies.
+
+
+==================================================
+COMMON WIPE CAUSES
+==================================================
+
+- Players unfamiliar with Spirit controls.
+- Constructs reaching the raid.
+- Spirit players panicking.
+- Standing in front of the boss.
+- Poor healer reaction to Incinerate.
+- Raid losing focus after multiple Spirit phases.
+
+
+==================================================
+PROGRESSION NOTES
+==================================================
+
+- This encounter is not a DPS race.
+- Individual execution is far more important than overall
+  raid damage.
+- Every raider should practice the Spirit abilities before
+  progression.
+- If every Shadow of Death player successfully controls
+  their Constructs, Teron becomes one of the easiest bosses
+  in Black Temple.
+- Continue maximizing boss uptime while Spirit players
+  handle their assignment independently.
+
+==================================================
+END OF TERON GOREFIEND
+==================================================

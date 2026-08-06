@@ -1,0 +1,93 @@
+==================================================
+RAGE WINTERCHILL
+==================================================
+
+Creature Type:
+Undead
+
+Demonslaying Elixir:
+No
+
+
+OVERVIEW
+==================================================
+
+Rage Winterchill is the opening encounter of Mount Hyjal
+and serves as a positioning and awareness check. While the
+mechanics are simple, poor movement or delayed reactions
+quickly overwhelm healers.
+
+The encounter rewards disciplined positioning and immediate
+responses to targeted mechanics rather than raw DPS.
+
+
+KEY MECHANICS
+==================================================
+
+ICEBOLT
+
+Effect:
+
+Freezes a random player, dealing heavy Frost damage and
+preventing all actions.
+
+Execution:
+
+- Healers should immediately stabilize the affected player.
+- Be prepared for temporary healing disruption if a healer
+  is targeted.
+
+
+DEATH AND DECAY
+
+Effect:
+
+Creates a large Shadow damage zone beneath a random player.
+
+Execution:
+
+- Move immediately.
+- Never attempt to finish a cast while standing in Death
+  and Decay.
+- Re-establish positioning once the area is clear.
+
+
+FROST NOVA
+
+Effect:
+
+Roots nearby players.
+
+Execution:
+
+- Remain aware of Death and Decay placement while rooted.
+- Recover positioning immediately once the root expires.
+
+
+POSITIONING
+==================================================
+
+- Tank Winterchill near the center of the fighting area.
+- Face the boss away from the raid.
+- Melee remain behind the boss.
+- Ranged and healers spread to reduce movement conflicts
+  while remaining within healing range.
+
+
+ENCOUNTER FLOW
+==================================================
+
+1. Establish boss positioning.
+2. Maintain consistent DPS.
+3. Immediately move from Death and Decay.
+4. Stabilize Icebolt targets.
+5. Continue until the boss is defeated.
+
+
+COMMON WIPE CAUSES
+==================================================
+
+- Standing in Death and Decay.
+- Delayed movement.
+- Frozen players dying before receiving heals.
+- Raid collapsing into the same location.

@@ -1,0 +1,337 @@
+==================================================
+RELIQUARY OF SOULS
+==================================================
+
+Creature Type:
+Elemental
+
+Demonslaying Elixir:
+No
+
+
+OVERVIEW
+==================================================
+
+Reliquary of Souls is one of the most mechanically unique
+encounters in Black Temple.
+
+The fight consists of three distinct phases, each with its
+own mechanics and raid requirements. Every phase demands a
+different approach, and clean transitions are just as
+important as the phases themselves.
+
+Phase One tests tank execution.
+
+Phase Two is an interrupt and healing check.
+
+Phase Three is a threat and DPS race.
+
+Most wipes occur during Phase Two due to missed interrupts
+or poor management of Deaden and Rune Shield. :contentReference[oaicite:0]{index=0}
+
+
+==================================================
+PHASE ONE
+ESSENCE OF SUFFERING
+==================================================
+
+OVERVIEW
+
+Healing is disabled during this phase by Aura of
+Suffering. Tanks survive through avoidance and proper tank
+swaps rather than healer throughput.
+
+There is effectively no threat after the opening moments,
+allowing DPS to go all out once the tank has established
+initial control. :contentReference[oaicite:1]{index=1}
+
+
+KEY MECHANICS
+==================================================
+
+AURA OF SUFFERING
+
+Effect:
+
+- Reduces healing received by 100%.
+- Removes armor.
+- Greatly reduces Defense.
+
+Execution:
+
+- Healers should contribute damage instead of attempting
+  ineffective healing.
+- Priests should keep Power Word: Shield on the active tank.
+- Tanks rely on avoidance and cooldowns rather than heals.
+
+
+FIXATE
+
+Effect:
+
+The closest player becomes the active target for several
+seconds.
+
+Execution:
+
+- Tanks perform controlled swaps by becoming the closest
+  player.
+- Never run through the boss.
+- DPS should never be the closest player.
+
+
+SOUL DRAIN
+
+Effect:
+
+Magic debuff that quickly kills players if left active.
+
+Execution:
+
+- Dispel immediately.
+- Priests can Mass Dispel.
+- Paladins should assist with Cleanse when available.
+
+
+ENRAGE
+
+Effect:
+
+Heavy increased melee damage.
+
+Execution:
+
+- Rogue with Evasion can temporarily soak if assigned.
+- Otherwise tanks use defensive cooldowns.
+
+
+POSITIONING
+==================================================
+
+- Main tank begins closest to the boss.
+- Melee attack from maximum melee range.
+- Entire raid stacks behind the boss.
+- Nobody should move in front of the boss unless performing
+  a planned tank swap.
+
+
+==================================================
+INTERLUDE
+==================================================
+
+After each Essence dies, Enslaved Souls begin spawning.
+
+Execution:
+
+- Stack together while killing Souls.
+- Soul Release restores health and mana to nearby players.
+- Use this time to recover resources.
+- Hunters should prepare Misdirection before the next
+  Essence becomes active.
+- Do not stand too close to the Reliquary until the tank is
+  ready to pick up the next phase. :contentReference[oaicite:2]{index=2}
+
+
+==================================================
+PHASE TWO
+ESSENCE OF DESIRE
+==================================================
+
+OVERVIEW
+
+This is the hardest phase of the encounter.
+
+Success depends almost entirely on interrupt discipline,
+proper handling of Rune Shield, and controlling Deaden.
+
+Every missed interrupt dramatically increases the chance of
+a wipe. :contentReference[oaicite:3]{index=3}
+
+
+KEY MECHANICS
+==================================================
+
+AURA OF DESIRE
+
+Effect:
+
+Players take damage equal to a portion of the damage they
+deal.
+
+Execution:
+
+- Monitor your health constantly.
+- Warlocks should be cautious with Life Tap.
+- Shadow Priests should never Shadow Word: Death while
+  Deaden is active.
+
+
+SPIRIT SHOCK
+
+Effect:
+
+Heavy Shadow damage and interrupt lockout.
+
+Execution:
+
+- Assign a dedicated interrupt rotation.
+- Never overlap interrupts.
+- Missing Spirit Shock casts is the fastest way to wipe.
+
+
+DEADEN
+
+Effect:
+
+Greatly reduces incoming damage to the boss.
+
+Execution:
+
+- Warriors should Spell Reflect when possible.
+- If not reflected, remove it immediately.
+- Never continue DPS into Deaden.
+
+
+RUNE SHIELD
+
+Effect:
+
+Absorbs damage while healing the boss.
+
+Execution:
+
+- Mages should Spellsteal immediately.
+- If Spellsteal is unavailable, Priests and Shamans should
+  remove it with Dispel Magic or Purge as assigned.
+- Do not continue DPS until Rune Shield has been removed.
+
+
+CAST SPEED REDUCTION
+
+Execution:
+
+- Maintain Curse of Tongues or Mind-numbing Poison
+  throughout the phase.
+- Slower casts provide a much safer interrupt window for
+  Spirit Shock. :contentReference[oaicite:4]{index=4}
+
+
+POSITIONING
+==================================================
+
+- Tank keeps the boss stationary.
+- Raid remains stacked behind the boss.
+- Interrupt players remain within range at all times.
+- Avoid unnecessary movement.
+
+
+==================================================
+PHASE THREE
+ESSENCE OF ANGER
+==================================================
+
+OVERVIEW
+
+This is a controlled burn phase.
+
+Raid damage steadily increases as Aura of Anger ramps up,
+turning the encounter into a race between healer mana and
+boss health.
+
+Bloodlust/Heroism and remaining offensive cooldowns should
+be committed here if your strategy calls for it. :contentReference[oaicite:5]{index=5}
+
+
+KEY MECHANICS
+==================================================
+
+AURA OF ANGER
+
+Effect:
+
+Increasing raid-wide Shadow damage over time.
+
+Execution:
+
+- Finish the encounter quickly.
+- Healers should expect increasing raid damage throughout
+  the phase.
+
+
+SOUL SCREAM
+
+Effect:
+
+Heavy frontal Shadow damage and mana burn.
+
+Execution:
+
+- Tank faces the boss away from the raid.
+- Never stand in front of the boss.
+- Tanks should spend Rage frequently to reduce incoming
+  damage.
+
+
+SPITE
+
+Effect:
+
+Marks a player before dealing heavy burst damage.
+
+Execution:
+
+- Healers quickly top the player.
+- Personal defensives and Healthstones should be used when
+  necessary.
+
+
+THREAT
+
+Execution:
+
+- Watch threat meters carefully.
+- Pulling aggro during this phase frequently results in a
+  wipe.
+
+
+POSITIONING
+==================================================
+
+- Tank keeps the boss stationary.
+- Melee remain behind the boss.
+- Ranged spread as needed while maintaining healer range.
+- Nobody should ever stand in front of the boss except the
+  active tank.
+
+
+==================================================
+ENCOUNTER FLOW
+==================================================
+
+1. Defeat Essence of Suffering.
+2. Stack and kill Enslaved Souls during the interlude.
+3. Recover health and mana.
+4. Defeat Essence of Desire while maintaining perfect
+   interrupts.
+5. Stack and recover during the second interlude.
+6. Defeat Essence of Anger before raid damage overwhelms the
+   healers.
+
+
+==================================================
+COMMON WIPE CAUSES
+==================================================
+
+- Missed Spirit Shock interrupts.
+- Slow removal of Rune Shield.
+- DPS attacking through Deaden.
+- Failure to maintain Curse of Tongues or Mind-numbing
+  Poison.
+- Tanks mishandling Fixate in Phase One.
+- Standing in front of Essence of Anger.
+- Players pulling threat in Phase Three.
+- Slow recovery during intermissions.
+
+==================================================
+END OF RELIQUARY OF SOULS
+==================================================

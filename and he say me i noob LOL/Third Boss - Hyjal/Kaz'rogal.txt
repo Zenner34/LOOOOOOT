@@ -1,0 +1,102 @@
+==================================================
+KAZ'ROGAL
+==================================================
+
+Creature Type:
+Demon
+
+Demonslaying Elixir:
+Yes
+
+
+OVERVIEW
+==================================================
+
+Kaz'rogal is a resource management encounter that heavily
+punishes mana users. While the mechanics are relatively
+simple, poor mana management or overextending cooldowns can
+quickly wipe the raid.
+
+The encounter becomes easier the faster it ends, making
+efficient DPS and proper cooldown usage important without
+sacrificing execution.
+
+
+KEY MECHANICS
+==================================================
+
+MARK OF KAZ'ROGAL
+
+Effect:
+
+Applies a debuff that periodically drains mana. Players who
+reach 0 mana explode, dealing heavy damage to themselves and
+nearby allies.
+
+Execution:
+
+- Mana users should closely monitor their mana pool.
+- Avoid reaching 0 mana.
+- Use Mana Potions, Dark Runes, Demonic Runes, Mana Tide,
+  Innervate, and other mana restoration abilities
+  proactively.
+- Healers should avoid excessive overhealing to preserve
+  mana.
+- If you are close to empty mana, communicate before it
+  becomes a problem.
+
+
+CLEAVE
+
+Effect:
+
+Heavy frontal physical attack.
+
+Execution:
+
+- Keep Kaz'rogal faced away from the raid.
+- Never stand in front of the boss unless assigned.
+
+
+WAR STOMP
+
+Effect:
+
+Short-range stun affecting nearby players.
+
+Execution:
+
+- Tanks should maintain stable positioning.
+- Healers prepare for brief healing disruption.
+
+
+POSITIONING
+==================================================
+
+- Tank Kaz'rogal near the entrance.
+- Face the boss away from the raid.
+- Melee remain behind the boss.
+- Ranged and healers spread while remaining within healing
+  range.
+
+
+ENCOUNTER FLOW
+==================================================
+
+1. Establish boss positioning.
+2. Maintain steady DPS.
+3. Manage mana carefully throughout the fight.
+4. Use mana cooldowns before reaching critical levels.
+5. Continue until the boss is defeated.
+
+
+COMMON WIPE CAUSES
+==================================================
+
+- Players exploding from Mark of Kaz'rogal.
+- Running completely out of mana.
+- Excessive overhealing early in the encounter.
+- Standing in front of the boss.
+- Panic usage of mana cooldowns after reaching critical
+  mana levels.
+

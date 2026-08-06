@@ -1,0 +1,119 @@
+==================================================
+AZGALOR
+==================================================
+
+Creature Type:
+Demon
+
+Demonslaying Elixir:
+Yes
+
+
+OVERVIEW
+==================================================
+
+Azgalor is the final encounter before Archimonde and serves
+as a positioning and personal responsibility check.
+
+Every player must execute mechanics correctly. Doom and Rain
+of Fire punish individual mistakes, while Howl of Azgalor
+creates constant pressure on healers.
+
+The encounter is controlled through discipline and proper
+movement.
+
+
+KEY MECHANICS
+==================================================
+
+DOOM
+
+Effect:
+
+Targets a random player with a debuff that cannot be
+removed. When the debuff expires, the player dies and a Doom
+Guard is summoned.
+
+Execution:
+
+- Affected players should immediately move away from the
+  raid.
+- Do not die inside the raid.
+- Tanks should immediately pick up the Doom Guard.
+- Ranged DPS quickly eliminate the Doom Guard before
+  returning to the boss.
+
+
+RAIN OF FIRE
+
+Effect:
+
+Creates a large area of Fire damage.
+
+Execution:
+
+- Move immediately.
+- Never finish a cast while standing in Rain of Fire.
+- Return to position once safe.
+
+
+HOWL OF AZGALOR
+
+Effect:
+
+Raid-wide silence affecting nearby players.
+
+Execution:
+
+- Healers should prepare before each silence.
+- Avoid unnecessary damage immediately before the silence
+  occurs.
+- Personal defensives should be used if healing is delayed.
+
+
+CLEAVE
+
+Effect:
+
+Heavy frontal physical damage.
+
+Execution:
+
+- Keep Azgalor facing away from the raid.
+- Never stand in front of the boss unless assigned.
+
+
+POSITIONING
+==================================================
+
+- Tank Azgalor facing away from the raid.
+- Melee remain behind the boss.
+- Ranged spread around the encounter area.
+- Players affected by Doom immediately leave the raid before
+  dying.
+- Doom Guards should be picked up away from the raid before
+  being burned down.
+
+
+ENCOUNTER FLOW
+==================================================
+
+1. Establish positioning.
+2. Maintain steady boss damage.
+3. Handle Rain of Fire immediately.
+4. Doom targets move away from the raid.
+5. Tanks secure Doom Guards.
+6. Kill Doom Guards.
+7. Resume boss damage.
+8. Repeat until Azgalor is defeated.
+
+
+COMMON WIPE CAUSES
+==================================================
+
+- Doom targets dying inside the raid.
+- Tanks failing to pick up Doom Guards.
+- Standing in Rain of Fire.
+- Healers being caught by Howl after unnecessary raid
+  damage.
+- Players standing in front of the boss.

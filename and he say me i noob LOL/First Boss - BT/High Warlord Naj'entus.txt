@@ -1,0 +1,152 @@
+==================================================
+HIGH WARLORD NAJ'ENTUS
+==================================================
+
+Creature Type:
+Demon
+
+Demonslaying Elixir:
+Yes
+
+==================================================
+OVERVIEW
+==================================================
+
+Naj'entus is primarily a healer and execution check.
+
+The fight revolves around managing Tidal Shield quickly while
+maintaining a spread to reduce raid damage.
+
+The faster the shield is removed, the easier the encounter
+becomes.
+
+==================================================
+PREPARATION
+==================================================
+
+Required
+
+- Demonslaying Elixir
+- Healthstone
+- Standard DPS consumables
+
+Recommended
+
+- Personal defensives
+
+==================================================
+POSITIONING
+==================================================
+
+Tank
+
+- Tank Naj'entus near the center.
+- Face him away from the raid.
+- Minimize unnecessary movement.
+
+Raid
+
+- Spread evenly around the boss.
+- Remain within healing range.
+- Avoid stacking whenever possible.
+
+Healers
+
+- Expect constant raid-wide damage.
+- Be prepared for shield breaks.
+
+==================================================
+KEY MECHANICS
+==================================================
+
+IMPALING SPINE
+
+Effect
+
+Random player is impaled and takes heavy Physical damage.
+
+Execution
+
+- Heal target immediately.
+- Loot the Spine immediately.
+- Assigned player keeps the Spine until Tidal Shield.
+
+Never throw the Spine early.
+
+--------------------------------------------------
+
+TIDAL SHIELD
+
+Effect
+
+Naj'entus becomes immune and rapidly heals.
+
+Execution
+
+- Wait until the raid is healthy.
+- Assigned player throws the Spine immediately.
+- Shield breaks.
+- Heroism/Bloodlust if assigned.
+- Resume full DPS instantly.
+
+The shield should be removed as quickly as safely possible.
+
+--------------------------------------------------
+
+NEEDLE SPINE
+
+Effect
+
+Physical damage to several nearby players.
+
+Execution
+
+- Maintain spread.
+- Do not stack.
+- Healers prepare for raid damage.
+
+--------------------------------------------------
+
+ENRAGE
+
+Hard enrage after eight minutes.
+
+Maintain strong DPS uptime.
+
+==================================================
+ENCOUNTER FLOW
+==================================================
+
+1. Spread around the boss.
+2. Heal Impaling Spine targets.
+3. Loot every Spine.
+4. Continue DPS.
+5. Wait for Tidal Shield.
+6. Break Shield immediately.
+7. Resume DPS.
+8. Repeat until kill.
+
+==================================================
+COMMON WIPE CAUSES
+==================================================
+
+- Throwing Spine early.
+- No Spine available for Tidal Shield.
+- Slow Shield break.
+- Poor raid spread.
+- Deaths before Shield break.
+- Low DPS causing enrage.
+
+==================================================
+PROGRESSION NOTES
+==================================================
+
+- Never panic throw a Spine.
+- Keep one assigned player responsible for every Shield.
+- Shield break timing is more important than maximizing DPS.
+- Stay spread throughout the encounter.
+- Resume DPS immediately after every Shield.
+
+==================================================
+END OF HIGH WARLORD NAJ'ENTUS
+==================================================
