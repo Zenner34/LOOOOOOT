@@ -6,19 +6,43 @@ import type { Boss, Mechanic, RoleNote, Section } from "./types";
 
 /* Renders one boss: hero banner + sticky section tabs + section content.
    Fully driven by the Boss data in ./black-temple/bosses.ts. */
-export default function BossGuide({ boss }: { boss: Boss }) {
+export default function BossGuide({
+  boss,
+  bossPrev,
+  bossNext,
+  onPickBoss,
+}: {
+  boss: Boss;
+  bossPrev?: Boss | null;
+  bossNext?: Boss | null;
+  onPickBoss?: (id: string) => void;
+}) {
   const accent = boss.accent;
   const [active, setActive] = useState(boss.sections[0].id);
   const section = boss.sections.find(s => s.id === active) ?? boss.sections[0];
   const idx = boss.sections.findIndex(s => s.id === active);
 
+  const nav = (variant: "top" | "bottom") => (
+    <GuideNav
+      accent={accent}
+      sections={boss.sections}
+      idx={idx}
+      setActive={setActive}
+      bossPrev={bossPrev}
+      bossNext={bossNext}
+      onPickBoss={onPickBoss}
+      variant={variant}
+    />
+  );
+
   return (
     <div className="space-y-5">
       <BossHero boss={boss} />
 
-      {/* Section tabs — sticky under the site header */}
+      {/* Section tabs — sticky under the site header. Top-right nav on desktop. */}
       <div className="sticky top-14 z-20 -mx-4 px-4 py-2 bg-[var(--bg)]/85 backdrop-blur-md border-y border-white/[0.06]">
-        <div className="flex gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex items-center gap-3">
+        <div className="flex gap-1.5 overflow-x-auto min-w-0 flex-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {boss.sections.map((s, i) => {
             const on = s.id === active;
             return (
@@ -40,6 +64,8 @@ export default function BossGuide({ boss }: { boss: Boss }) {
               </button>
             );
           })}
+        </div>
+        <div className="shrink-0 hidden lg:block">{nav("top")}</div>
         </div>
       </div>
 
@@ -143,10 +169,7 @@ export default function BossGuide({ boss }: { boss: Boss }) {
         )}
       </article>
 
-      <div className="flex items-center justify-between gap-3 border-t hairline pt-4">
-        <StepButton dir="prev" section={idx > 0 ? boss.sections[idx - 1] : null} onClick={s => setActive(s.id)} />
-        <StepButton dir="next" section={idx < boss.sections.length - 1 ? boss.sections[idx + 1] : null} onClick={s => setActive(s.id)} />
-      </div>
+      <div className="border-t hairline pt-4">{nav("bottom")}</div>
     </div>
   );
 }
@@ -326,18 +349,84 @@ function EncounterFlow({ accent, steps }: { accent: string; steps: string[] }) {
   );
 }
 
-function StepButton({ dir, section, onClick }: { dir: "prev" | "next"; section: Section | null; onClick: (s: Section) => void }) {
-  if (!section) return <span />;
+/* Combined navigation: section prev/next (prominent, labeled) flanked by
+   boss prev/next (arrow chips). Rendered top-right (desktop) and bottom. */
+function GuideNav({
+  accent, sections, idx, setActive, bossPrev, bossNext, onPickBoss, variant,
+}: {
+  accent: string;
+  sections: Section[];
+  idx: number;
+  setActive: (id: string) => void;
+  bossPrev?: Boss | null;
+  bossNext?: Boss | null;
+  onPickBoss?: (id: string) => void;
+  variant: "top" | "bottom";
+}) {
+  const prevSec = idx > 0 ? sections[idx - 1] : null;
+  const nextSec = idx < sections.length - 1 ? sections[idx + 1] : null;
+
+  function BossArrow({ dir, boss }: { dir: "prev" | "next"; boss?: Boss | null }) {
+    if (!boss || !onPickBoss) return null;
+    return (
+      <button
+        type="button"
+        onClick={() => onPickBoss(boss.id)}
+        title={`${dir === "prev" ? "Previous" : "Next"} boss: ${boss.name}`}
+        aria-label={`${dir === "prev" ? "Previous" : "Next"} boss: ${boss.name}`}
+        className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-2 transition hover:brightness-125"
+        style={{ borderColor: `${accent}44`, background: `${accent}12`, color: accent }}
+      >
+        {dir === "prev" && <ArrowRight size={14} className="rotate-180" />}
+        <span className="text-[10px] font-bold uppercase tracking-wider">Boss</span>
+        {dir === "next" && <ArrowRight size={14} />}
+      </button>
+    );
+  }
+
+  function SectionBtn({ dir, section, prominent }: { dir: "prev" | "next"; section: Section | null; prominent?: boolean }) {
+    if (!section) return null;
+    if (prominent) {
+      return (
+        <button
+          type="button"
+          onClick={() => setActive(section.id)}
+          className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition hover:brightness-110"
+          style={{ background: accent, color: "#0c0a12" }}
+        >
+          <span className="flex flex-col items-start leading-tight">
+            <span className="text-[9px] uppercase tracking-wider opacity-70">Next</span>
+            <span>{section.tab}</span>
+          </span>
+          <ArrowRight size={15} />
+        </button>
+      );
+    }
+    return (
+      <button
+        type="button"
+        onClick={() => setActive(section.id)}
+        className="inline-flex items-center gap-2 rounded-lg border border-white/[0.08] bg-[var(--surface)] px-3 py-2 text-sm transition hover:border-white/20 hover:bg-white/[0.03]"
+      >
+        <ArrowRight size={15} className="rotate-180 text-neutral-500" />
+        <span className="flex flex-col items-start leading-tight">
+          <span className="text-[9px] uppercase tracking-wider text-neutral-500">Prev</span>
+          <span className="text-neutral-200 font-medium">{section.tab}</span>
+        </span>
+      </button>
+    );
+  }
+
   return (
-    <button
-      onClick={() => onClick(section)}
-      className={`group inline-flex items-center gap-2 rounded-lg border border-white/[0.06] bg-[var(--surface)] px-3.5 py-2 text-sm transition hover:border-white/15 hover:bg-white/[0.02] ${dir === "next" ? "flex-row-reverse text-right" : ""}`}
-    >
-      <ArrowRight size={15} className={`text-neutral-500 group-hover:text-neutral-200 transition ${dir === "prev" ? "rotate-180" : ""}`} />
-      <span className="flex flex-col leading-tight">
-        <span className="text-[10px] uppercase tracking-wider text-neutral-500">{dir === "prev" ? "Previous" : "Next"}</span>
-        <span className="font-semibold text-neutral-200">{section.tab}</span>
-      </span>
-    </button>
+    <div className={`flex items-center gap-2 ${variant === "bottom" ? "justify-between flex-wrap" : "justify-end"}`}>
+      <div className="flex items-center gap-2">
+        <BossArrow dir="prev" boss={bossPrev} />
+        <SectionBtn dir="prev" section={prevSec} />
+      </div>
+      <div className="flex items-center gap-2">
+        <SectionBtn dir="next" section={nextSec} prominent />
+        <BossArrow dir="next" boss={bossNext} />
+      </div>
+    </div>
   );
 }

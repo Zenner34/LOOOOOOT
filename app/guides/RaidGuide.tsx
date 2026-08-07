@@ -9,8 +9,11 @@ import type { Boss } from "./types";
    Shared by every raid — pass its boss list + an aria label. */
 export default function RaidGuide({ bosses, ariaLabel }: { bosses: Boss[]; ariaLabel: string }) {
   const [bossId, setBossId] = useState(bosses[0]?.id ?? "");
-  const boss = bosses.find(b => b.id === bossId) ?? bosses[0];
+  const bossIdx = bosses.findIndex(b => b.id === bossId);
+  const boss = bosses[bossIdx] ?? bosses[0];
   if (!boss) return null;
+  const bossPrev = bossIdx > 0 ? bosses[bossIdx - 1] : null;
+  const bossNext = bossIdx >= 0 && bossIdx < bosses.length - 1 ? bosses[bossIdx + 1] : null;
 
   const options = bosses.map((b, i) => ({
     value: b.id,
@@ -41,7 +44,13 @@ export default function RaidGuide({ bosses, ariaLabel }: { bosses: Boss[]; ariaL
         />
       </div>
 
-      <BossGuide key={boss.id} boss={boss} />
+      <BossGuide
+        key={boss.id}
+        boss={boss}
+        bossPrev={bossPrev}
+        bossNext={bossNext}
+        onPickBoss={setBossId}
+      />
     </div>
   );
 }
