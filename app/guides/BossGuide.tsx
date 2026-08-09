@@ -126,9 +126,8 @@ export default function BossGuide({
         )}
 
         {section.order && (
-          <Block accent={accent} title="Execution order" icon={<ListOrdered size={14} />}>
+          <Block accent={accent} title={section.order.title ?? "Execution order"} icon={<ListOrdered size={14} />}>
             <div className="panel p-4 sm:p-5">
-              {section.order.title && <h4 className="text-base font-semibold text-neutral-100">{section.order.title}</h4>}
               <NumberedSteps accent={accent} steps={section.order.steps} />
             </div>
           </Block>
