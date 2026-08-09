@@ -1,0 +1,296 @@
+ILLIDARI COUNCIL - WEEK 1 STRATEGY
+
+Creature Type:
+Humanoid
+
+Demonslaying Elixir:
+No
+
+
+OVERVIEW
+
+For our first clear we are intentionally using the safer Council strategy.
+
+We are NOT using the full cleave strategy.
+
+POSITIONING
+
+Gathios + Veras
+- Stacked together.
+- Physical DPS focuses Veras.
+- Melee can cleave between the two.
+
+Malande
+- Kept separated from Gathios and Veras.
+- Dedicated tank.
+- Dedicated Rogue assigned full time.
+- Do not bring Malande into the Gathios/Veras group.
+
+Zerevor
+- Separated from everyone.
+- Mage kites him around the room.
+
+
+TARGET PRIORITY
+
+PHYSICAL DPS
+
+1. Veras
+2. Gathios when Veras Vanishes
+3. Veras when he returns
+
+Malande is NOT cleaved during Week 1.
+
+Zerevor is handled by the Mage.
+
+
+GATHIOS + VERAS
+
+Gathios and Veras remain together.
+
+The Veras tank keeps Veras positioned with Gathios.
+
+When Veras Vanishes:
+- Melee immediately swaps to Gathios.
+- Continue damaging Gathios.
+- Handle Deadly Poison targets.
+
+When Veras returns:
+- Off Tank immediately establishes threat.
+- Bring Veras back into position.
+- Melee immediately returns to Veras.
+
+
+MALANDE - WEEK 1
+
+Malande remains separated from Gathios and Veras for the entire encounter.
+
+ROGUE
+
+One Rogue is assigned to Malande FULL TIME.
+
+The Rogue does not leave Malande to chase DPS or assist another target unless specifically necessary.
+
+The Rogue should have:
+- Mind-Numbing Poison
+- PvP gloves
+
+The Rogue's job is to make sure Malande gets as few casts through as possible.
+
+MIND-NUMBING POISON
+
+Maintain Mind-Numbing Poison on Malande at all times.
+
+The reduced casting speed gives the Rogue additional time to react and land interrupts.
+
+KICK
+
+Priority:
+1. Divine Wrath
+2. Circle of Healing
+3. Empowered Smite
+
+DIVINE WRATH
+Highest priority. This should not be allowed to cast freely.
+
+CIRCLE OF HEALING
+Second priority. Do not allow Malande to repeatedly heal the Council.
+
+EMPOWERED SMITE
+Lower priority than Divine Wrath and Circle of Healing, but should still be interrupted whenever possible.
+
+PVP GLOVES
+
+The Rogue should use PvP gloves to provide additional Kick coverage.
+
+The goal is to eliminate missed interrupts and provide as much continuous control as possible.
+
+The Rogue should remain glued to Malande for the entire fight.
+
+If Kick is unavailable:
+- Use the available backup interrupt.
+- Shaman should be prepared to cover Malande.
+- Do not allow Divine Wrath to go through simply because Kick is on cooldown.
+
+BLESSING OF SPELL WARDING
+
+If Gathios places Blessing of Spell Warding on Malande:
+- Physical interrupts will not work.
+- Shaman and other available magical interrupts must cover her.
+- Return to normal Rogue interrupt duty immediately when the shield expires.
+
+REFLECTIVE SHIELD
+
+When Reflective Shield is active:
+- Stop damaging Malande.
+- Continue monitoring her casts.
+- Resume DPS when the shield expires.
+
+The Rogue remains assigned to Malande even while she is protected.
+
+
+MALANDE POSITIONING
+
+- Malande remains separated from Gathios and Veras.
+- Her tank keeps her in a stable position.
+- The Rogue remains directly on Malande.
+- Do not bring Malande into the Gathios/Veras group.
+- Do not attempt to cleave Malande during Week 1.
+
+Objective:
+KEEP MALANDE CONTROLLED AND PREVENT HER FROM HEALING.
+
+
+ZEREVOR
+
+The Mage is responsible for Zerevor.
+
+Zerevor remains completely separated from the main Council group.
+
+The Mage should:
+- Spellsteal Dampen Magic.
+- Establish threat.
+- Kite Zerevor around the room.
+- Avoid Arcane Bolt whenever possible.
+- Avoid Flamestrike.
+- Avoid Blizzard.
+- Maintain Dampen Magic.
+
+The Mage's primary responsibility is survival. DPS is secondary.
+
+
+CHROMATIC RESISTANCE AURA
+
+Gathios can cast Chromatic Resistance Aura.
+
+For Week 1, we are intentionally keeping Malande outside Gathios's aura whenever positioning allows.
+
+Casters should still be prepared for the aura when attacking Gathios and Veras.
+
+Curse of the Elements should remain active.
+
+The 162 Spell Penetration figure comes from:
+250 Resistance
+- 88 Curse of the Elements
+= 162 remaining resistance
+
+This is an optimization rather than a reason to complicate the Week 1 strategy.
+
+
+GATHIOS
+
+Gathios remains with Veras.
+
+Tank him away from Malande.
+
+CONSECRATION
+- Move Gathios out.
+- Keep the raid out.
+- Maintain Gathios/Veras positioning.
+
+JUDGEMENT
+- Prepare for heavy tank damage.
+- Use defensive cooldowns when appropriate.
+
+BLESSING OF SPELL WARDING
+If Gathios protects another Council member:
+- Do not waste magical attacks into the protected target.
+- Continue attacking an available target.
+
+If Malande receives Spell Warding:
+- Interrupt coverage becomes even more important.
+- Use Shaman or other available interrupts as necessary.
+
+
+VERAS
+
+Veras is the primary physical DPS target.
+
+His low armor makes him extremely vulnerable to physical damage.
+
+DEADLY POISON
+- Healers immediately prioritize affected players.
+- Players use Healthstones and defensives if necessary.
+
+ENVENOM
+- Prepare for the burst following Deadly Poison.
+- Do not allow affected players to sit at low health.
+
+VANISH
+
+When Veras disappears:
+- Swap to Gathios.
+- Continue DPS.
+- Prepare for Veras's return.
+
+When Veras returns:
+- Off Tank immediately snaps threat.
+- Return Veras to the Gathios position.
+- Resume DPS on Veras.
+
+
+HEALING PRIORITIES
+
+1. Malande Tank
+2. Gathios Tank
+3. Veras Tank
+4. Deadly Poison targets
+5. Mage Tank
+6. General raid damage
+
+
+WEEK 1 ENCOUNTER FLOW
+
+PULL
+↓
+Separate Malande
+↓
+Mage separates Zerevor
+↓
+Gathios + Veras established together
+↓
+Physical DPS attacks Veras
+↓
+Rogue controls Malande
+↓
+Veras Vanishes
+↓
+Physical DPS swaps to Gathios
+↓
+Handle Deadly Poison
+↓
+Veras returns
+↓
+OT snaps Veras
+↓
+Return to Veras
+↓
+Continue controlling Malande
+↓
+Mage continues kiting Zerevor
+↓
+Repeat until Council dies
+
+
+WEEK 1 SUCCESS CRITERIA
+
+DO NOT WORRY ABOUT OPTIMAL CLEAVE.
+
+The objective is a clean first kill.
+
+Priorities:
+1. Malande does not heal the Council.
+2. Zerevor does not kill the Mage.
+3. Veras does not kill random raid members.
+4. Gathios remains controlled.
+5. Veras is burned whenever available.
+6. Everyone respects mechanics.
+
+Once we have the encounter on farm, we can transition to the optimized strategy:
+
+GATHIOS + VERAS + MALANDE CLEAVE
+
+with only Zerevor separated.
+
+
+END OF WEEK 1 STRATEGY
