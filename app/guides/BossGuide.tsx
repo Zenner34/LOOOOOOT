@@ -367,18 +367,22 @@ function GuideNav({
 
   function BossArrow({ dir, boss }: { dir: "prev" | "next"; boss?: Boss | null }) {
     if (!boss || !onPickBoss) return null;
+    const label = dir === "prev" ? "Prev boss" : "Next boss";
     return (
       <button
         type="button"
         onClick={() => onPickBoss(boss.id)}
-        title={`${dir === "prev" ? "Previous" : "Next"} boss: ${boss.name}`}
-        aria-label={`${dir === "prev" ? "Previous" : "Next"} boss: ${boss.name}`}
-        className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-2 transition hover:brightness-125"
+        title={`${label}: ${boss.name}`}
+        aria-label={`${label}: ${boss.name}`}
+        className="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 transition hover:brightness-125"
         style={{ borderColor: `${accent}44`, background: `${accent}12`, color: accent }}
       >
-        {dir === "prev" && <ArrowRight size={14} className="rotate-180" />}
-        <span className="text-[10px] font-bold uppercase tracking-wider">Boss</span>
-        {dir === "next" && <ArrowRight size={14} />}
+        {dir === "prev" && <ArrowRight size={14} className="shrink-0 rotate-180" />}
+        <span className={`flex flex-col leading-tight ${dir === "next" ? "items-end" : "items-start"}`}>
+          <span className="text-[9px] font-bold uppercase tracking-wider opacity-70">{label}</span>
+          <span className="max-w-[8rem] truncate text-xs font-semibold">{boss.name}</span>
+        </span>
+        {dir === "next" && <ArrowRight size={14} className="shrink-0" />}
       </button>
     );
   }
@@ -416,8 +420,20 @@ function GuideNav({
     );
   }
 
+  // Top (sticky bar) stays compact — forward controls only, since the section
+  // tabs and boss dropdown right beside it already handle going back. The
+  // bottom bar carries the full prev/next set for both sections and bosses.
+  if (variant === "top") {
+    return (
+      <div className="flex items-center justify-end gap-2">
+        <SectionBtn dir="next" section={nextSec} prominent />
+        <BossArrow dir="next" boss={bossNext} />
+      </div>
+    );
+  }
+
   return (
-    <div className={`flex items-center gap-2 ${variant === "bottom" ? "justify-between flex-wrap" : "justify-end"}`}>
+    <div className="flex flex-wrap items-center justify-between gap-2">
       <div className="flex items-center gap-2">
         <BossArrow dir="prev" boss={bossPrev} />
         <SectionBtn dir="prev" section={prevSec} />

@@ -7,17 +7,17 @@ import LogoutButton from "./LogoutButton";
 import { Menu, X } from "@/app/components/ui/Icon";
 
 const NAV = [
+  { href: "/guides",             label: "Guides"                       },
+  { href: "/assignments",        label: "Assignments"                  },
   { href: "/overview",    label: "Overview"                  },
-  { href: "/loot",        label: "Loot"                      },
+  { href: "/loot",        label: "Loot",        adminOnly: true },
   { href: "/loot/assign",        label: "Assign",      adminOnly: true },
   { href: "/admin/loot",         label: "All loot",    adminOnly: true },
-  { href: "/assignments",        label: "Assignments"                  },
-  { href: "/guides",             label: "Guides"                       },
-  { href: "/rosters",     label: "Roster"                    },
-  { href: "/players",     label: "Players"                   },
-  { href: "/characters",  label: "Characters"                },
-  { href: "/professions", label: "Professions"               },
-  { href: "/attendance",  label: "Attendance"                },
+  { href: "/rosters",     label: "Roster",      adminOnly: true },
+  { href: "/players",     label: "Players",     adminOnly: true },
+  { href: "/characters",  label: "Characters",  adminOnly: true },
+  { href: "/professions", label: "Professions", adminOnly: true },
+  { href: "/attendance",  label: "Attendance",  adminOnly: true },
 ];
 
 export default function NavBar({ admin }: { admin: boolean }) {

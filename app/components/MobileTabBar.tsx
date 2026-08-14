@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type LucideIcon } from "lucide-react";
-import { Award, Calendar, List, Package, Swords, Users } from "@/app/components/ui/Icon";
+import { Award, Calendar, Layers, Package, Shield, Swords, Users } from "@/app/components/ui/Icon";
 
 // Five most-used routes get prime thumb-reach real estate at the bottom of
 // the screen on phones. Mirrors the pattern of native apps (iOS tab bar,
@@ -18,14 +18,12 @@ const ITEMS: Array<{ href: string; label: string; icon: LucideIcon; adminOnly?: 
   { href: "/attendance",  label: "Nights",   icon: Calendar },
 ];
 
-// Public-only fallback set so non-admins still see 5 tabs (Loot moves into
-// the slot Assign would have occupied; Roster fills the gap).
+// Public-only set — the three player-facing pages that survived the site
+// simplification. Everything else is admin-only now.
 const PUBLIC_ITEMS: Array<{ href: string; label: string; icon: LucideIcon }> = [
-  { href: "/overview",   label: "Overview", icon: Swords },
-  { href: "/loot",       label: "Loot",     icon: Package },
-  { href: "/players",    label: "Players",  icon: Users },
-  { href: "/rosters",    label: "Roster",   icon: List },
-  { href: "/attendance", label: "Nights",   icon: Calendar },
+  { href: "/guides",      label: "Guides",      icon: Shield },
+  { href: "/assignments", label: "Assignments", icon: Layers },
+  { href: "/overview",    label: "Overview",    icon: Swords },
 ];
 
 export default function MobileTabBar({ admin }: { admin: boolean }) {
@@ -41,7 +39,7 @@ export default function MobileTabBar({ admin }: { admin: boolean }) {
       className="md:hidden fixed bottom-0 inset-x-0 z-30 border-t border-white/10 bg-[var(--bg)]/95 backdrop-blur-md pb-safe"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0)" }}
     >
-      <ul className="grid grid-cols-5">
+      <ul className="grid" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>
         {items.map(item => {
           const active = isActive(item.href);
           const Icon = item.icon;
