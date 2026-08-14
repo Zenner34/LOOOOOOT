@@ -805,7 +805,7 @@ const SHAHRAZ: Boss = {
       tag: "Seventh Boss",
       title: "Overview",
       image: `${IMG}/mother-shahraz.png`,
-      imageCaption: "Mother Shahraz — fountain positioning",
+      imageCaption: "Mother Shahraz — positioning (camera angle may be scuffed)",
       lead: [
         "One of the final Black Temple encounters and a major execution check. Rather than relying on Shadow Resistance gear, our strategy maximizes raid DPS and uses Rocket Boots to handle Fatal Attraction.",
         "It's won through disciplined movement, positioning, and quick reactions — not raw healing or DPS.",
@@ -862,11 +862,10 @@ const SHAHRAZ: Boss = {
         },
       ],
       positioning: [
-        "Position Mother Shahraz in the fountain — raid get under your statues ASAP.",
+        "Position Mother Shahraz in front of the right statue. Melee get under the extended hand to reduce knock-up.",
         "Face her away from the raid.",
-        "Melee stack behind and return quickly after mechanics.",
-        "Ranged spread around the rear within healer range.",
         "Healers ready for large bursts of raid damage after Fatal Attraction.",
+        "Ranged stack underneath the closed exitway leading to Council and tuck in the back corner.",
       ],
     },
     {
@@ -875,7 +874,7 @@ const SHAHRAZ: Boss = {
       tag: "Reference",
       title: "Encounter Flow & Wipes",
       flow: [
-        "Tanks establish Shahraz in the fountain",
+        "Tanks establish Shahraz at the right statue",
         "Raid sets normal positioning",
         "Handle Saber Lash with the tank group",
         "Steady DPS, minimal movement",
