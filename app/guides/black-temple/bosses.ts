@@ -862,10 +862,10 @@ const SHAHRAZ: Boss = {
         },
       ],
       positioning: [
-        "Position Mother Shahraz in front of the right statue. Melee get under the extended hand to reduce knock-up.",
+        "Tanks must be stacked running in to soak Saber Lash.",
         "Face her away from the raid.",
         "Healers ready for large bursts of raid damage after Fatal Attraction.",
-        "Ranged stack underneath the closed exitway leading to Council and tuck in the back corner.",
+        "Ranged groups stack in their respective stacks under the bent knee or extended hand to prevent knock up.",
       ],
     },
     {
