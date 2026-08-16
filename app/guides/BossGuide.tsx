@@ -103,6 +103,33 @@ export default function BossGuide({
           </figure>
         )}
 
+        {section.images && section.images.length > 0 && (
+          <div className={`grid gap-3 ${section.images.length > 1 ? "sm:grid-cols-2" : ""}`}>
+            {section.images.map((img, i) => (
+              <figure key={i} className="space-y-2">
+                <a
+                  href={img.src}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block overflow-hidden rounded-xl border transition hover:brightness-110"
+                  style={{ borderColor: `${accent}33` }}
+                  title="Open full size"
+                >
+                  <img
+                    src={img.src}
+                    alt={img.alt ?? `${boss.name} — ${section.title} diagram`}
+                    loading="lazy"
+                    className="w-full h-auto block bg-black/30"
+                  />
+                </a>
+                {img.caption && (
+                  <figcaption className="text-[11px] text-neutral-500 text-center">{img.caption}</figcaption>
+                )}
+              </figure>
+            ))}
+          </div>
+        )}
+
         {section.callout && <Callout accent={accent} {...section.callout} />}
 
         {section.roles?.map((r, i) => <RoleCallout key={i} accent={accent} role={r} />)}

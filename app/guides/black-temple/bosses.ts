@@ -1086,6 +1086,18 @@ const ILLIDARI_COUNCIL: Boss = {
       lead: [
         "The Mage owns Zerevor, kept completely separate from the Council. Survival comes first — his DPS is secondary.",
       ],
+      images: [
+        {
+          src: `${IMG}/zerevor-kite-1.png`,
+          alt: "Mage kite starting position and route around the room",
+          caption: "Mage start position and the kite route around the room.",
+        },
+        {
+          src: `${IMG}/zerevor-kite-2.png`,
+          alt: "Top-down map of the Zerevor kite path",
+          caption: "Overhead view — kite Zerevor in a wide arc around the central platform.",
+        },
+      ],
       roles: [
         {
           title: "Mage — Zerevor kite",

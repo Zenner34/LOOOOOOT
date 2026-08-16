@@ -15,6 +15,8 @@ export type Section = {
   image?: string;
   imageAlt?: string;
   imageCaption?: string;
+  /** Optional extra diagrams rendered as a gallery beneath the primary image. */
+  images?: { src: string; alt?: string; caption?: string }[];
   lead?: string[];
   callout?: Callout;
   roles?: RoleNote[];
