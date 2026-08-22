@@ -16,9 +16,10 @@ import {
   type PhaseSlotRule,
 } from "@/lib/raid-helper";
 import { CLASS_COLOR } from "@/lib/specs";
-import { ExternalLink, Eye, Plus, Sparkles, X } from "@/app/components/ui/Icon";
+import { BookOpen, ExternalLink, Eye, Plus, Sparkles, X } from "@/app/components/ui/Icon";
 import { CharacterChip, EmptySlot, type AssignableCharacter } from "./CharacterChip";
 import { CharacterPicker } from "./CharacterPicker";
+import { BossGuideModal } from "./BossGuideModal";
 import { EditOnly, useViewMode } from "./ViewModeContext";
 
 const ICON_BASE = "https://wow.zamimg.com/images/wow/icons/medium/";
@@ -54,6 +55,7 @@ export function PhaseBossCard({
   charsById: Map<number, AssignableCharacter>;
 }) {
   const { readOnly } = useViewMode();
+  const [guideOpen, setGuideOpen] = useState(false);
   const sections = sheet.sections ?? [];
   const tpls = PHASE_BOSS_TEMPLATES[boss.slug as PhaseBossSlug] ?? [];
   const tplById = new Map<string, PhaseSectionTpl>(tpls.map(t => [tplSectionId(t.key), t]));
@@ -117,7 +119,18 @@ export function PhaseBossCard({
               {boss.name}
             </h3>
           </div>
-          <div className="flex items-baseline gap-3 flex-shrink-0">
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {boss.guideId && (
+              <button
+                type="button"
+                onClick={() => setGuideOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold transition hover:brightness-125"
+                style={{ borderColor: `${boss.accent}44`, background: `${boss.accent}14`, color: boss.accent }}
+                title={`Read the ${boss.name} strategy guide`}
+              >
+                <BookOpen size={12} aria-hidden /> Guide
+              </button>
+            )}
             <span className="hidden sm:inline text-[10px] uppercase tracking-[0.18em] text-slate-400">
               {boss.raidShort === "BT" ? "Black Temple" : "Mount Hyjal"}
             </span>
@@ -193,6 +206,8 @@ export function PhaseBossCard({
           </div>
         </div>
       </div>
+
+      {guideOpen && <BossGuideModal boss={boss} onClose={() => setGuideOpen(false)} />}
     </div>
   );
 }

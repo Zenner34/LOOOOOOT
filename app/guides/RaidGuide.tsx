@@ -7,7 +7,15 @@ import type { Boss } from "./types";
 
 /* One raid's guide: a boss dropdown that swaps the rendered BossGuide.
    Shared by every raid — pass its boss list + an aria label. */
-export default function RaidGuide({ bosses, ariaLabel }: { bosses: Boss[]; ariaLabel: string }) {
+export default function RaidGuide({
+  bosses,
+  ariaLabel,
+  raidName = "Black Temple",
+}: {
+  bosses: Boss[];
+  ariaLabel: string;
+  raidName?: string;
+}) {
   const [bossId, setBossId] = useState(bosses[0]?.id ?? "");
   const bossIdx = bosses.findIndex(b => b.id === bossId);
   const boss = bosses[bossIdx] ?? bosses[0];
@@ -50,6 +58,7 @@ export default function RaidGuide({ bosses, ariaLabel }: { bosses: Boss[]; ariaL
         bossPrev={bossPrev}
         bossNext={bossNext}
         onPickBoss={setBossId}
+        raidName={raidName}
       />
     </div>
   );

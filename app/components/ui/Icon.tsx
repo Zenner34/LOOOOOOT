@@ -8,6 +8,7 @@ export {
   ArrowUp,
   ArrowUpRight,
   Award,
+  BookOpen,
   Calendar,
   Check,
   ChevronDown,

@@ -11,11 +11,18 @@ export default function BossGuide({
   bossPrev,
   bossNext,
   onPickBoss,
+  raidName = "Black Temple",
+  modal = false,
 }: {
   boss: Boss;
   bossPrev?: Boss | null;
   bossNext?: Boss | null;
   onPickBoss?: (id: string) => void;
+  /** Raid name shown in the hero's crown line. */
+  raidName?: string;
+  /** Rendered inside a scrolling modal — pins the tab bar to the top of
+   *  that container instead of below the site header. */
+  modal?: boolean;
 }) {
   const accent = boss.accent;
   const [active, setActive] = useState(boss.sections[0].id);
@@ -37,10 +44,11 @@ export default function BossGuide({
 
   return (
     <div className="space-y-5">
-      <BossHero boss={boss} />
+      <BossHero boss={boss} raidName={raidName} />
 
-      {/* Section tabs — sticky under the site header. Top-right nav on desktop. */}
-      <div className="sticky top-14 z-20 -mx-4 px-4 py-2 bg-[var(--bg)]/85 backdrop-blur-md border-y border-white/[0.06]">
+      {/* Section tabs — sticky under the site header (or the modal's
+          scroll top). Top-right nav on desktop. */}
+      <div className={`sticky ${modal ? "top-0" : "top-14"} z-20 -mx-4 px-4 py-2 bg-[var(--bg)]/85 backdrop-blur-md border-y border-white/[0.06]`}>
         <div className="flex items-center gap-3">
         <div className="flex gap-1.5 overflow-x-auto min-w-0 flex-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {boss.sections.map((s, i) => {
@@ -202,7 +210,7 @@ export default function BossGuide({
 
 /* ──────────────────────────────────────────────────────────────────── */
 
-function BossHero({ boss }: { boss: Boss }) {
+function BossHero({ boss, raidName }: { boss: Boss; raidName: string }) {
   const a = boss.accent;
   return (
     <div
@@ -217,7 +225,7 @@ function BossHero({ boss }: { boss: Boss }) {
       <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="mb-2 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: a }}>
-            <Crown size={13} /> Black Temple · {boss.role}
+            <Crown size={13} /> {raidName} · {boss.role}
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-50">{boss.name}</h2>
           {boss.quote && <p className="mt-1 text-sm italic text-neutral-400">&ldquo;{boss.quote}&rdquo;</p>}

@@ -88,26 +88,29 @@ export type PhaseBossMeta = {
    *  Unset renders a placeholder panel until the real images land in
    *  /public/strategies/. */
   readonly strategy?: string;
+  /** Matching boss id in the /guides data — powers the card's guide
+   *  popup. */
+  readonly guideId?: string;
 };
 
 const WCL_BOSS_ICON = (encounterId: number) =>
   `https://assets.rpglogs.com/img/warcraft/bosses/${encounterId}-icon.jpg`;
 
 export const PHASE_BOSSES = [
-  { slug: "najentus",   raidShort: "BT", name: "High Warlord Naj'entus", accent: "#5edfff", icon: WCL_BOSS_ICON(601) },
-  { slug: "supremus",   raidShort: "BT", name: "Supremus",               accent: "#ff7a3c", icon: WCL_BOSS_ICON(602) },
-  { slug: "shade",      raidShort: "BT", name: "Shade of Akama",         accent: "#8b9dff", icon: WCL_BOSS_ICON(603) },
-  { slug: "teron",      raidShort: "BT", name: "Teron Gorefiend",        accent: "#a78bfa", icon: WCL_BOSS_ICON(604) },
-  { slug: "gurtogg",    raidShort: "BT", name: "Gurtogg Bloodboil",      accent: "#ff5e6c", icon: WCL_BOSS_ICON(605) },
-  { slug: "reliquary",  raidShort: "BT", name: "Reliquary of Souls",     accent: "#ff7ad4", icon: WCL_BOSS_ICON(606) },
-  { slug: "shahraz",    raidShort: "BT", name: "Mother Shahraz",         accent: "#e08bff", icon: WCL_BOSS_ICON(607) },
-  { slug: "council",    raidShort: "BT", name: "Illidari Council",       accent: "#c58bff", icon: WCL_BOSS_ICON(608) },
-  { slug: "illidan",    raidShort: "BT", name: "Illidan Stormrage",      accent: "#a3ff5e", icon: WCL_BOSS_ICON(609) },
-  { slug: "rage",       raidShort: "MH", name: "Rage Winterchill",       accent: "#7ec8ff", icon: WCL_BOSS_ICON(618) },
-  { slug: "anetheron",  raidShort: "MH", name: "Anetheron",              accent: "#ff8a4c", icon: WCL_BOSS_ICON(619) },
-  { slug: "kazrogal",   raidShort: "MH", name: "Kaz'rogal",              accent: "#b18bff", icon: WCL_BOSS_ICON(620) },
-  { slug: "azgalor",    raidShort: "MH", name: "Az'galor",               accent: "#ff5e6c", icon: WCL_BOSS_ICON(621) },
-  { slug: "archimonde", raidShort: "MH", name: "Archimonde",             accent: "#ffd24c", icon: WCL_BOSS_ICON(622) },
+  { slug: "najentus",   raidShort: "BT", name: "High Warlord Naj'entus", accent: "#5edfff", icon: WCL_BOSS_ICON(601), guideId: "najentus" },
+  { slug: "supremus",   raidShort: "BT", name: "Supremus",               accent: "#ff7a3c", icon: WCL_BOSS_ICON(602), guideId: "supremus" },
+  { slug: "shade",      raidShort: "BT", name: "Shade of Akama",         accent: "#8b9dff", icon: WCL_BOSS_ICON(603), guideId: "shade-of-akama" },
+  { slug: "teron",      raidShort: "BT", name: "Teron Gorefiend",        accent: "#a78bfa", icon: WCL_BOSS_ICON(604), guideId: "teron-gorefiend" },
+  { slug: "gurtogg",    raidShort: "BT", name: "Gurtogg Bloodboil",      accent: "#ff5e6c", icon: WCL_BOSS_ICON(605), guideId: "gurtogg-bloodboil" },
+  { slug: "reliquary",  raidShort: "BT", name: "Reliquary of Souls",     accent: "#ff7ad4", icon: WCL_BOSS_ICON(606), guideId: "reliquary-of-souls" },
+  { slug: "shahraz",    raidShort: "BT", name: "Mother Shahraz",         accent: "#e08bff", icon: WCL_BOSS_ICON(607), guideId: "mother-shahraz" },
+  { slug: "council",    raidShort: "BT", name: "Illidari Council",       accent: "#c58bff", icon: WCL_BOSS_ICON(608), guideId: "illidari-council" },
+  { slug: "illidan",    raidShort: "BT", name: "Illidan Stormrage",      accent: "#a3ff5e", icon: WCL_BOSS_ICON(609), guideId: "illidan" },
+  { slug: "rage",       raidShort: "MH", name: "Rage Winterchill",       accent: "#7ec8ff", icon: WCL_BOSS_ICON(618), guideId: "rage-winterchill" },
+  { slug: "anetheron",  raidShort: "MH", name: "Anetheron",              accent: "#ff8a4c", icon: WCL_BOSS_ICON(619), guideId: "anetheron" },
+  { slug: "kazrogal",   raidShort: "MH", name: "Kaz'rogal",              accent: "#b18bff", icon: WCL_BOSS_ICON(620), guideId: "kazrogal" },
+  { slug: "azgalor",    raidShort: "MH", name: "Az'galor",               accent: "#ff5e6c", icon: WCL_BOSS_ICON(621), guideId: "azgalor" },
+  { slug: "archimonde", raidShort: "MH", name: "Archimonde",             accent: "#ffd24c", icon: WCL_BOSS_ICON(622), guideId: "archimonde" },
 ] as const satisfies readonly PhaseBossMeta[];
 
 export type PhaseBossSlug = (typeof PHASE_BOSSES)[number]["slug"];
@@ -171,9 +174,9 @@ const S = {
   hpal:   (n: number) => ({ label: `Hpal ${n}`,   specs: ["Holy Paladin"], nth: n }),
   ret:    (n: number) => ({ label: `Ret ${n}`,    specs: ["Retribution Paladin"], nth: n }),
   prot:   (n: number) => ({ label: `Prot ${n}`,   specs: ["Protection Paladin"], nth: n }),
-  // No "Reckoning" spec exists in the Raid-Helper mapping — manual slot,
-  // picker scoped to paladins.
-  reck:   (n: number) => ({ label: `Reck ${n}`,   classes: ["Paladin"] }),
+  // Curse of Recklessness warlock — assigned per-fight like the buff
+  // sheet's Curses row, so manual, picker scoped to warlocks.
+  reck:   (n: number) => ({ label: `Reck ${n}`,   classes: ["Warlock"] }),
   affi:   (n: number) => ({ label: `Affi ${n}`,   specs: ["Affliction Warlock"], nth: n }),
   // "Warlock n" counts the non-Affliction locks so it never doubles up
   // with the dedicated "Affi n" slots in a parallel group.
@@ -269,8 +272,14 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
       staticItems: ["Council Heal Kick"] },
   ],
   illidan: [
+    // Shear tank: Prot Warrior when one is in the comp, otherwise the
+    // Prot Paladin (tiered pool).
     { key: "mt", title: "Main Tank",
-      slots: [S.prot(1), md(S.surv(1)), S.openMd()] },
+      slots: [
+        { label: "Prot 1", specs: ["Protection Warrior", "Protection Paladin"], tiered: true, nth: 1 },
+        md(S.surv(1)),
+        S.openMd(),
+      ] },
     { key: "lefttank", title: "Left Ele Tank",
       slots: [S.feral(1), md(S.hunter(1))] },
     { key: "righttank", title: "Right Ele Tank",
