@@ -1,12 +1,27 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { newSectionId, type AssignSection } from "@/lib/assignments";
-import type { PhaseBossMeta, PhaseBossSheet } from "@/lib/raid-helper";
-import { Eye, Plus, X } from "@/app/components/ui/Icon";
+import {
+  autoFillBossSheet,
+  PHASE_BOSS_TEMPLATES,
+  slotClass,
+  slotEligibility,
+  tplSectionId,
+  type PhaseBossMeta,
+  type PhaseBossSheet,
+  type PhaseBossSlug,
+  type PhaseSectionTpl,
+  type PhaseSlotRule,
+} from "@/lib/raid-helper";
+import { CLASS_COLOR } from "@/lib/specs";
+import { ExternalLink, Eye, Plus, Sparkles, X } from "@/app/components/ui/Icon";
 import { CharacterChip, EmptySlot, type AssignableCharacter } from "./CharacterChip";
 import { CharacterPicker } from "./CharacterPicker";
 import { EditOnly, useViewMode } from "./ViewModeContext";
+
+const ICON_BASE = "https://wow.zamimg.com/images/wow/icons/medium/";
 
 /**
  * One boss's assignment card on the BT/Hyjal sheet, laid out like the
@@ -40,6 +55,9 @@ export function PhaseBossCard({
 }) {
   const { readOnly } = useViewMode();
   const sections = sheet.sections ?? [];
+  const tpls = PHASE_BOSS_TEMPLATES[boss.slug as PhaseBossSlug] ?? [];
+  const tplById = new Map<string, PhaseSectionTpl>(tpls.map(t => [tplSectionId(t.key), t]));
+  const hasRuledSlots = tpls.some(t => t.slots?.some(s => s.nth));
 
   function patchSection(id: string, patch: Partial<AssignSection>) {
     onChange({ ...sheet, sections: sections.map(s => (s.id === id ? { ...s, ...patch } : s)) });
@@ -54,6 +72,16 @@ export function PhaseBossCard({
       ...sheet,
       sections: [...sections, { id: newSectionId(), title: "New assignment", characterIds: [] }],
     });
+  }
+
+  function autoFill() {
+    const next = autoFillBossSheet(characters, tpls, sheet, { onlyEmpty: true });
+    if (JSON.stringify(next) === JSON.stringify(sheet)) {
+      toast.message("Nothing to fill — every templated slot is already assigned.");
+      return;
+    }
+    onChange(next);
+    toast.success(`${boss.name}: filled the empty slots from the roster.`);
   }
 
   return (
@@ -94,6 +122,17 @@ export function PhaseBossCard({
               {boss.raidShort === "BT" ? "Black Temple" : "Mount Hyjal"}
             </span>
             <EditOnly>
+              {hasRuledSlots && (
+                <button
+                  type="button"
+                  onClick={autoFill}
+                  disabled={characters.length === 0}
+                  className="inline-flex items-center gap-1 text-[11px] text-amber-300 hover:text-amber-200 disabled:opacity-30 disabled:cursor-not-allowed transition whitespace-nowrap"
+                  title="Fill this boss's empty templated slots from the imported roster"
+                >
+                  <Sparkles size={11} aria-hidden /> Auto-fill
+                </button>
+              )}
               <button
                 type="button"
                 onClick={addSection}
@@ -120,17 +159,30 @@ export function PhaseBossCard({
               </div>
             ) : (
               <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                {sections.map(s => (
-                  <PhaseSectionBox
-                    key={s.id}
-                    section={s}
-                    accent={boss.accent}
-                    onPatch={patch => patchSection(s.id, patch)}
-                    onDelete={() => deleteSection(s.id)}
-                    characters={characters}
-                    charsById={charsById}
-                  />
-                ))}
+                {sections.map(s => {
+                  const tpl = tplById.get(s.id);
+                  return tpl ? (
+                    <TplSectionBox
+                      key={s.id}
+                      tpl={tpl}
+                      section={s}
+                      accent={boss.accent}
+                      onPatch={patch => patchSection(s.id, patch)}
+                      characters={characters}
+                      charsById={charsById}
+                    />
+                  ) : (
+                    <PhaseSectionBox
+                      key={s.id}
+                      section={s}
+                      accent={boss.accent}
+                      onPatch={patch => patchSection(s.id, patch)}
+                      onDelete={() => deleteSection(s.id)}
+                      characters={characters}
+                      charsById={charsById}
+                    />
+                  );
+                })}
               </div>
             )}
 
@@ -184,6 +236,174 @@ function StrategyPanel({ boss }: { boss: PhaseBossMeta }) {
         <br />
         coming soon
       </span>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────────── */
+
+/**
+ * A templated assignment box transcribed from the guild's Google Sheet:
+ * fixed labeled slots (empty slots show the class-tinted callsign —
+ * "Feral 1", "Hunter 2" — exactly like the sheet), optional Misdirect
+ * icons per row, read-only tip rows, and an external link bar. Title
+ * and shape are template-owned, so there's no rename/delete here; the
+ * picker scopes each slot to its rule's specs/class.
+ */
+function TplSectionBox({
+  tpl,
+  section,
+  accent,
+  onPatch,
+  characters,
+  charsById,
+}: {
+  tpl: PhaseSectionTpl;
+  section: AssignSection;
+  accent: string;
+  onPatch: (patch: Partial<AssignSection>) => void;
+  characters: AssignableCharacter[];
+  charsById: Map<number, AssignableCharacter>;
+}) {
+  const { readOnly } = useViewMode();
+  const [openSlot, setOpenSlot] = useState<number | null>(null);
+  const slotRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
+  const slots = tpl.slots ?? [];
+  const ids = [...section.characterIds];
+  while (ids.length < slots.length) ids.push(0);
+  const assigned = new Set(ids.filter(id => id > 0));
+
+  function setSlot(idx: number, id: number) {
+    const next = [...ids];
+    next[idx] = id;
+    onPatch({ characterIds: next });
+    setOpenSlot(null);
+  }
+
+  return (
+    <div className="rounded border border-black/50 bg-black/20 overflow-visible">
+      <div className="bg-[#1a1a1a] border-b border-black text-center text-[10px] font-bold uppercase tracking-wider text-white py-1 px-2 truncate">
+        {tpl.title}
+      </div>
+      <div className="flex flex-col gap-px p-px">
+        {slots.map((rule, i) => (
+          <TplSlotRow
+            key={i}
+            rule={rule}
+            char={ids[i] ? charsById.get(ids[i]) ?? null : null}
+            readOnly={readOnly}
+            open={openSlot === i}
+            slotRef={el => { slotRefs.current[i] = el; }}
+            onToggle={() => setOpenSlot(prev => (prev === i ? null : i))}
+            onRemove={() => setSlot(i, 0)}
+            picker={
+              openSlot === i ? (
+                <CharacterPicker
+                  characters={characters}
+                  excludeIds={new Set([...assigned].filter(id => id !== ids[i]))}
+                  eligibility={slotEligibility(rule)}
+                  onPick={c => setSlot(i, c.id)}
+                  onClose={() => setOpenSlot(null)}
+                  anchorRef={{ current: slotRefs.current[i] }}
+                />
+              ) : null
+            }
+          />
+        ))}
+        {tpl.staticItems?.map((item, i) => (
+          <div
+            key={`static-${i}`}
+            className="bg-white/[0.07] px-2 py-1 text-center text-[11px] font-semibold italic text-neutral-300"
+          >
+            {item}
+          </div>
+        ))}
+        {tpl.link && (
+          <a
+            href={tpl.link.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-1.5 bg-white/[0.04] px-2 py-1.5 text-center text-[11px] font-semibold text-sky-300 underline decoration-sky-300/40 underline-offset-2 transition hover:text-sky-200"
+          >
+            {tpl.link.label}
+            <ExternalLink size={10} aria-hidden />
+          </a>
+        )}
+      </div>
+      <span aria-hidden className="block h-0.5" style={{ background: `${accent}55` }} />
+    </div>
+  );
+}
+
+/** One labeled slot row: [MD icon?] then the chip, or the class-tinted
+ *  callsign while unfilled. */
+function TplSlotRow({
+  rule,
+  char,
+  readOnly,
+  open,
+  slotRef,
+  onToggle,
+  onRemove,
+  picker,
+}: {
+  rule: PhaseSlotRule;
+  char: AssignableCharacter | null;
+  readOnly: boolean;
+  open: boolean;
+  slotRef: (el: HTMLDivElement | null) => void;
+  onToggle: () => void;
+  onRemove: () => void;
+  picker: React.ReactNode;
+}) {
+  const cls = slotClass(rule);
+  const color = cls ? CLASS_COLOR[cls] ?? "#9aa4b2" : "#9aa4b2";
+  const isOpenSlot = rule.label === "Open";
+
+  return (
+    <div ref={slotRef} className="relative flex items-stretch gap-px">
+      {rule.icon && (
+        <span className="flex w-6 shrink-0 items-center justify-center bg-black/40">
+          <img
+            src={`${ICON_BASE}${rule.icon}.jpg`}
+            alt=""
+            width={16}
+            height={16}
+            loading="lazy"
+            onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+            className="h-4 w-4 rounded-[2px] ring-1 ring-black/60"
+          />
+        </span>
+      )}
+      <div className="min-w-0 flex-1">
+        {char ? (
+          <CharacterChip
+            character={char}
+            size="sm"
+            onRemove={onRemove}
+            onClick={onToggle}
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={readOnly ? undefined : onToggle}
+            disabled={readOnly}
+            title={readOnly ? rule.label : `Assign ${rule.label}`}
+            className={`flex w-full items-center justify-center border px-2 py-1 text-[12px] font-semibold italic leading-snug transition ${
+              readOnly ? "cursor-default" : "hover:brightness-125"
+            }`}
+            style={
+              isOpenSlot
+                ? { background: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.1)", color: "#6b7280" }
+                : { background: `${color}2b`, borderColor: `${color}66`, color }
+            }
+          >
+            {rule.label}
+          </button>
+        )}
+      </div>
+      {picker}
     </div>
   );
 }

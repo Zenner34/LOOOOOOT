@@ -118,6 +118,210 @@ export const PHASE_RAIDS: Array<{ short: "BT" | "MH"; name: string }> = [
 ];
 
 /* ────────────────────────────────────────────────────────────────────
+   BOSS ASSIGNMENT TEMPLATES — transcribed from the guild's Google
+   Sheet. Each section is a box of ordered slots; a slot's label is an
+   ordinal class/spec callsign ("Feral 1", "Hunter 2") that both hints
+   the picker and drives deterministic auto-fill from the imported
+   roster: the nth member matching the slot's spec pool, in roster
+   (group) order. Slots without an `nth` are manual — the label still
+   scopes the picker. Template info lives here in code; the saved blob
+   stores only the picks (sections keyed by stable "tpl:<key>" ids).
+   ──────────────────────────────────────────────────────────────────── */
+
+export type PhaseSlotRule = {
+  /** Callsign shown while the slot is empty ("Feral 1", "Open"). */
+  label: string;
+  /** Eligible canonical spec keys. Pool order = roster order, unless
+   *  `tiered` — then specs[0] matches first (Feral: bears before cats). */
+  specs?: string[];
+  tiered?: boolean;
+  /** Class-level eligibility for manual slots ("Reck 1" → any Paladin). */
+  classes?: string[];
+  /** 1-based ordinal into the spec pool for auto-fill; omit = manual. */
+  nth?: number;
+  /** Wowhead icon slug rendered before the slot (Misdirection rows). */
+  icon?: string;
+};
+
+export type PhaseSectionTpl = {
+  /** Stable key — the stored section id is `tpl:<key>`. */
+  key: string;
+  title: string;
+  slots?: PhaseSlotRule[];
+  /** Read-only text rows (Fel Rage tips). */
+  staticItems?: string[];
+  /** External link bar (Teron construct mini-game). */
+  link?: { label: string; href: string };
+};
+
+const MD_ICON = "ability_hunter_misdirection";
+const md = (r: PhaseSlotRule): PhaseSlotRule => ({ ...r, icon: MD_ICON });
+
+/** Slot-rule shorthands matching the sheet's callsign vocabulary. */
+const S = {
+  feral:  (n: number) => ({ label: `Feral ${n}`,  specs: ["Feral Druid (Tank)", "Feral Druid (DPS)"], tiered: true, nth: n }),
+  surv:   (n: number) => ({ label: `Surv ${n}`,   specs: ["Survival Hunter"], nth: n }),
+  hunter: (n: number) => ({ label: `Hunter ${n}`, specs: ["Beast Mastery Hunter", "Marksmanship Hunter"], nth: n }),
+  hpal:   (n: number) => ({ label: `Hpal ${n}`,   specs: ["Holy Paladin"], nth: n }),
+  ret:    (n: number) => ({ label: `Ret ${n}`,    specs: ["Retribution Paladin"], nth: n }),
+  prot:   (n: number) => ({ label: `Prot ${n}`,   specs: ["Protection Paladin"], nth: n }),
+  // No "Reckoning" spec exists in the Raid-Helper mapping — manual slot,
+  // picker scoped to paladins.
+  reck:   (n: number) => ({ label: `Reck ${n}`,   classes: ["Paladin"] }),
+  affi:   (n: number) => ({ label: `Affi ${n}`,   specs: ["Affliction Warlock"], nth: n }),
+  // "Warlock n" counts the non-Affliction locks so it never doubles up
+  // with the dedicated "Affi n" slots in a parallel group.
+  lock:   (n: number) => ({ label: `Warlock ${n}`, specs: ["Destruction Warlock", "Demonology Warlock"], nth: n }),
+  ele:    (n: number) => ({ label: `Ele ${n}`,    specs: ["Elemental Shaman"], nth: n }),
+  disc:   (n: number) => ({ label: `Disc ${n}`,   specs: ["Discipline Priest"], nth: n }),
+  mage:   (n: number) => ({ label: `Mage ${n}`,   specs: ["Arcane Mage", "Fire Mage", "Frost Mage"], nth: n }),
+  boomie: (n: number) => ({ label: `Boomie ${n}`, specs: ["Balance Druid"], nth: n }),
+  rdruid: (n: number) => ({ label: `Rdruid ${n}`, specs: ["Restoration Druid"], nth: n }),
+  spriest:(n: number) => ({ label: `Spriest ${n}`, specs: ["Shadow Priest"], nth: n }),
+  openMd:  (): PhaseSlotRule => md({ label: "Open", classes: ["Hunter"] }),
+  openPala:(): PhaseSlotRule => ({ label: "Open", classes: ["Paladin"] }),
+  open:    (): PhaseSlotRule => ({ label: "Open" }),
+};
+
+export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl[]>> = {
+  najentus: [
+    { key: "mt", title: "Main Tank",
+      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
+  ],
+  supremus: [
+    { key: "mt", title: "Main Tank",
+      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(2))] },
+    { key: "hateful", title: "Hateful Tank",
+      slots: [S.feral(2), md(S.hunter(1)), S.openMd()] },
+  ],
+  shade: [
+    { key: "mt", title: "Main Tank",
+      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(2))] },
+    { key: "hateful", title: "Hateful Tank",
+      slots: [S.feral(2), md(S.hunter(1)), S.openMd()] },
+  ],
+  teron: [
+    { key: "mt", title: "Main Tank",
+      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
+    { key: "minigame", title: "Construct Mini-Game",
+      staticItems: ["Practice the construct kill before raid :)"],
+      link: { label: "teron.faldorn.net/terongame", href: "https://teron.faldorn.net/terongame/" } },
+  ],
+  gurtogg: [
+    { key: "mt", title: "Main Tank",
+      slots: [S.feral(1), md(S.surv(1))] },
+    { key: "ot", title: "OT",
+      slots: [S.feral(2), md(S.hunter(1)), md(S.hunter(2))] },
+    { key: "bb1", title: "Blood Boil Group 1",
+      slots: [S.hpal(1), S.affi(1), S.lock(2), S.hunter(1), S.ele(1)] },
+    { key: "bb2", title: "Blood Boil Group 2",
+      slots: [S.disc(1), S.reck(1), S.mage(1), S.hunter(2), S.boomie(1)] },
+    { key: "bb3", title: "Blood Boil Group 3",
+      slots: [S.rdruid(1), S.lock(1), S.surv(1), S.spriest(1), S.open()] },
+    { key: "felrage", title: "Fel Rage BoP",
+      slots: [S.hpal(1), S.ret(1), S.prot(1), S.openPala(), S.openPala()] },
+    { key: "tips", title: "Fel Rage Tips",
+      staticItems: [
+        "Rogues: Evasion",
+        "Druids: Bear",
+        "Mages: do NOT Block",
+        "Hunters: do NOT Feign",
+        "Spread from the Fel Rage target",
+      ] },
+  ],
+};
+
+export function tplSectionId(key: string): string {
+  return `tpl:${key}`;
+}
+
+/**
+ * Align a boss's stored sections with its current template: every
+ * templated section exists (in template order, title refreshed),
+ * orphaned "tpl:" sections from removed templates are dropped, and
+ * admin-added custom sections trail behind.
+ */
+export function reconcileTplSections(tpls: PhaseSectionTpl[], stored: AssignSection[]): AssignSection[] {
+  const out: AssignSection[] = [];
+  for (const t of tpls) {
+    const id = tplSectionId(t.key);
+    const existing = stored.find(s => s.id === id);
+    out.push(existing ? { ...existing, title: t.title } : { id, title: t.title, characterIds: [] });
+  }
+  out.push(...stored.filter(s => !s.id.startsWith("tpl:")));
+  return out;
+}
+
+/** Minimal member view the slot auto-fill needs — PhaseMember and the
+ *  client's AssignableCharacter both satisfy it. */
+export type SlotPickable = { id: number; spec: string };
+
+/** The nth roster member matching a slot rule, in roster (group) order
+ *  — tiered rules walk specs[0] matches first. 0 = no match / manual. */
+export function pickForSlot(members: SlotPickable[], rule: PhaseSlotRule): number {
+  if (!rule.nth || !rule.specs?.length) return 0;
+  const pool = rule.tiered
+    ? rule.specs.flatMap(spec => members.filter(m => m.spec === spec))
+    : members.filter(m => rule.specs!.includes(m.spec));
+  return pool[rule.nth - 1]?.id ?? 0;
+}
+
+/**
+ * Fill a boss sheet's templated slots from the roster. `onlyEmpty`
+ * touches just unfilled slots (the per-card Auto-fill button); imports
+ * recompute every ruled slot so the sheet always reflects the comp.
+ * Manual slots (no `nth`) are never written by auto-fill.
+ */
+export function autoFillBossSheet(
+  members: SlotPickable[],
+  tpls: PhaseSectionTpl[],
+  sheet: PhaseBossSheet,
+  opts: { onlyEmpty: boolean },
+): PhaseBossSheet {
+  const sections = reconcileTplSections(tpls, sheet.sections ?? []).map(s => {
+    const tpl = tpls.find(t => tplSectionId(t.key) === s.id);
+    if (!tpl?.slots?.length) return s;
+    const characterIds = [...s.characterIds];
+    while (characterIds.length < tpl.slots.length) characterIds.push(0);
+    tpl.slots.forEach((rule, i) => {
+      if (!rule.nth) return;
+      if (opts.onlyEmpty && characterIds[i]) return;
+      characterIds[i] = pickForSlot(members, rule);
+    });
+    return { ...s, characterIds };
+  });
+  return { ...sheet, sections };
+}
+
+/** Run auto-fill across every templated boss on the sheet. */
+export function autoFillPhaseBossSheets(
+  data: PhaseAssignmentData,
+  opts: { onlyEmpty: boolean },
+): PhaseAssignmentData {
+  const bossSheets: PhaseAssignmentData["bossSheets"] = { ...data.bossSheets };
+  for (const b of PHASE_BOSSES) {
+    const tpls = PHASE_BOSS_TEMPLATES[b.slug];
+    if (!tpls?.length) continue;
+    bossSheets[b.slug] = autoFillBossSheet(data.members, tpls, bossSheets[b.slug] ?? { sections: [] }, opts);
+  }
+  return { ...data, bossSheets };
+}
+
+/** Picker eligibility for a templated slot. */
+export function slotEligibility(rule: PhaseSlotRule): { specs?: string[]; classes?: string[] } | undefined {
+  if (rule.specs?.length) return { specs: rule.specs };
+  if (rule.classes?.length) return { classes: rule.classes };
+  return undefined;
+}
+
+/** WoW class driving the empty-slot label tint. */
+export function slotClass(rule: PhaseSlotRule): string | null {
+  if (rule.specs?.length) return SPEC_BY_KEY[rule.specs[0]]?.class ?? null;
+  if (rule.classes?.length) return rule.classes[0];
+  return null;
+}
+
+/* ────────────────────────────────────────────────────────────────────
    SHEET SHAPE
    ──────────────────────────────────────────────────────────────────── */
 
@@ -277,14 +481,15 @@ export function hydratePhaseData(raw: unknown): PhaseAssignmentData {
   const bossSheets: PhaseAssignmentData["bossSheets"] = {};
   for (const b of PHASE_BOSSES) {
     const entry = rawSheets[b.slug];
+    const tpls = PHASE_BOSS_TEMPLATES[b.slug] ?? [];
     if (entry && typeof entry === "object") {
       const e = entry as Record<string, unknown>;
       bossSheets[b.slug] = {
-        sections: sanitizeSections(e.sections),
+        sections: reconcileTplSections(tpls, sanitizeSections(e.sections)),
         ...(typeof e.notes === "string" && e.notes ? { notes: e.notes } : {}),
       };
     } else {
-      bossSheets[b.slug] = { sections: [] };
+      bossSheets[b.slug] = { sections: reconcileTplSections(tpls, []) };
     }
   }
 
@@ -607,13 +812,17 @@ export function applyImport(prev: PhaseAssignmentData, parsed: ParsedImport): Ph
     memberIdSeq: nextId - 1,
   });
 
+  // Recompute every templated boss slot from the fresh comp, then
+  // auto-fill the buff blocks.
+  const filled = autoFillPhaseBossSheets(pruned, { onlyEmpty: false });
+
   const eligibles = members.map(memberToEligible);
   const byId = new Map(eligibles.map(e => [e.id, e]));
   return {
-    ...pruned,
+    ...filled,
     buffs: suggestTankRoleSections(
-      suggestFillSections(pruned.buffs, eligibles),
-      pruned.groups,
+      suggestFillSections(filled.buffs, eligibles),
+      filled.groups,
       id => byId.get(id),
     ),
   };
