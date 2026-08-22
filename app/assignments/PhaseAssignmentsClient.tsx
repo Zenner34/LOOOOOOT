@@ -277,18 +277,23 @@ export default function PhaseAssignmentsClient({
               ) : (
                 <div className="grid grid-cols-12 gap-3">
                   {/* LEFT rail — group setup (from the Discord comp) + role tallies */}
-                  <aside className="col-span-12 lg:col-span-2 space-y-3">
-                    <div className="flex justify-end lg:justify-start">
-                      <MemberSpotlightPicker characters={characters} />
+                  <aside className="col-span-12 lg:col-span-2">
+                    {/* Sticks under the site header on desktop so the
+                        groups follow the reader down the boss list; the
+                        roster starts collapsed to keep the stack short. */}
+                    <div className="space-y-3 lg:sticky lg:top-[4.5rem]">
+                      <div className="flex justify-end lg:justify-start">
+                        <MemberSpotlightPicker characters={characters} />
+                      </div>
+                      <GroupSetup
+                        data={data}
+                        setData={setData}
+                        characters={characters}
+                        charsById={charsById}
+                        title={`${dayMeta.label} Groups`}
+                      />
+                      <RosterSidebar teamRosterChars={characters} />
                     </div>
-                    <GroupSetup
-                      data={data}
-                      setData={setData}
-                      characters={characters}
-                      charsById={charsById}
-                      title={`${dayMeta.label} Groups`}
-                    />
-                    <RosterSidebar teamRosterChars={characters} />
                   </aside>
 
                   {/* CENTER — buffs + tank/heal + boss cards */}
