@@ -229,6 +229,52 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
         "Spread from the Fel Rage target",
       ] },
   ],
+  reliquary: [
+    { key: "p1rot", title: "P1 Tank Rot",
+      slots: [S.feral(1), S.feral(2), S.prot(1)] },
+    { key: "mt", title: "Main Tank",
+      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
+    { key: "ot", title: "OT",
+      slots: [S.feral(2)] },
+  ],
+  shahraz: [
+    { key: "mt", title: "Main Tank",
+      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
+    { key: "ot", title: "OT",
+      slots: [S.feral(2), S.prot(1)] },
+    // The sheet links WA checkers here — URLs pending, so static rows
+    // for now.
+    { key: "was", title: "Helpful WAs",
+      staticItems: ["Prismatic Shield Checker", "Shadow Resistance Checker"] },
+  ],
+  council: [
+    { key: "gathios", title: "Gathios Tank",
+      slots: [S.feral(1), md(S.surv(1))] },
+    { key: "veras", title: "Veras Tank",
+      slots: [S.feral(2), md(S.hunter(1))] },
+    { key: "malande", title: "Malande Tank",
+      slots: [S.prot(1), md(S.hunter(2))] },
+    { key: "magetank", title: "Mage Tank",
+      slots: [S.mage(1)] },
+    { key: "bop", title: "BoP Mage on Pull",
+      slots: [S.hpal(1)] },
+    { key: "wa", title: "Helpful WA",
+      staticItems: ["Council Heal Kick"] },
+  ],
+  illidan: [
+    { key: "mt", title: "Main Tank",
+      slots: [S.prot(1), md(S.surv(1)), S.openMd()] },
+    { key: "lefttank", title: "Left Ele Tank",
+      slots: [S.feral(1), md(S.hunter(1))] },
+    { key: "righttank", title: "Right Ele Tank",
+      slots: [S.feral(2), md(S.hunter(2))] },
+    { key: "p5", title: "Phase 5",
+      staticItems: [
+        "Repeat of P3",
+        "Illidan Enrages & needs to be kited over a trap to Soothe him",
+        "Burn the boss",
+      ] },
+  ],
 };
 
 export function tplSectionId(key: string): string {
