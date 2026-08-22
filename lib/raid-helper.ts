@@ -143,6 +143,10 @@ export type PhaseSlotRule = {
    *  Group 2 feral or the Prot Warrior when he's there; OT = same from
    *  Group 1; then the rest). Overrides `nth` when set. */
   tankSlot?: number;
+  /** Fill from a specific Discord raid group — the nth member of that
+   *  group in slot order (Gurtogg's Blood Boil soak groups = raid
+   *  Groups 3 & 4). */
+  fromGroup?: number;
   /** Class-level eligibility for manual slots ("Reck 1" → any Paladin). */
   classes?: string[];
   /** 1-based ordinal into the spec pool for auto-fill; omit = manual. */
@@ -200,6 +204,8 @@ const S = {
   rdruid: (n: number) => ({ label: `Rdruid ${n}`, specs: ["Restoration Druid"], nth: n }),
   rsham:  (n: number) => ({ label: `Rsham ${n}`,  specs: ["Restoration Shaman"], nth: n }),
   spriest:(n: number) => ({ label: `Spriest ${n}`, specs: ["Shadow Priest"], nth: n }),
+  /** The nth member of a Discord raid group, any class. */
+  groupSlot: (g: number, n: number): PhaseSlotRule => ({ label: `G${g} \u00b7 ${n}`, fromGroup: g, nth: n }),
   openMd:  (): PhaseSlotRule => md({ label: "Open", classes: ["Hunter"] }),
   openPala:(): PhaseSlotRule => ({ label: "Open", classes: ["Paladin"] }),
   open:    (): PhaseSlotRule => ({ label: "Open" }),
@@ -217,10 +223,12 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
       slots: [S.feral(2), md(S.surv(1)), S.openMd()] },
   ],
   shade: [
-    { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2))] },
-    { key: "hateful", title: "Hateful Tank",
-      slots: [S.feral(2), md(S.surv(1)), S.openMd()] },
+    // Adds come down both sides — one tank each; the Surv's two MDs
+    // mean he can cover a side while an Open row stays for the extra.
+    { key: "lefttank", title: "Left Tank",
+      slots: [S.feral(1), md(S.hunter(1)), md(S.surv(1))] },
+    { key: "righttank", title: "Right Tank",
+      slots: [S.feral(2), md(S.hunter(2)), S.openMd()] },
   ],
   teron: [
     { key: "mt", title: "Main Tank",
@@ -233,13 +241,13 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
     { key: "mt", title: "Main Tank",
       slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2))] },
     { key: "ot", title: "OT",
-      slots: [S.feral(2), md(S.hunter(3)), md(S.surv(1))] },
-    { key: "bb1", title: "Blood Boil Group 1",
-      slots: [S.hpal(1), S.affi(1), S.lock(2), S.hunter(1), S.ele(1)] },
-    { key: "bb2", title: "Blood Boil Group 2",
-      slots: [S.disc(1), S.reck(1), S.mage(1), S.hunter(2), S.boomie(1)] },
-    { key: "bb3", title: "Blood Boil Group 3",
-      slots: [S.rdruid(1), S.lock(1), S.surv(1), S.spriest(1), S.open()] },
+      slots: [S.feral(2), md(S.hunter(3)), md(S.surv(1)), S.openMd()] },
+    // Two soak groups rotate — the raid's Groups 3 and 4, straight from
+    // the Discord comp.
+    { key: "bb1", title: "Blood Boil Group 1", subtitle: "Raid Group 3",
+      slots: [S.groupSlot(3, 1), S.groupSlot(3, 2), S.groupSlot(3, 3), S.groupSlot(3, 4), S.groupSlot(3, 5)] },
+    { key: "bb2", title: "Blood Boil Group 2", subtitle: "Raid Group 4",
+      slots: [S.groupSlot(4, 1), S.groupSlot(4, 2), S.groupSlot(4, 3), S.groupSlot(4, 4), S.groupSlot(4, 5)] },
     { key: "felrage", title: "Fel Rage BoP",
       slots: [S.hpal(1), S.ret(1), S.prot(1), S.openPala(), S.openPala()] },
     { key: "tips", title: "Fel Rage Tips",
@@ -278,7 +286,7 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
     { key: "veras", title: "Veras Tank",
       slots: [S.feral(2), md(S.hunter(2))] },
     { key: "malande", title: "Malande Tank",
-      slots: [S.prot(1), md(S.surv(1))] },
+      slots: [S.prot(1), md(S.surv(1)), S.openMd()] },
     { key: "magetank", title: "Mage Tank",
       slots: [S.mage(1)] },
     { key: "bop", title: "BoP Mage on Pull",
@@ -311,6 +319,7 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
       slots: [
         { label: "Feral 2", specs: ["Feral Druid (Tank)", "Feral Druid (DPS)"], tankSlot: 2 },
         md(S.surv(1)),
+        S.openMd(),
       ] },
     { key: "p2notes", title: "P2 Notes", phase: "Phase 2",
       staticItems: [
@@ -358,7 +367,7 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
   kazrogal: [
     // The sheet's Low Mana Warning WeakAura link rides under the MT box.
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1))],
+      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()],
       links: [{ label: "Kaz'rogal — Low Mana Warning WA", href: "https://wago.io/xOs30kx6E" }] },
     { key: "cleave", title: "Cleave Eaters", subtitle: "If Not using NPC",
       slots: [S.feral(1), S.feral(2), S.prot(1)] },
@@ -458,6 +467,10 @@ export function pickForSlot(members: SlotPickable[], rule: PhaseSlotRule): numbe
     }
     return ids[rule.tankSlot - 1] ?? 0;
   }
+  if (rule.fromGroup) {
+    const pool = members.filter(m => m.group === rule.fromGroup);
+    return pool[(rule.nth ?? 1) - 1]?.id ?? 0;
+  }
   if (!rule.nth || !rule.specs?.length) return 0;
   const pool = rule.tiered
     ? rule.specs.flatMap(spec => members.filter(m => m.spec === spec))
@@ -483,7 +496,7 @@ export function autoFillBossSheet(
     const characterIds = [...s.characterIds];
     while (characterIds.length < tpl.slots.length) characterIds.push(0);
     tpl.slots.forEach((rule, i) => {
-      if (!rule.nth && !rule.tankSlot) return;
+      if (!rule.nth && !rule.tankSlot && !rule.fromGroup) return;
       if (opts.onlyEmpty && characterIds[i]) return;
       characterIds[i] = pickForSlot(members, rule);
     });
