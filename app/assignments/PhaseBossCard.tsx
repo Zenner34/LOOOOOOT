@@ -20,6 +20,7 @@ import { BookOpen, ExternalLink, Eye, Plus, Sparkles, X } from "@/app/components
 import { CharacterChip, EmptySlot, type AssignableCharacter } from "./CharacterChip";
 import { CharacterPicker } from "./CharacterPicker";
 import { BossGuideModal } from "./BossGuideModal";
+import { ZoomImage } from "@/app/components/ui/ZoomImage";
 import { EditOnly, useViewMode } from "./ViewModeContext";
 
 const ICON_BASE = "https://wow.zamimg.com/images/wow/icons/medium/";
@@ -159,11 +160,11 @@ export function PhaseBossCard({
 
         {/* Body: strategy rail | assignment sections */}
         <div className="grid grid-cols-12 gap-3">
-          <div className="col-span-12 md:col-span-4 lg:col-span-3">
+          <div className="col-span-12 md:col-span-5 lg:col-span-4">
             <StrategyPanel boss={boss} />
           </div>
 
-          <div className="col-span-12 md:col-span-8 lg:col-span-9 min-w-0">
+          <div className="col-span-12 md:col-span-7 lg:col-span-8 min-w-0">
             {sections.length === 0 ? (
               <div className="rounded-md border border-dashed border-[#2e3a55] px-3 py-6 text-center text-[12px] text-neutral-500 italic">
                 {readOnly
@@ -279,21 +280,13 @@ function StrategyPanel({ boss }: { boss: PhaseBossMeta }) {
                 {img.label}
               </figcaption>
             )}
-            <a
-              href={img.src}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block group/strategy"
-              title="Open full size"
-            >
-              <img
-                src={img.src}
-                alt={`${boss.name}${img.label ? ` ${img.label}` : ""} strategy diagram`}
-                loading="lazy"
-                onError={() => setErroredSrcs(prev => new Set([...prev, img.src]))}
-                className="w-full rounded-md border border-[#2e3a55] transition group-hover/strategy:border-amber-400/60 group-hover/strategy:shadow-[0_0_0_2px_rgba(212,175,55,0.15)]"
-              />
-            </a>
+            <ZoomImage
+              src={img.src}
+              alt={`${boss.name}${img.label ? ` ${img.label}` : ""} strategy diagram`}
+              caption={`${boss.name}${img.label ? ` — ${img.label}` : ""}`}
+              onError={() => setErroredSrcs(prev => new Set([...prev, img.src]))}
+              imgClassName="w-full rounded-md border border-[#2e3a55] transition hover:border-amber-400/60 hover:shadow-[0_0_0_2px_rgba(212,175,55,0.15)]"
+            />
           </figure>
         ))}
       </div>

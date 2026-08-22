@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Shield, Eye, Swords, Sparkles, Info, Crown, Check, X, ArrowRight, Trophy, ListOrdered } from "@/app/components/ui/Icon";
 import type { Boss, Mechanic, RoleNote, Section } from "./types";
+import { ZoomImage } from "@/app/components/ui/ZoomImage";
 
 /* Renders one boss: hero banner + sticky section tabs + section content.
    Fully driven by the Boss data in ./black-temple/bosses.ts. */
@@ -105,21 +106,14 @@ export default function BossGuide({
             <div className="space-y-3">
               {section.image && (
                 <figure className="space-y-1.5">
-                  <a
-                    href={section.image}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mx-auto block w-fit max-w-full overflow-hidden rounded-xl border transition hover:brightness-110"
-                    style={{ borderColor: `${accent}33` }}
-                    title="Open full size"
-                  >
-                    <img
-                      src={section.image}
-                      alt={section.imageAlt ?? `${boss.name} strategy diagram`}
-                      loading="lazy"
-                      className="block h-auto max-h-64 w-auto max-w-full bg-black/30 sm:max-h-72"
-                    />
-                  </a>
+                  <ZoomImage
+                    src={section.image}
+                    alt={section.imageAlt ?? `${boss.name} strategy diagram`}
+                    caption={section.imageCaption ?? section.title}
+                    wrapperClassName="mx-auto w-fit max-w-full"
+                    imgClassName="block h-auto max-h-[22rem] w-auto max-w-full rounded-xl border bg-black/30 transition hover:brightness-110 sm:max-h-[26rem]"
+                    imgStyle={{ borderColor: `${accent}33` }}
+                  />
                   <figcaption className="text-[11px] text-neutral-500 text-center">
                     {section.imageCaption ?? ""}{section.imageCaption ? " · " : ""}click to enlarge
                   </figcaption>
@@ -127,21 +121,14 @@ export default function BossGuide({
               )}
               {section.images?.map((img, i) => (
                 <figure key={i} className="space-y-1.5">
-                  <a
-                    href={img.src}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mx-auto block w-fit max-w-full overflow-hidden rounded-xl border transition hover:brightness-110"
-                    style={{ borderColor: `${accent}33` }}
-                    title="Open full size"
-                  >
-                    <img
-                      src={img.src}
-                      alt={img.alt ?? `${boss.name} — ${section.title} diagram`}
-                      loading="lazy"
-                      className="block h-auto max-h-52 w-auto max-w-full bg-black/30 sm:max-h-60"
-                    />
-                  </a>
+                  <ZoomImage
+                    src={img.src}
+                    alt={img.alt ?? `${boss.name} — ${section.title} diagram`}
+                    caption={img.caption ?? `${boss.name} — ${section.title}`}
+                    wrapperClassName="mx-auto w-fit max-w-full"
+                    imgClassName="block h-auto max-h-72 w-auto max-w-full rounded-xl border bg-black/30 transition hover:brightness-110 sm:max-h-80"
+                    imgStyle={{ borderColor: `${accent}33` }}
+                  />
                   {img.caption && (
                     <figcaption className="text-[11px] text-neutral-500 text-center">{img.caption}</figcaption>
                   )}
@@ -150,12 +137,12 @@ export default function BossGuide({
             </div>
           );
           return (
-            <div className="grid gap-4 lg:grid-cols-5 lg:items-start">
-              <div className="space-y-4 lg:col-span-3">
+            <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+              <div className="space-y-4">
                 {lead}
                 {callout}
               </div>
-              <div className="lg:col-span-2">{imagery}</div>
+              <div>{imagery}</div>
             </div>
           );
         })()}
