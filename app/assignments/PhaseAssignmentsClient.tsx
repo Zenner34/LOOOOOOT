@@ -144,6 +144,7 @@ export default function PhaseAssignmentsClient({
       isMain: true,
       playerId: null,
       playerName: null,
+      group: m.group,
     })),
     [data.members],
   );

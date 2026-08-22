@@ -15,6 +15,9 @@ export type AssignableCharacter = {
   isMain: boolean;
   playerId: number | null;
   playerName: string | null;
+  /** Discord comp group (phase sheet only) — drives the group-based
+   *  tank hierarchy in slot auto-fill. */
+  group?: number;
 };
 
 /**

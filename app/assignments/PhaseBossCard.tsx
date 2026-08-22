@@ -60,7 +60,7 @@ export function PhaseBossCard({
   const sections = sheet.sections ?? [];
   const tpls = PHASE_BOSS_TEMPLATES[boss.slug as PhaseBossSlug] ?? [];
   const tplById = new Map<string, PhaseSectionTpl>(tpls.map(t => [tplSectionId(t.key), t]));
-  const hasRuledSlots = tpls.some(t => t.slots?.some(s => s.nth));
+  const hasRuledSlots = tpls.some(t => t.slots?.some(s => s.nth || s.tankSlot));
 
   function patchSection(id: string, patch: Partial<AssignSection>) {
     onChange({ ...sheet, sections: sections.map(s => (s.id === id ? { ...s, ...patch } : s)) });

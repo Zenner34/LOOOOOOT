@@ -289,8 +289,9 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   { title: "Tanks · Adds",                      iconSlug: "ability_warrior_defensivestance",       eligibility: { roles: ["tank"] }, fixedSlots: 1, noAutoFill: true },
   { title: "Prayer of Fortitude · G1-3",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] }, fixedSlots: 1 },
   { title: "Prayer of Fortitude · G4-5",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] }, fixedSlots: 1 },
-  { title: "Gift of the Wild · G1-3",           iconSlug: "spell_nature_regeneration",             eligibility: { classes: ["Druid"] }, fixedSlots: 1 },
-  { title: "Gift of the Wild · G4-5",           iconSlug: "spell_nature_regeneration",             eligibility: { classes: ["Druid"] }, fixedSlots: 1 },
+  // Boomie/Resto job — ferals and tanks never buff (per raid lead).
+  { title: "Gift of the Wild · G1-3",           iconSlug: "spell_nature_regeneration",             eligibility: { specs: ["Balance Druid", "Restoration Druid"] }, fixedSlots: 1 },
+  { title: "Gift of the Wild · G4-5",           iconSlug: "spell_nature_regeneration",             eligibility: { specs: ["Balance Druid", "Restoration Druid"] }, fixedSlots: 1 },
   { title: "Arcane Brilliance · G1-3",          iconSlug: "spell_holy_arcaneintellect",            eligibility: { classes: ["Mage"] }, fixedSlots: 1 },
   { title: "Arcane Brilliance · G4-5",          iconSlug: "spell_holy_arcaneintellect",            eligibility: { classes: ["Mage"] }, fixedSlots: 1 },
   // Earth Shield — one row per unique resto shaman, each paired with a

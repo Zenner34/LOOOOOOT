@@ -139,6 +139,10 @@ export type PhaseSlotRule = {
    *  `tiered` — then specs[0] matches first (Feral: bears before cats). */
   specs?: string[];
   tiered?: boolean;
+  /** 1-based slot into the group-derived tank hierarchy (MT = the
+   *  Group 2 feral or the Prot Warrior when he's there; OT = same from
+   *  Group 1; then the rest). Overrides `nth` when set. */
+  tankSlot?: number;
   /** Class-level eligibility for manual slots ("Reck 1" → any Paladin). */
   classes?: string[];
   /** 1-based ordinal into the spec pool for auto-fill; omit = manual. */
@@ -172,9 +176,11 @@ const at = (pos: string, r: PhaseSlotRule): PhaseSlotRule => ({ ...r, pos });
 
 /** Slot-rule shorthands matching the sheet's callsign vocabulary. */
 const S = {
-  feral:  (n: number) => ({ label: `Feral ${n}`,  specs: ["Feral Druid (Tank)", "Feral Druid (DPS)"], tiered: true, nth: n }),
+  // Tank callsigns resolve through the group hierarchy (MT = Group 2,
+  // OT = Group 1, Prot Warrior takes the role when he is in that group).
+  feral:  (n: number) => ({ label: `Feral ${n}`,  specs: ["Feral Druid (Tank)", "Feral Druid (DPS)", "Protection Warrior"], tankSlot: n }),
   surv:   (n: number) => ({ label: `Surv ${n}`,   specs: ["Survival Hunter"], nth: n }),
-  hunter: (n: number) => ({ label: `Hunter ${n}`, specs: ["Beast Mastery Hunter", "Marksmanship Hunter"], nth: n }),
+  hunter: (n: number) => ({ label: `Hunter ${n}`, specs: ["Beast Mastery Hunter", "Marksmanship Hunter"], tiered: true, nth: n }),
   hpal:   (n: number) => ({ label: `Hpal ${n}`,   specs: ["Holy Paladin"], nth: n }),
   ret:    (n: number) => ({ label: `Ret ${n}`,    specs: ["Retribution Paladin"], nth: n }),
   prot:   (n: number) => ({ label: `Prot ${n}`,   specs: ["Protection Paladin"], nth: n }),
@@ -186,7 +192,9 @@ const S = {
   // with the dedicated "Affi n" slots in a parallel group.
   lock:   (n: number) => ({ label: `Warlock ${n}`, specs: ["Destruction Warlock", "Demonology Warlock"], nth: n }),
   ele:    (n: number) => ({ label: `Ele ${n}`,    specs: ["Elemental Shaman"], nth: n }),
-  disc:   (n: number) => ({ label: `Disc ${n}`,   specs: ["Discipline Priest"], nth: n }),
+  // Disc falls back to the Holy-signed priest — signups often carry the
+  // wrong priest spec and the Disc slots were staying empty.
+  disc:   (n: number) => ({ label: `Disc ${n}`,   specs: ["Discipline Priest", "Holy Priest"], tiered: true, nth: n }),
   mage:   (n: number) => ({ label: `Mage ${n}`,   specs: ["Arcane Mage", "Fire Mage", "Frost Mage"], nth: n }),
   boomie: (n: number) => ({ label: `Boomie ${n}`, specs: ["Balance Druid"], nth: n }),
   rdruid: (n: number) => ({ label: `Rdruid ${n}`, specs: ["Restoration Druid"], nth: n }),
@@ -200,32 +208,32 @@ const S = {
 export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl[]>> = {
   najentus: [
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
+      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
   ],
   supremus: [
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(2))] },
+      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2))] },
     { key: "hateful", title: "Hateful Tank",
-      slots: [S.feral(2), md(S.hunter(1)), S.openMd()] },
+      slots: [S.feral(2), md(S.surv(1)), S.openMd()] },
   ],
   shade: [
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(2))] },
+      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2))] },
     { key: "hateful", title: "Hateful Tank",
-      slots: [S.feral(2), md(S.hunter(1)), S.openMd()] },
+      slots: [S.feral(2), md(S.surv(1)), S.openMd()] },
   ],
   teron: [
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
+      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
     { key: "minigame", title: "Construct Mini-Game",
       staticItems: ["Practice the construct kill before raid :)"],
       links: [{ label: "teron.faldorn.net/terongame", href: "https://teron.faldorn.net/terongame/" }] },
   ],
   gurtogg: [
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.surv(1))] },
+      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2))] },
     { key: "ot", title: "OT",
-      slots: [S.feral(2), md(S.hunter(1)), md(S.hunter(2))] },
+      slots: [S.feral(2), md(S.hunter(3)), md(S.surv(1))] },
     { key: "bb1", title: "Blood Boil Group 1",
       slots: [S.hpal(1), S.affi(1), S.lock(2), S.hunter(1), S.ele(1)] },
     { key: "bb2", title: "Blood Boil Group 2",
@@ -247,7 +255,7 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
     { key: "p1rot", title: "P1 Tank Rot",
       slots: [S.feral(1), S.feral(2), S.prot(1)] },
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
+      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
     { key: "ot", title: "OT",
       slots: [S.feral(2)] },
     { key: "kicks", title: "Kick Rotation", subtitle: "P2 — Spirit Shock",
@@ -255,7 +263,7 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
   ],
   shahraz: [
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
+      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
     { key: "ot", title: "OT",
       slots: [S.feral(2), S.prot(1)] },
     { key: "was", title: "Helpful WAs",
@@ -266,11 +274,11 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
   ],
   council: [
     { key: "gathios", title: "Gathios Tank",
-      slots: [S.feral(1), md(S.surv(1))] },
+      slots: [S.feral(1), md(S.hunter(1))] },
     { key: "veras", title: "Veras Tank",
-      slots: [S.feral(2), md(S.hunter(1))] },
+      slots: [S.feral(2), md(S.hunter(2))] },
     { key: "malande", title: "Malande Tank",
-      slots: [S.prot(1), md(S.hunter(2))] },
+      slots: [S.prot(1), md(S.surv(1))] },
     { key: "magetank", title: "Mage Tank",
       slots: [S.mage(1)] },
     { key: "bop", title: "BoP Mage on Pull",
@@ -284,7 +292,7 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
     { key: "mt", title: "Main Tank", phase: "Phase 1",
       slots: [
         { label: "Prot 1", specs: ["Protection Warrior", "Protection Paladin"], tiered: true, nth: 1 },
-        md(S.surv(1)),
+        md(S.hunter(1)),
         S.openMd(),
       ] },
     { key: "p1notes", title: "P1 Notes", phase: "Phase 1",
@@ -295,9 +303,15 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
       ] },
     // ── Phase 2 — Fire Res tanks each pick up a Flame of Azzinoth.
     { key: "lefttank", title: "Left Ele Tank", phase: "Phase 2",
-      slots: [S.feral(1), md(S.hunter(1))] },
+      slots: [
+        { label: "Feral 1", specs: ["Feral Druid (Tank)", "Feral Druid (DPS)"], tankSlot: 1 },
+        md(S.hunter(2)),
+      ] },
     { key: "righttank", title: "Right Ele Tank", phase: "Phase 2",
-      slots: [S.feral(2), md(S.hunter(2))] },
+      slots: [
+        { label: "Feral 2", specs: ["Feral Druid (Tank)", "Feral Druid (DPS)"], tankSlot: 2 },
+        md(S.surv(1)),
+      ] },
     { key: "p2notes", title: "P2 Notes", phase: "Phase 2",
       staticItems: [
         "Fire Res tanks pick up the Flames — kite within 1-24 yds of its glaive or Enrage = wipe",
@@ -323,7 +337,7 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
   ],
   rage: [
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
+      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
     { key: "healerpos", title: "Healer Pos",
       slots: [
         at("H1", S.hpal(1)), at("H2", S.disc(1)), at("H3", S.rdruid(1)),
@@ -332,7 +346,7 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
   ],
   anetheron: [
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
+      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
     { key: "healerpos", title: "Healer Pos",
       slots: [
         at("H1", S.hpal(1)), at("H2", S.disc(1)), at("H3", S.rdruid(1)),
@@ -344,20 +358,20 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
   kazrogal: [
     // The sheet's Low Mana Warning WeakAura link rides under the MT box.
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2))],
+      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1))],
       links: [{ label: "Kaz'rogal — Low Mana Warning WA", href: "https://wago.io/xOs30kx6E" }] },
     { key: "cleave", title: "Cleave Eaters", subtitle: "If Not using NPC",
       slots: [S.feral(1), S.feral(2), S.prot(1)] },
   ],
   azgalor: [
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
+      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
     { key: "dg", title: "DG Tank",
       slots: [S.feral(2)] },
   ],
   archimonde: [
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
+      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
     { key: "fearward", title: "Fear Ward",
       slots: [S.disc(1), S.spriest(1)] },
     { key: "reminders", title: "Reminders",
@@ -390,12 +404,60 @@ export function reconcileTplSections(tpls: PhaseSectionTpl[], stored: AssignSect
 }
 
 /** Minimal member view the slot auto-fill needs — PhaseMember and the
- *  client's AssignableCharacter both satisfy it. */
-export type SlotPickable = { id: number; spec: string };
+ *  client's AssignableCharacter (which carries `group` on the phase
+ *  sheet) both satisfy it. */
+export type SlotPickable = { id: number; spec: string; group?: number };
 
-/** The nth roster member matching a slot rule, in roster (group) order
- *  — tiered rules walk specs[0] matches first. 0 = no match / manual. */
+/**
+ * Group-derived tank hierarchy over the feral / prot-warrior pool:
+ *   1. MT  — from Group 2: the Prot Warrior if he's there, else the
+ *            feral (bear before cat); falls back to any bear/cat/pwar.
+ *   2. OT  — same rule from Group 1.
+ *   3. The rest of the pool in roster order.
+ * Prot Paladins are NOT in this hierarchy — the pally is always the
+ * third tank via his own "Prot 1" callsign.
+ */
+export function tankHierarchy(members: SlotPickable[]): number[] {
+  const isBear = (m: SlotPickable) => m.spec === "Feral Druid (Tank)";
+  const isCat  = (m: SlotPickable) => m.spec === "Feral Druid (DPS)";
+  const isPWar = (m: SlotPickable) => m.spec === "Protection Warrior";
+  const pool = members.filter(m => isBear(m) || isCat(m) || isPWar(m));
+  const used = new Set<number>();
+  const pick = (pred: (m: SlotPickable) => boolean) => {
+    const found = pool.find(m => !used.has(m.id) && pred(m));
+    if (found) used.add(found.id);
+    return found ?? null;
+  };
+  const fromGroup = (g: number) =>
+    pick(m => m.group === g && isPWar(m)) ??
+    pick(m => m.group === g && isBear(m)) ??
+    pick(m => m.group === g && isCat(m)) ??
+    pick(isBear) ?? pick(isCat) ?? pick(isPWar);
+
+  const out: number[] = [];
+  const mt = fromGroup(2);
+  if (mt) out.push(mt.id);
+  const ot = fromGroup(1);
+  if (ot) out.push(ot.id);
+  for (const m of pool) {
+    if (!used.has(m.id)) { used.add(m.id); out.push(m.id); }
+  }
+  return out;
+}
+
+/** The member filling a slot rule: tank-hierarchy slots resolve through
+ *  the group-derived hierarchy; ordinal rules take the nth member of
+ *  the spec pool in roster order (tiered rules walk specs[0] first).
+ *  0 = no match / manual. */
 export function pickForSlot(members: SlotPickable[], rule: PhaseSlotRule): number {
+  if (rule.tankSlot) {
+    let ids = tankHierarchy(members);
+    if (rule.specs?.length) {
+      const specById = new Map(members.map(m => [m.id, m.spec]));
+      ids = ids.filter(id => rule.specs!.includes(specById.get(id) ?? ""));
+    }
+    return ids[rule.tankSlot - 1] ?? 0;
+  }
   if (!rule.nth || !rule.specs?.length) return 0;
   const pool = rule.tiered
     ? rule.specs.flatMap(spec => members.filter(m => m.spec === spec))
@@ -421,7 +483,7 @@ export function autoFillBossSheet(
     const characterIds = [...s.characterIds];
     while (characterIds.length < tpl.slots.length) characterIds.push(0);
     tpl.slots.forEach((rule, i) => {
-      if (!rule.nth) return;
+      if (!rule.nth && !rule.tankSlot) return;
       if (opts.onlyEmpty && characterIds[i]) return;
       characterIds[i] = pickForSlot(members, rule);
     });
@@ -438,11 +500,16 @@ export function autoFillBossSheet(
  * tank gets one healer before any tank gets a second.
  */
 export function autoFillTankRows(data: PhaseAssignmentData): PhaseAssignmentData {
-  const tankPool = [
-    ...data.members.filter(m => m.spec === "Feral Druid (Tank)"),
-    ...data.members.filter(m => m.spec === "Feral Druid (DPS)"),
-    ...data.members.filter(m => m.role === "tank" && !m.spec.startsWith("Feral Druid")),
-  ];
+  // Skull = MT, Cross = OT (group hierarchy), Square = the pally
+  // ("pally is 3rd"), then everyone else tank-flavored.
+  const byId = new Map(data.members.map(m => [m.id, m]));
+  const hier = tankHierarchy(data.members).map(id => byId.get(id)!);
+  const seen = new Set(hier.map(m => m.id));
+  const palas = data.members.filter(m => m.spec === "Protection Paladin" && !seen.has(m.id));
+  const rest = data.members.filter(
+    m => m.role === "tank" && !seen.has(m.id) && m.spec !== "Protection Paladin",
+  );
+  const tankPool = [...hier.slice(0, 2), ...palas, ...hier.slice(2), ...rest];
   const healers = data.members.filter(m => m.role === "heal");
 
   const rows = (data.tankAssignments ?? defaultTankAssignments()).map((row, i) => ({
@@ -991,15 +1058,73 @@ export function applyImport(prev: PhaseAssignmentData, parsed: ParsedImport): Ph
 export function recomputeAutoAssignments(data: PhaseAssignmentData): PhaseAssignmentData {
   const filled = autoFillTankRows(autoFillPhaseBossSheets(data, { onlyEmpty: false }));
   const eligibles = filled.members.map(memberToEligible);
-  const byId = new Map(eligibles.map(e => [e.id, e]));
-  return {
-    ...filled,
-    buffs: suggestTankRoleSections(
-      suggestFillSections(filled.buffs, eligibles),
-      filled.groups,
-      id => byId.get(id),
+  const buffs = fixSoulstoneTargets(
+    fixGiftOfTheWild(
+      fillTankBuffRows(suggestFillSections(filled.buffs, eligibles), filled.members),
+      filled.members,
     ),
+    filled.members,
+  );
+  return { ...filled, buffs };
+}
+
+/** Tanks · MT / OT / Adds buff rows from the group hierarchy: MT = the
+ *  Group 2 tank, OT = Group 1, and the Adds/3rd tank is always the
+ *  Prot Paladin (else whoever's next in the hierarchy). Only fills
+ *  empty rows, like every buff suggestion. */
+function fillTankBuffRows(buffs: AssignSection[], members: PhaseMember[]): AssignSection[] {
+  const h = tankHierarchy(members);
+  const pala = members.find(m => m.spec === "Protection Paladin")?.id ?? null;
+  const pick: Record<string, number | null> = {
+    MT: h[0] ?? null,
+    OT: h[1] ?? null,
+    Adds: pala ?? h[2] ?? null,
   };
+  return buffs.map(s => {
+    if (!s.title.startsWith("Tanks")) return s;
+    if (s.characterIds.some(id => id > 0)) return s;
+    const scope = s.title.split("\u00b7")[1]?.trim() ?? "";
+    const id = pick[scope];
+    return id != null ? { ...s, characterIds: [id] } : s;
+  });
+}
+
+/** Gift of the Wild is a Boomie/Resto job — never ferals or tanks.
+ *  One eligible druid covers both group rows; a boomie + resto pair
+ *  splits them. */
+function fixGiftOfTheWild(buffs: AssignSection[], members: PhaseMember[]): AssignSection[] {
+  const druids = [
+    ...members.filter(m => m.spec === "Balance Druid"),
+    ...members.filter(m => m.spec === "Restoration Druid"),
+  ];
+  return buffs.map(s => {
+    if (!s.title.startsWith("Gift of the Wild")) return s;
+    const idx = s.title.includes("G4-5") ? 1 : 0;
+    const chosen = druids[idx] ?? druids[0];
+    return { ...s, characterIds: chosen ? [chosen.id] : [] };
+  });
+}
+
+/** Soulstone rez-priority targets, in order across however many locks
+ *  we have: the Disc priest first (Holy-signed priest counts), then
+ *  the pally tank, then down the tank hierarchy (MT, OT, ...). */
+function fixSoulstoneTargets(buffs: AssignSection[], members: PhaseMember[]): AssignSection[] {
+  const priest = [
+    ...members.filter(m => m.spec === "Discipline Priest"),
+    ...members.filter(m => m.spec === "Holy Priest"),
+  ][0]?.id ?? null;
+  const pala = members.find(m => m.spec === "Protection Paladin")?.id ?? null;
+  const targets = [priest, pala, ...tankHierarchy(members)]
+    .filter((id, i, arr): id is number => id != null && arr.indexOf(id) === i);
+  let t = 0;
+  return buffs.map(s => {
+    if (!s.title.startsWith("Soulstones")) return s;
+    if (!s.characterIds[0]) return s; // no caster generated for this row
+    const target = targets[t++] ?? 0;
+    const characterIds = [...s.characterIds];
+    characterIds[1] = characterIds[1] || target;
+    return { ...s, characterIds };
+  });
 }
 
 /**
