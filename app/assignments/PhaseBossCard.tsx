@@ -286,6 +286,14 @@ function TplSectionBox({
       <div className="bg-[#1a1a1a] border-b border-black text-center text-[10px] font-bold uppercase tracking-wider text-white py-1 px-2 truncate">
         {tpl.title}
       </div>
+      {tpl.subtitle && (
+        <div
+          className="border-b border-black text-center text-[10px] font-bold text-white py-0.5 px-2 truncate"
+          style={{ background: "linear-gradient(180deg, #234876, #1e3a5f)", textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
+        >
+          {tpl.subtitle}
+        </div>
+      )}
       <div className="flex flex-col gap-px p-px">
         {slots.map((rule, i) => (
           <TplSlotRow
@@ -363,6 +371,14 @@ function TplSlotRow({
 
   return (
     <div ref={slotRef} className="relative flex items-stretch gap-px">
+      {rule.pos && (
+        <span
+          className="flex w-7 shrink-0 items-center justify-center text-[10px] font-bold"
+          style={{ background: "#c9897a", color: "#1a1a1a" }}
+        >
+          {rule.pos}
+        </span>
+      )}
       {rule.icon && (
         <span className="flex w-6 shrink-0 items-center justify-center bg-black/40">
           <img

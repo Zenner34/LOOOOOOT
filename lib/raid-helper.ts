@@ -141,12 +141,17 @@ export type PhaseSlotRule = {
   nth?: number;
   /** Wowhead icon slug rendered before the slot (Misdirection rows). */
   icon?: string;
+  /** Position tag rendered as a small leading cell ("H1"…"H5" healer
+   *  spots on the Hyjal platform maps). */
+  pos?: string;
 };
 
 export type PhaseSectionTpl = {
   /** Stable key — the stored section id is `tpl:<key>`. */
   key: string;
   title: string;
+  /** Secondary header row under the title ("If Not using NPC"). */
+  subtitle?: string;
   slots?: PhaseSlotRule[];
   /** Read-only text rows (Fel Rage tips). */
   staticItems?: string[];
@@ -156,6 +161,7 @@ export type PhaseSectionTpl = {
 
 const MD_ICON = "ability_hunter_misdirection";
 const md = (r: PhaseSlotRule): PhaseSlotRule => ({ ...r, icon: MD_ICON });
+const at = (pos: string, r: PhaseSlotRule): PhaseSlotRule => ({ ...r, pos });
 
 /** Slot-rule shorthands matching the sheet's callsign vocabulary. */
 const S = {
@@ -177,6 +183,7 @@ const S = {
   mage:   (n: number) => ({ label: `Mage ${n}`,   specs: ["Arcane Mage", "Fire Mage", "Frost Mage"], nth: n }),
   boomie: (n: number) => ({ label: `Boomie ${n}`, specs: ["Balance Druid"], nth: n }),
   rdruid: (n: number) => ({ label: `Rdruid ${n}`, specs: ["Restoration Druid"], nth: n }),
+  rsham:  (n: number) => ({ label: `Rsham ${n}`,  specs: ["Restoration Shaman"], nth: n }),
   spriest:(n: number) => ({ label: `Spriest ${n}`, specs: ["Shadow Priest"], nth: n }),
   openMd:  (): PhaseSlotRule => md({ label: "Open", classes: ["Hunter"] }),
   openPala:(): PhaseSlotRule => ({ label: "Open", classes: ["Paladin"] }),
@@ -273,6 +280,52 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
         "Repeat of P3",
         "Illidan Enrages & needs to be kited over a trap to Soothe him",
         "Burn the boss",
+      ] },
+  ],
+  rage: [
+    { key: "mt", title: "Main Tank",
+      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
+    { key: "healerpos", title: "Healer Pos",
+      slots: [
+        at("H1", S.hpal(1)), at("H2", S.disc(1)), at("H3", S.rdruid(1)),
+        at("H4", S.rsham(1)), at("H5", S.rsham(2)),
+      ] },
+  ],
+  anetheron: [
+    { key: "mt", title: "Main Tank",
+      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
+    { key: "healerpos", title: "Healer Pos",
+      slots: [
+        at("H1", S.hpal(1)), at("H2", S.disc(1)), at("H3", S.rdruid(1)),
+        at("H4", S.rsham(1)), at("H5", S.rsham(2)),
+      ] },
+    { key: "infernal", title: "Infernal Tank",
+      slots: [S.feral(2)] },
+  ],
+  kazrogal: [
+    // The sheet's Low Mana Warning WeakAura link rides under the MT box —
+    // URL pending, static row for now.
+    { key: "mt", title: "Main Tank",
+      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2))],
+      staticItems: ["Kaz'rogal — Low Mana Warning WA"] },
+    { key: "cleave", title: "Cleave Eaters", subtitle: "If Not using NPC",
+      slots: [S.feral(1), S.feral(2), S.prot(1)] },
+  ],
+  azgalor: [
+    { key: "mt", title: "Main Tank",
+      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
+    { key: "dg", title: "DG Tank",
+      slots: [S.feral(2)] },
+  ],
+  archimonde: [
+    { key: "mt", title: "Main Tank",
+      slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
+    { key: "fearward", title: "Fear Ward",
+      slots: [S.disc(1), S.spriest(1)] },
+    { key: "reminders", title: "Reminders",
+      staticItems: [
+        "If you die you should be banned",
+        "Boss has less HP than Gruul",
       ] },
   ],
 };
