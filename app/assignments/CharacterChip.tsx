@@ -74,7 +74,7 @@ export function CharacterChip({
       onFocus={() => setHover(character.id)}
       onBlur={() => setHover(null)}
       title={`${character.name} — ${character.spec} ${character.class}${character.playerName && character.playerName !== character.name ? ` · ${character.playerName}` : ""}${character.isMain ? " (main)" : " (alt)"}`}
-      className={`group items-center justify-start gap-1.5 italic font-semibold rounded-[4px] border border-black/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_1px_2px_rgba(0,0,0,0.35)] ${pad} ${txt} ${layoutCls} transition-all leading-snug select-none ${
+      className={`group items-center justify-center gap-1.5 italic font-semibold rounded-[4px] border border-black/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_1px_2px_rgba(0,0,0,0.35)] ${pad} ${txt} ${layoutCls} transition-all leading-snug select-none ${
         readOnly ? "cursor-default" : "cursor-pointer"
       } ${
         dimmed ? "grayscale opacity-55 brightness-75" : ""
@@ -95,7 +95,9 @@ export function CharacterChip({
           onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
         />
       )}
-      <span className="truncate flex-1 text-left">{character.name}</span>
+      {/* Icon + name center together as one unit; min-w-0 keeps long
+          names truncating instead of blowing out the slot. */}
+      <span className="truncate min-w-0">{character.name}</span>
       {showRemove && (
         <span
           role="button"

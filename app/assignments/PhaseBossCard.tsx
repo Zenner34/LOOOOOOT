@@ -457,7 +457,7 @@ function TplSlotRow({
             onClick={readOnly ? undefined : onToggle}
             disabled={readOnly}
             title={readOnly ? rule.label : `Assign ${rule.label}`}
-            className={`flex w-full items-center justify-start rounded-[4px] border border-dashed px-2 py-1 text-left text-[12px] font-semibold italic leading-snug transition ${
+            className={`flex w-full items-center justify-center rounded-[4px] border border-dashed px-2 py-1 text-center text-[12px] font-semibold italic leading-snug transition ${
               readOnly ? "cursor-default" : "hover:brightness-125"
             }`}
             style={
