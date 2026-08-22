@@ -6,18 +6,21 @@ import { toast } from "sonner";
 import { isMeleeSpec } from "@/lib/assignments";
 import {
   applyImport,
+  emptyPhaseData,
   hydratePhaseData,
   parseRaidHelperExport,
   PHASE_BOSSES,
+  PHASE_DAYS,
   PHASE_RAIDS,
-  PHASE_SLUG,
+  phaseDaySlug,
   type ParsedImport,
   type PhaseAssignmentData,
   type PhaseBossSheet,
   type PhaseBossSlug,
+  type PhaseDayKey,
 } from "@/lib/raid-helper";
 import { PageHeader } from "@/app/components/ui/PageHeader";
-import { Inbox, Plus, Search, X } from "@/app/components/ui/Icon";
+import { Calendar, Inbox, Plus, Search, X } from "@/app/components/ui/Icon";
 import { type AssignableCharacter } from "./CharacterChip";
 import { GroupSetup } from "./GroupSetup";
 import { BuffsCard } from "./BuffsCard";
@@ -31,46 +34,63 @@ import { ViewModeProvider, EditOnly } from "./ViewModeContext";
 import { CLASS_COLOR } from "@/lib/specs";
 
 /**
- * The live BT/Hyjal assignment sheet. Standalone: the roster comes from
- * a pasted Raid-Helper composition export, not the Character table —
- * members carry their Discord names, mapped classes/specs, and the
- * Discord comp's group layout. Buffs auto-fill from the import; boss
- * cards start as shells the admin fills (per-boss auto-fill templates
- * come with the assignment spreadsheet).
+ * The live BT/Hyjal assignment sheets — one independent sheet per raid
+ * night (Tue / Thu / Sun). Standalone: each day's roster comes from a
+ * pasted Raid-Helper composition export, not the Character table.
+ * Importing or resetting one day never touches the others; each day
+ * saves to its own PhaseSheet row.
  */
 export default function PhaseAssignmentsClient({
-  raw,
+  rawByDay,
   admin,
+  initialDay,
 }: {
-  raw: unknown;
+  rawByDay: Record<PhaseDayKey, unknown>;
   admin: boolean;
+  initialDay: PhaseDayKey;
 }) {
-  const [data, setData] = useState<PhaseAssignmentData>(() => hydratePhaseData(raw));
+  const [day, setDay] = useState<PhaseDayKey>(initialDay);
+  const [dataByDay, setDataByDay] = useState<Record<PhaseDayKey, PhaseAssignmentData>>(() => {
+    const out = {} as Record<PhaseDayKey, PhaseAssignmentData>;
+    for (const d of PHASE_DAYS) out[d.key] = hydratePhaseData(rawByDay[d.key]);
+    return out;
+  });
   const [savingState, setSavingState] = useState<SavingState>("idle");
   const [importOpen, setImportOpen] = useState(false);
-  // Snapshot of the last state we consider persisted — seeded from the
-  // hydrated initial state (NOT a fresh hydrate call, which would mint
+
+  // Per-day snapshots of the last persisted state — seeded from the
+  // hydrated initial states (NOT fresh hydrate calls, which would mint
   // different section ids), so hydration diffs don't save until the
   // admin actually edits something.
-  const lastSavedRef = useRef<string | null>(null);
-  if (lastSavedRef.current === null) lastSavedRef.current = JSON.stringify(data);
+  const lastSavedRef = useRef<Record<PhaseDayKey, string> | null>(null);
+  if (lastSavedRef.current === null) {
+    const snap = {} as Record<PhaseDayKey, string>;
+    for (const d of PHASE_DAYS) snap[d.key] = JSON.stringify(dataByDay[d.key]);
+    lastSavedRef.current = snap;
+  }
 
-  // Debounced coarse save — same contract as the old sheet: ~600ms after
-  // the last edit, PUT the whole blob.
+  // Debounced coarse save, one PUT per dirty day. Edits normally touch
+  // only the active day, but diffing every day means a pending save
+  // never gets dropped by switching tabs mid-debounce.
   useEffect(() => {
     if (!admin) return;
-    const json = JSON.stringify(data);
-    if (json === lastSavedRef.current) { setSavingState("idle"); return; }
+    const snaps = lastSavedRef.current!;
+    const dirty = PHASE_DAYS.map(d => d.key)
+      .filter(k => JSON.stringify(dataByDay[k]) !== snaps[k]);
+    if (dirty.length === 0) { setSavingState("idle"); return; }
     setSavingState("saving");
     const t = setTimeout(async () => {
       try {
-        const r = await fetch("/api/phase-sheets", {
-          method: "PUT",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ slug: PHASE_SLUG, data }),
-        });
-        if (!r.ok) throw new Error("save failed");
-        lastSavedRef.current = json;
+        for (const k of dirty) {
+          const json = JSON.stringify(dataByDay[k]);
+          const r = await fetch("/api/phase-sheets", {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ slug: phaseDaySlug(k), data: dataByDay[k] }),
+          });
+          if (!r.ok) throw new Error("save failed");
+          snaps[k] = json;
+        }
         setSavingState("saved");
         setTimeout(() => setSavingState(curr => (curr === "saved" ? "idle" : curr)), 1200);
       } catch {
@@ -79,7 +99,22 @@ export default function PhaseAssignmentsClient({
       }
     }, 600);
     return () => clearTimeout(t);
-  }, [data, admin]);
+  }, [dataByDay, admin]);
+
+  const data = dataByDay[day];
+  function setData(next: PhaseAssignmentData) {
+    setDataByDay(prev => ({ ...prev, [day]: next }));
+  }
+
+  function switchDay(k: PhaseDayKey) {
+    setDay(k);
+    // Deep-linkable without a server round-trip.
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("day", k);
+      window.history.replaceState(null, "", url);
+    } catch {}
+  }
 
   // The imported roster viewed through the same lens as the old sheet's
   // characters — every shared card (chips, pickers, buffs, tanks) works
@@ -116,10 +151,23 @@ export default function PhaseAssignmentsClient({
     })),
   ], []);
 
-  function handleImport(parsed: ParsedImport) {
-    setData(applyImport(data, parsed));
+  const dayMeta = PHASE_DAYS.find(d => d.key === day)!;
+
+  function handleImport(targetDay: PhaseDayKey, parsed: ParsedImport) {
+    setDataByDay(prev => ({ ...prev, [targetDay]: applyImport(prev[targetDay], parsed) }));
     setImportOpen(false);
-    toast.success(`Imported ${parsed.members.length} raiders from Raid-Helper.`);
+    if (targetDay !== day) switchDay(targetDay);
+    const label = PHASE_DAYS.find(d => d.key === targetDay)!.label;
+    toast.success(`${label}: imported ${parsed.members.length} raiders from Raid-Helper.`);
+  }
+
+  function resetDay() {
+    const count = data.members.length;
+    if (!confirm(
+      `Reset ${dayMeta.label}? This clears its roster${count ? ` (${count} raiders)` : ""}, buffs, and every boss assignment for that day. The other days are untouched. This can't be undone.`,
+    )) return;
+    setData(emptyPhaseData());
+    toast.success(`${dayMeta.label} reset.`);
   }
 
   function setBossSheet(slug: PhaseBossSlug, sheet: PhaseBossSheet) {
@@ -132,7 +180,6 @@ export default function PhaseAssignmentsClient({
 
   return (
     <ViewModeProvider forceReadOnly={!admin}>
-    <HighlightProvider storageKey="assignments.phase.lockedHighlight">
       <div
         className="relative left-1/2 -translate-x-1/2 w-screen px-4 sm:px-6 -my-6 md:-my-8 py-6 md:py-8 min-h-screen"
         style={{
@@ -147,11 +194,24 @@ export default function PhaseAssignmentsClient({
             <PageHeader
               eyebrow="Raid"
               title="Assignments"
-              subtitle="Black Temple & Mount Hyjal — the roster comes straight from the Raid-Helper comp; find your name, your group, and your jobs."
+              subtitle="Black Temple & Mount Hyjal — one roster per raid night, imported straight from the Raid-Helper comp. Find your night, your group, and your jobs."
             />
 
-            {/* Top bar */}
-            <div className="flex flex-wrap items-center gap-2">
+            {/* Day switcher + view controls */}
+            <div className="flex flex-wrap items-center gap-3 justify-between">
+              <DayTabs
+                day={day}
+                dataByDay={dataByDay}
+                onSwitch={switchDay}
+              />
+              <div className="inline-flex items-center gap-2 text-xs flex-wrap justify-end">
+                <ViewModeToggle />
+                {admin && <SaveIndicator state={savingState} />}
+              </div>
+            </div>
+
+            {/* Per-day action row */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs -mt-1">
               <EditOnly>
                 <button
                   type="button"
@@ -163,110 +223,190 @@ export default function PhaseAssignmentsClient({
                 </button>
               </EditOnly>
               {importedStamp && (
-                <span className="text-[11px] text-neutral-500">
-                  Roster imported {importedStamp}
+                <span className="inline-flex items-center gap-1.5 text-neutral-500">
+                  <Calendar size={11} aria-hidden />
+                  {dayMeta.label} roster imported {importedStamp}
                   {data.raidTitle ? ` · ${data.raidTitle}` : ""}
                 </span>
               )}
-              <div className="ml-auto inline-flex items-center gap-2 text-xs flex-wrap justify-end">
-                <ViewModeToggle />
-                <MemberSpotlightPicker characters={characters} />
-                {admin && <SaveIndicator state={savingState} />}
-              </div>
+              <EditOnly>
+                {data.members.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={resetDay}
+                    className="ml-auto inline-flex items-center gap-1 text-rose-300/80 hover:text-rose-200 transition"
+                    title={`Clear ${dayMeta.label}'s roster and assignments`}
+                  >
+                    <X size={11} aria-hidden /> Reset {dayMeta.label}
+                  </button>
+                )}
+              </EditOnly>
             </div>
 
-            {data.members.length === 0 ? (
-              <EmptyRoster admin={admin} onImport={() => setImportOpen(true)} />
-            ) : (
-              <div className="grid grid-cols-12 gap-3">
-                {/* LEFT rail — group setup (from the Discord comp) + role tallies */}
-                <aside className="col-span-12 lg:col-span-2 space-y-3">
-                  <GroupSetup
-                    data={data}
-                    setData={setData}
-                    characters={characters}
-                    charsById={charsById}
-                  />
-                  <RosterSidebar teamRosterChars={characters} />
-                </aside>
-
-                {/* CENTER — buffs + tank/heal + boss cards */}
-                <section className="col-span-12 lg:col-span-8 space-y-4 min-w-0">
-                  <BuffsCard
-                    data={data}
-                    setData={d => setData(d as PhaseAssignmentData)}
-                    characters={characters}
-                    teamRosterIds={rosterIds}
-                    teamRosterChars={characters}
-                    charsById={charsById}
-                  />
-
-                  <TankHealersCard
-                    data={data}
-                    setData={d => setData(d as PhaseAssignmentData)}
-                    characters={characters}
-                    teamRosterIds={rosterIds}
-                    teamRosterChars={characters}
-                    charsById={charsById}
-                  />
-
-                  {PHASE_RAIDS.map(raid => (
-                    <div key={raid.short} className="space-y-3">
-                      <div
-                        className="font-display text-3xl text-amber-200 border-b border-slate-700 pb-2 mt-2"
-                        style={{ letterSpacing: "0.03em" }}
-                      >
-                        {raid.name}
-                      </div>
-                      {PHASE_BOSSES.filter(b => b.raidShort === raid.short).map(b => (
-                        <PhaseBossCard
-                          key={b.slug}
-                          boss={b}
-                          sheet={data.bossSheets[b.slug] ?? { sections: [] }}
-                          onChange={sheet => setBossSheet(b.slug, sheet)}
-                          characters={characters}
-                          charsById={charsById}
-                        />
-                      ))}
+            {/* Keyed by day: highlight locks, open pickers, and scroll-nav
+                state all reset cleanly when switching nights. */}
+            <HighlightProvider key={day} storageKey={`assignments.phase.${day}.lockedHighlight`}>
+              {data.members.length === 0 ? (
+                <EmptyRoster admin={admin} dayLabel={dayMeta.label} onImport={() => setImportOpen(true)} />
+              ) : (
+                <div className="grid grid-cols-12 gap-3">
+                  {/* LEFT rail — group setup (from the Discord comp) + role tallies */}
+                  <aside className="col-span-12 lg:col-span-2 space-y-3">
+                    <div className="flex justify-end lg:justify-start">
+                      <MemberSpotlightPicker characters={characters} />
                     </div>
-                  ))}
-                </section>
+                    <GroupSetup
+                      data={data}
+                      setData={setData}
+                      characters={characters}
+                      charsById={charsById}
+                      title={`${dayMeta.label} Groups`}
+                    />
+                    <RosterSidebar teamRosterChars={characters} />
+                  </aside>
 
-                {/* RIGHT rail — jump nav */}
-                <aside className="col-span-12 lg:col-span-2">
-                  <SectionNav groups={navGroups} />
-                </aside>
-              </div>
-            )}
+                  {/* CENTER — buffs + tank/heal + boss cards */}
+                  <section className="col-span-12 lg:col-span-8 space-y-4 min-w-0">
+                    <BuffsCard
+                      data={data}
+                      setData={d => setData(d as PhaseAssignmentData)}
+                      characters={characters}
+                      teamRosterIds={rosterIds}
+                      teamRosterChars={characters}
+                      charsById={charsById}
+                    />
+
+                    <TankHealersCard
+                      data={data}
+                      setData={d => setData(d as PhaseAssignmentData)}
+                      characters={characters}
+                      teamRosterIds={rosterIds}
+                      teamRosterChars={characters}
+                      charsById={charsById}
+                    />
+
+                    {PHASE_RAIDS.map(raid => (
+                      <div key={raid.short} className="space-y-3">
+                        <div
+                          className="font-display text-3xl text-amber-200 border-b border-slate-700 pb-2 mt-2"
+                          style={{ letterSpacing: "0.03em" }}
+                        >
+                          {raid.name}
+                        </div>
+                        {PHASE_BOSSES.filter(b => b.raidShort === raid.short).map(b => (
+                          <PhaseBossCard
+                            key={b.slug}
+                            boss={b}
+                            sheet={data.bossSheets[b.slug] ?? { sections: [] }}
+                            onChange={sheet => setBossSheet(b.slug, sheet)}
+                            characters={characters}
+                            charsById={charsById}
+                          />
+                        ))}
+                      </div>
+                    ))}
+                  </section>
+
+                  {/* RIGHT rail — jump nav */}
+                  <aside className="col-span-12 lg:col-span-2">
+                    <SectionNav groups={navGroups} />
+                  </aside>
+                </div>
+              )}
+            </HighlightProvider>
           </div>
         </div>
       </div>
 
       {importOpen && (
         <ImportModal
-          hasExistingRoster={data.members.length > 0}
+          defaultDay={day}
+          dataByDay={dataByDay}
           onClose={() => setImportOpen(false)}
           onApply={handleImport}
         />
       )}
-    </HighlightProvider>
     </ViewModeProvider>
   );
 }
 
 /* ──────────────────────────────────────────────────────────────────── */
 
-function EmptyRoster({ admin, onImport }: { admin: boolean; onImport: () => void }) {
+/**
+ * Segmented raid-night switcher. Each tab shows the night plus a live
+ * status badge — raider count once a comp is imported, "empty" until
+ * then — so admins can see the whole week's state at a glance.
+ */
+function DayTabs({
+  day,
+  dataByDay,
+  onSwitch,
+}: {
+  day: PhaseDayKey;
+  dataByDay: Record<PhaseDayKey, PhaseAssignmentData>;
+  onSwitch: (k: PhaseDayKey) => void;
+}) {
+  return (
+    <div
+      role="tablist"
+      aria-label="Raid night"
+      className="inline-flex rounded-xl border border-white/10 bg-black/30 p-1 gap-1"
+    >
+      {PHASE_DAYS.map(d => {
+        const active = d.key === day;
+        const count = dataByDay[d.key].members.length;
+        return (
+          <button
+            key={d.key}
+            role="tab"
+            aria-selected={active}
+            onClick={() => onSwitch(d.key)}
+            className={`group flex flex-col items-center gap-0.5 rounded-lg px-4 sm:px-5 py-1.5 transition min-w-[4.5rem] ${
+              active
+                ? "text-white shadow-inner border border-[#2c5494]"
+                : "text-neutral-400 hover:text-neutral-100 hover:bg-white/[0.04] border border-transparent"
+            }`}
+            style={active ? { background: "linear-gradient(180deg, #234876, #1e3a5f)", textShadow: "0 1px 0 rgba(0,0,0,0.4)" } : undefined}
+          >
+            <span className="text-[13px] font-semibold leading-none">
+              <span className="sm:hidden">{d.short}</span>
+              <span className="hidden sm:inline">{d.label}</span>
+            </span>
+            <span
+              className={`text-[10px] leading-none tabular-nums ${
+                active ? "text-amber-200/90" : count > 0 ? "text-neutral-500 group-hover:text-neutral-400" : "text-neutral-600 italic"
+              }`}
+            >
+              {count > 0 ? `${count} raiders` : "empty"}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────────── */
+
+function EmptyRoster({
+  admin,
+  dayLabel,
+  onImport,
+}: {
+  admin: boolean;
+  dayLabel: string;
+  onImport: () => void;
+}) {
   return (
     <div className="rounded-xl border border-white/[0.07] bg-[var(--surface)] px-6 py-14 text-center">
       <Inbox size={28} className="mx-auto mb-3 text-neutral-600" aria-hidden />
       <h2 className="text-lg font-semibold text-neutral-100">
-        {admin ? "Import the raid comp to get started" : "Roster not posted yet"}
+        {admin ? `Import ${dayLabel}'s raid comp to get started` : `${dayLabel}'s roster isn't posted yet`}
       </h2>
       <p className="mx-auto mt-1.5 max-w-md text-sm text-neutral-400">
         {admin
-          ? "Paste the Raid-Helper composition export and the groups, roster, and buff assignments fill themselves in."
-          : "The raid comp hasn't been imported for this week yet — check back once the roster is posted."}
+          ? "Paste the Raid-Helper composition export and the groups, roster, and buff assignments fill themselves in. The other raid nights stay exactly as they are."
+          : "The comp for this night hasn't been imported yet — check back once the roster is posted, or peek at another night above."}
       </p>
       {admin && (
         <button type="button" onClick={onImport} className="btn mt-5 inline-flex items-center gap-1.5">
@@ -281,19 +421,23 @@ function EmptyRoster({ admin, onImport }: { admin: boolean; onImport: () => void
 
 /**
  * Paste-and-preview modal for the Raid-Helper composition export.
- * Parses live as the admin pastes; shows the member/group/role summary
- * plus any warnings before anything is committed to the sheet.
+ * Parses live as the admin pastes, previews groups/roles/warnings, and
+ * lets them pick which raid night the comp lands on before anything is
+ * committed.
  */
 function ImportModal({
-  hasExistingRoster,
+  defaultDay,
+  dataByDay,
   onClose,
   onApply,
 }: {
-  hasExistingRoster: boolean;
+  defaultDay: PhaseDayKey;
+  dataByDay: Record<PhaseDayKey, PhaseAssignmentData>;
   onClose: () => void;
-  onApply: (parsed: ParsedImport) => void;
+  onApply: (day: PhaseDayKey, parsed: ParsedImport) => void;
 }) {
   const [text, setText] = useState("");
+  const [targetDay, setTargetDay] = useState<PhaseDayKey>(defaultDay);
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
@@ -316,6 +460,9 @@ function ImportModal({
       return { ok: null, error: e instanceof Error ? e.message : "Couldn't parse that." };
     }
   }, [text]);
+
+  const targetMeta = PHASE_DAYS.find(d => d.key === targetDay)!;
+  const existingCount = dataByDay[targetDay].members.length;
 
   if (!mounted) return null;
   return createPortal(
@@ -340,6 +487,36 @@ function ImportModal({
           </div>
 
           <div className="px-5 py-4 space-y-3">
+            {/* Which night gets this comp */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-500">
+                Import into
+              </span>
+              <div className="inline-flex rounded-lg border border-white/10 bg-black/30 p-0.5 gap-0.5">
+                {PHASE_DAYS.map(d => {
+                  const active = d.key === targetDay;
+                  const count = dataByDay[d.key].members.length;
+                  return (
+                    <button
+                      key={d.key}
+                      type="button"
+                      onClick={() => setTargetDay(d.key)}
+                      className={`rounded-md px-3 py-1 text-xs font-semibold transition ${
+                        active ? "text-white border border-[#2c5494]" : "text-neutral-400 hover:text-neutral-100 border border-transparent"
+                      }`}
+                      style={active ? { background: "linear-gradient(180deg, #234876, #1e3a5f)" } : undefined}
+                      title={count > 0 ? `${d.label} — ${count} raiders currently` : `${d.label} — empty`}
+                    >
+                      {d.label}
+                      <span className={`ml-1.5 text-[10px] tabular-nums ${active ? "text-amber-200/90" : "text-neutral-600"}`}>
+                        {count > 0 ? count : "—"}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <textarea
               autoFocus
               value={text}
@@ -356,10 +533,11 @@ function ImportModal({
 
             {parsed.ok && <ImportPreview parsed={parsed.ok} />}
 
-            {hasExistingRoster && parsed.ok && (
+            {existingCount > 0 && parsed.ok && (
               <p className="text-[11px] text-amber-300/90">
-                Re-importing replaces the group grid. Raiders keeping the same name keep their
-                assignments; anyone no longer in the comp is cleared from every slot.
+                {targetMeta.label} already has {existingCount} raiders — importing replaces its group
+                grid. Raiders keeping the same name keep their assignments; anyone no longer in the
+                comp is cleared from every slot. Other nights are untouched.
               </p>
             )}
           </div>
@@ -368,11 +546,11 @@ function ImportModal({
             <button type="button" onClick={onClose} className="btn-ghost">Cancel</button>
             <button
               type="button"
-              onClick={() => parsed.ok && onApply(parsed.ok)}
+              onClick={() => parsed.ok && onApply(targetDay, parsed.ok)}
               disabled={!parsed.ok}
               className="btn"
             >
-              {parsed.ok ? `Import ${parsed.ok.members.length} raiders` : "Import"}
+              {parsed.ok ? `Import ${parsed.ok.members.length} raiders → ${targetMeta.label}` : "Import"}
             </button>
           </div>
         </div>
@@ -449,9 +627,9 @@ function ImportPreview({ parsed }: { parsed: ParsedImport }) {
 /* ──────────────────────────────────────────────────────────────────── */
 
 /**
- * Top-bar "highlight me" picker over the imported members. Locks the
- * gold highlight on one raider — every chip of theirs lights up across
- * the sheet, everyone else dims. Persists per-browser.
+ * "Highlight me" picker over the active night's imported members. Locks
+ * the gold highlight on one raider — every chip of theirs lights up
+ * across the sheet, everyone else dims. Persists per-browser, per-night.
  */
 function MemberSpotlightPicker({ characters }: { characters: AssignableCharacter[] }) {
   const { lockedIds, setLocked } = useHighlight();
@@ -521,7 +699,7 @@ function MemberSpotlightPicker({ characters }: { characters: AssignableCharacter
           ref={popoverRef}
           role="dialog"
           aria-label="Pick a raider to highlight"
-          className="absolute z-40 mt-1 top-full right-0 w-64 rounded-xl border border-white/10 bg-[var(--surface-2)] shadow-2xl animate-fade-in overflow-hidden"
+          className="absolute z-40 mt-1 top-full left-0 lg:left-auto lg:right-0 w-64 rounded-xl border border-white/10 bg-[var(--surface-2)] shadow-2xl animate-fade-in overflow-hidden"
         >
           <div className="relative p-2 border-b border-white/5">
             <Search size={12} className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" aria-hidden />

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { PHASE_SLUG } from "@/lib/raid-helper";
+import { isPhaseSheetSlug, PHASE_SLUG } from "@/lib/raid-helper";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +12,9 @@ export const dynamic = "force-dynamic";
 // Body: { slug?, data }
 export async function GET(req: Request) {
   const slug = new URL(req.url).searchParams.get("slug") || PHASE_SLUG;
+  if (!isPhaseSheetSlug(slug)) {
+    return NextResponse.json({ error: "unknown sheet" }, { status: 400 });
+  }
   const sheet = await prisma.phaseSheet.findUnique({ where: { slug } });
   return NextResponse.json(sheet ?? { slug, data: null });
 }
@@ -19,6 +22,9 @@ export async function GET(req: Request) {
 export async function PUT(req: Request) {
   const body = await req.json().catch(() => ({}));
   const slug = typeof body?.slug === "string" && body.slug ? body.slug : PHASE_SLUG;
+  if (!isPhaseSheetSlug(slug)) {
+    return NextResponse.json({ error: "unknown sheet" }, { status: 400 });
+  }
   const data = body?.data;
   if (!data || typeof data !== "object") {
     return NextResponse.json({ error: "data required" }, { status: 400 });

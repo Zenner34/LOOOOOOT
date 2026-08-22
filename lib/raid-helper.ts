@@ -25,6 +25,48 @@ import { SPEC_BY_KEY, type Role } from "./specs";
 export const PHASE_SLUG = "bt-hyjal";
 
 /* ────────────────────────────────────────────────────────────────────
+   RAID DAYS — one independent sheet per raid night so admins can set
+   the whole week's rosters without touching the other days. Each day
+   persists under its own PhaseSheet slug ("bt-hyjal-tuesday", …); the
+   pre-day single sheet ("bt-hyjal") is read as Tuesday's data until a
+   Tuesday row exists.
+   ──────────────────────────────────────────────────────────────────── */
+
+export type PhaseDayKey = "tuesday" | "thursday" | "sunday";
+
+export const PHASE_DAYS: Array<{ key: PhaseDayKey; label: string; short: string; dow: number }> = [
+  { key: "tuesday",  label: "Tuesday",  short: "Tue", dow: 2 },
+  { key: "thursday", label: "Thursday", short: "Thu", dow: 4 },
+  { key: "sunday",   label: "Sunday",   short: "Sun", dow: 0 },
+];
+
+export function phaseDaySlug(day: PhaseDayKey): string {
+  return `${PHASE_SLUG}-${day}`;
+}
+
+export function isPhaseDayKey(v: unknown): v is PhaseDayKey {
+  return PHASE_DAYS.some(d => d.key === v);
+}
+
+/** Every slug the phase-sheet API may write. */
+export function isPhaseSheetSlug(slug: string): boolean {
+  return slug === PHASE_SLUG || PHASE_DAYS.some(d => phaseDaySlug(d.key) === slug);
+}
+
+/** The raid day a visitor most likely cares about right now — today's
+ *  raid if today is one, otherwise the next upcoming raid day. */
+export function nextPhaseDayKey(date: Date): PhaseDayKey {
+  const dow = date.getDay();
+  let best: PhaseDayKey = PHASE_DAYS[0].key;
+  let bestDist = 8;
+  for (const d of PHASE_DAYS) {
+    const dist = (d.dow - dow + 7) % 7; // 0 = today
+    if (dist < bestDist) { bestDist = dist; best = d.key; }
+  }
+  return best;
+}
+
+/* ────────────────────────────────────────────────────────────────────
    BOSSES — Black Temple + Mount Hyjal card shells. Accents mirror the
    guide pages so the two surfaces read as one system. Per-boss section
    templates (what auto-fills from the import) land here once the
