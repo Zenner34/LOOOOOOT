@@ -170,7 +170,7 @@ export default function PhaseAssignmentsClient({
     setImportOpen(false);
     if (targetDay !== day) switchDay(targetDay);
     const label = PHASE_DAYS.find(d => d.key === targetDay)!.label;
-    toast.success(`${label}: imported ${parsed.members.length} raiders from Raid-Helper.`);
+    toast.success(`${label}: imported ${parsed.members.length} raiders — buffs, tanks, and boss assignments set.`);
   }
 
   function resetDay() {
@@ -489,8 +489,10 @@ function ImportModal({
               </div>
               <div className="font-semibold">Paste the composition export</div>
               <p className="mt-1 text-xs text-neutral-500 max-w-md">
-                Raid-Helper → your comp → Export → JSON. Groups, names, classes, and specs
-                come across exactly as set in Discord; buffs auto-fill from the roster.
+                Raid-Helper → your comp → Export → JSON. Groups come across exactly as set
+                in Discord, and the whole sheet assigns itself: buffs, tanks &amp; tank
+                healers, and every boss box (MT/OT, Misdirects, Blood Boil groups, healer
+                positions…). Adjust anything after.
               </p>
             </div>
             <button type="button" onClick={onClose} className="text-neutral-500 hover:text-neutral-200 p-1 -m-1" aria-label="Close">

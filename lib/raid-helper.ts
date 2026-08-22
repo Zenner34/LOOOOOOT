@@ -401,6 +401,37 @@ export function autoFillBossSheet(
   return { ...sheet, sections };
 }
 
+/**
+ * Set the Tanks & Tank Healers rows from the roster: tanks take the
+ * marker rows in sheet hierarchy order (bear ferals, then cat ferals
+ * off-tanking, then the remaining tanks in roster order — mirroring
+ * Feral 1 / Feral 2 / Prot), and healers are dealt round-robin so every
+ * tank gets one healer before any tank gets a second.
+ */
+export function autoFillTankRows(data: PhaseAssignmentData): PhaseAssignmentData {
+  const tankPool = [
+    ...data.members.filter(m => m.spec === "Feral Druid (Tank)"),
+    ...data.members.filter(m => m.spec === "Feral Druid (DPS)"),
+    ...data.members.filter(m => m.role === "tank" && !m.spec.startsWith("Feral Druid")),
+  ];
+  const healers = data.members.filter(m => m.role === "heal");
+
+  const rows = (data.tankAssignments ?? defaultTankAssignments()).map((row, i) => ({
+    ...row,
+    tankId: tankPool[i]?.id ?? null,
+    healerIds: [] as number[],
+  }));
+  const occupied = rows.filter(r => r.tankId !== null);
+  let h = 0;
+  for (let round = 0; round < 2 && h < healers.length; round++) {
+    for (const row of occupied) {
+      if (h >= healers.length) break;
+      row.healerIds.push(healers[h++].id);
+    }
+  }
+  return { ...data, tankAssignments: rows };
+}
+
 /** Run auto-fill across every templated boss on the sheet. */
 export function autoFillPhaseBossSheets(
   data: PhaseAssignmentData,
@@ -920,9 +951,9 @@ export function applyImport(prev: PhaseAssignmentData, parsed: ParsedImport): Ph
     memberIdSeq: nextId - 1,
   });
 
-  // Recompute every templated boss slot from the fresh comp, then
-  // auto-fill the buff blocks.
-  const filled = autoFillPhaseBossSheets(pruned, { onlyEmpty: false });
+  // Recompute every templated boss slot, the tank/healer rows, and the
+  // buff blocks from the fresh comp — one paste sets the whole sheet.
+  const filled = autoFillTankRows(autoFillPhaseBossSheets(pruned, { onlyEmpty: false }));
 
   const eligibles = members.map(memberToEligible);
   const byId = new Map(eligibles.map(e => [e.id, e]));
