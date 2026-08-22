@@ -58,9 +58,15 @@ Currently rendered as Unicode glyphs in `lib/assignments.ts` TANK_MARKERS
 |---|---|
 | Gnomish Cloaking Device | https://static.wikia.nocookie.net/wowwiki/images/0/02/Inv_gizmo_01.png/revision/latest?cb=20061008050507 |
 
-## Still-pending links (missing items list)
+## WeakAura links (wired into the boss cards)
+
+| WA | URL |
+|---|---|
+| Shahraz — Prismatic Shield Checker | https://wago.io/2WMUU1Xr- |
+| Shahraz — Shadow Resistance Checker | https://wago.io/xg11NQ_KE |
+| Council — Heal Kick | https://wago.io/tdQDtUTrZ |
+| Kaz'rogal — Low Mana Warning | https://wago.io/xOs30kx6E |
+
+## Still-pending (missing items list)
 
 - Disarm icon (blank in the source table)
-- WeakAura URLs: Shahraz Prismatic Shield Checker, Shahraz Shadow
-  Resistance Checker, Council Heal Kick, Kaz'rogal Low Mana Warning
-- Strategy images for all 14 boss card rails (Illidan multi-phase)

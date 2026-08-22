@@ -401,17 +401,18 @@ function TplSectionBox({
             {item}
           </div>
         ))}
-        {tpl.link && (
+        {tpl.links?.map(l => (
           <a
-            href={tpl.link.href}
+            key={l.href}
+            href={l.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-1.5 bg-white/[0.04] px-2 py-1.5 text-center text-[11px] font-semibold text-sky-300 underline decoration-sky-300/40 underline-offset-2 transition hover:text-sky-200"
+            className="flex items-center justify-center gap-1.5 rounded-[4px] bg-white/[0.04] px-2 py-1.5 text-center text-[11px] font-semibold text-sky-300 underline decoration-sky-300/40 underline-offset-2 transition hover:text-sky-200"
           >
-            {tpl.link.label}
+            {l.label}
             <ExternalLink size={10} aria-hidden />
           </a>
-        )}
+        ))}
       </div>
       <span aria-hidden className="block h-0.5" style={{ background: `${accent}55` }} />
     </div>

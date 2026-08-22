@@ -162,8 +162,8 @@ export type PhaseSectionTpl = {
   slots?: PhaseSlotRule[];
   /** Read-only text rows (Fel Rage tips). */
   staticItems?: string[];
-  /** External link bar (Teron construct mini-game). */
-  link?: { label: string; href: string };
+  /** External link bars (WeakAuras, the Teron mini-game). */
+  links?: readonly { label: string; href: string }[];
 };
 
 const MD_ICON = "ability_hunter_misdirection";
@@ -219,7 +219,7 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
       slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
     { key: "minigame", title: "Construct Mini-Game",
       staticItems: ["Practice the construct kill before raid :)"],
-      link: { label: "teron.faldorn.net/terongame", href: "https://teron.faldorn.net/terongame/" } },
+      links: [{ label: "teron.faldorn.net/terongame", href: "https://teron.faldorn.net/terongame/" }] },
   ],
   gurtogg: [
     { key: "mt", title: "Main Tank",
@@ -256,10 +256,11 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
       slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
     { key: "ot", title: "OT",
       slots: [S.feral(2), S.prot(1)] },
-    // The sheet links WA checkers here — URLs pending, so static rows
-    // for now.
     { key: "was", title: "Helpful WAs",
-      staticItems: ["Prismatic Shield Checker", "Shadow Resistance Checker"] },
+      links: [
+        { label: "Prismatic Shield Checker", href: "https://wago.io/2WMUU1Xr-" },
+        { label: "Shadow Resistance Checker", href: "https://wago.io/xg11NQ_KE" },
+      ] },
   ],
   council: [
     { key: "gathios", title: "Gathios Tank",
@@ -273,7 +274,7 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
     { key: "bop", title: "BoP Mage on Pull",
       slots: [S.hpal(1)] },
     { key: "wa", title: "Helpful WA",
-      staticItems: ["Council Heal Kick"] },
+      links: [{ label: "Council Heal Kick", href: "https://wago.io/tdQDtUTrZ" }] },
   ],
   illidan: [
     // ── Phase 1 — shear tank on the boss. Prot Warrior when one is in
@@ -339,11 +340,10 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
       slots: [S.feral(2)] },
   ],
   kazrogal: [
-    // The sheet's Low Mana Warning WeakAura link rides under the MT box —
-    // URL pending, static row for now.
+    // The sheet's Low Mana Warning WeakAura link rides under the MT box.
     { key: "mt", title: "Main Tank",
       slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2))],
-      staticItems: ["Kaz'rogal — Low Mana Warning WA"] },
+      links: [{ label: "Kaz'rogal — Low Mana Warning WA", href: "https://wago.io/xOs30kx6E" }] },
     { key: "cleave", title: "Cleave Eaters", subtitle: "If Not using NPC",
       slots: [S.feral(1), S.feral(2), S.prot(1)] },
   ],
