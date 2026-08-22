@@ -250,6 +250,8 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
       slots: [S.feral(1), md(S.surv(1)), md(S.hunter(1)), md(S.hunter(2)), S.openMd()] },
     { key: "ot", title: "OT",
       slots: [S.feral(2)] },
+    { key: "kicks", title: "Kick Rotation", subtitle: "P2 — Spirit Shock",
+      staticItems: ["1. Group 1", "2. Group 2", "3. Groups 3 + 4 (combined)"] },
   ],
   shahraz: [
     { key: "mt", title: "Main Tank",
