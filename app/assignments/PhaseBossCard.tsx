@@ -3,17 +3,27 @@
 import { useRef, useState } from "react";
 import { newSectionId, type AssignSection } from "@/lib/assignments";
 import type { PhaseBossMeta, PhaseBossSheet } from "@/lib/raid-helper";
-import { Plus, X } from "@/app/components/ui/Icon";
+import { Eye, Plus, X } from "@/app/components/ui/Icon";
 import { CharacterChip, EmptySlot, type AssignableCharacter } from "./CharacterChip";
 import { CharacterPicker } from "./CharacterPicker";
 import { EditOnly, useViewMode } from "./ViewModeContext";
 
 /**
- * One boss's assignment card on the BT/Hyjal sheet. Starts as a shell —
- * a header plus freeform sections (title + character chips) and a notes
- * box the admin fills by hand. Per-boss templates that auto-fill from
- * the Raid-Helper import land here once the assignment spreadsheet
- * content is supplied.
+ * One boss's assignment card on the BT/Hyjal sheet, laid out like the
+ * SSC/TK cards:
+ *
+ *   ┌──────────────────────────────────────────────────────────────┐
+ *   │ [icon] Boss Name (Cinzel, amber)        BLACK TEMPLE  + add  │
+ *   ├────────────────┬─────────────────────────────────────────────┤
+ *   │  strategy img  │  ┌─ section ─┐ ┌─ section ─┐ ┌─ section ─┐  │
+ *   │  (placeholder  │  │ navy hdr  │ │ navy hdr  │ │ navy hdr  │  │
+ *   │   until real   │  │ • chips   │ │ • chips   │ │ • chips   │  │
+ *   │   art lands)   │  └───────────┘ └───────────┘ └───────────┘  │
+ *   │                │  notes                                      │
+ *   └────────────────┴─────────────────────────────────────────────┘
+ *
+ * Sections are freeform (title + chips) until the per-boss templates
+ * from the assignment spreadsheet land.
  */
 export function PhaseBossCard({
   boss,
@@ -46,77 +56,134 @@ export function PhaseBossCard({
     });
   }
 
-  const hasContent = sections.length > 0 || !!sheet.notes;
-
   return (
     <div
       id={`boss-${boss.slug}`}
-      className="rounded-lg border border-[#2a3650] p-3 scroll-mt-20"
-      style={{ background: "linear-gradient(180deg, #1a2236, #111827)" }}
+      className="relative rounded-lg border border-[#2a3650] overflow-visible scroll-mt-20"
+      style={{ background: "linear-gradient(180deg, #131b2c, #0e1525)" }}
     >
-      <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
-        <div className="flex items-center gap-2.5 min-w-0">
-          {boss.icon && (
-            <img
-              src={boss.icon}
-              alt=""
-              width={40}
-              height={40}
-              loading="lazy"
-              onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-              className="w-10 h-10 shrink-0 rounded-md border border-black/60 object-cover shadow-[0_2px_8px_rgba(0,0,0,0.45)]"
-              style={{ boxShadow: `0 0 0 1px ${boss.accent}55, 0 2px 8px rgba(0,0,0,0.45)` }}
-            />
-          )}
-          <div
-            className="text-xs font-bold uppercase tracking-wider text-white px-3 py-1 border rounded inline-flex items-center gap-2 min-w-0"
-            style={{
-              background: "linear-gradient(180deg, #234876, #1e3a5f)",
-              borderColor: "#2c5494",
-              textShadow: "0 1px 0 rgba(0,0,0,0.4)",
-            }}
-          >
-            <span aria-hidden className="inline-block w-2 h-2 shrink-0 rounded-full" style={{ background: boss.accent }} />
-            <span className="truncate">{boss.name}</span>
+      {/* Subtle gold sheen at the top, matching the SSC/TK cards */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 rounded-lg"
+        style={{ background: "linear-gradient(180deg, rgba(255,215,128,0.06), transparent 30%)" }}
+      />
+
+      <div className="relative p-4">
+        {/* Header: icon + name, instance label + actions right */}
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            {boss.icon && (
+              <img
+                src={boss.icon}
+                alt=""
+                width={36}
+                height={36}
+                loading="lazy"
+                onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                className="w-9 h-9 shrink-0 rounded-md border border-black/60 object-cover"
+                style={{ boxShadow: `0 0 0 1px ${boss.accent}55, 0 2px 8px rgba(0,0,0,0.45)` }}
+              />
+            )}
+            <h3 className="font-display text-2xl text-amber-200 truncate leading-none">
+              {boss.name}
+            </h3>
+          </div>
+          <div className="flex items-baseline gap-3 flex-shrink-0">
+            <span className="hidden sm:inline text-[10px] uppercase tracking-[0.18em] text-slate-400">
+              {boss.raidShort === "BT" ? "Black Temple" : "Mount Hyjal"}
+            </span>
+            <EditOnly>
+              <button
+                type="button"
+                onClick={addSection}
+                className="inline-flex items-center gap-1 text-[11px] text-neutral-400 hover:text-vermillion-200 transition whitespace-nowrap"
+              >
+                <Plus size={11} aria-hidden /> Add section
+              </button>
+            </EditOnly>
           </div>
         </div>
-        <EditOnly>
-          <button
-            type="button"
-            onClick={addSection}
-            className="inline-flex items-center gap-1 text-[11px] text-neutral-400 hover:text-vermillion-200 transition"
-          >
-            <Plus size={11} aria-hidden /> Add section
-          </button>
-        </EditOnly>
-      </div>
 
-      {!hasContent ? (
-        <div className="text-[12px] text-neutral-500 italic px-1 py-2">
-          {readOnly
-            ? "No assignments posted for this boss yet."
-            : "No assignments yet — add sections by hand, or wait for the boss-sheet import."}
-        </div>
-      ) : (
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {sections.map(s => (
-            <PhaseSectionBox
-              key={s.id}
-              section={s}
-              accent={boss.accent}
-              onPatch={patch => patchSection(s.id, patch)}
-              onDelete={() => deleteSection(s.id)}
-              characters={characters}
-              charsById={charsById}
+        {/* Body: strategy rail | assignment sections */}
+        <div className="grid grid-cols-12 gap-3">
+          <div className="col-span-12 md:col-span-4 lg:col-span-3">
+            <StrategyPanel boss={boss} />
+          </div>
+
+          <div className="col-span-12 md:col-span-8 lg:col-span-9 min-w-0">
+            {sections.length === 0 ? (
+              <div className="rounded-md border border-dashed border-[#2e3a55] px-3 py-6 text-center text-[12px] text-neutral-500 italic">
+                {readOnly
+                  ? "No assignments posted for this boss yet."
+                  : "No assignments yet — add sections by hand, or wait for the boss-sheet templates."}
+              </div>
+            ) : (
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                {sections.map(s => (
+                  <PhaseSectionBox
+                    key={s.id}
+                    section={s}
+                    accent={boss.accent}
+                    onPatch={patch => patchSection(s.id, patch)}
+                    onDelete={() => deleteSection(s.id)}
+                    characters={characters}
+                    charsById={charsById}
+                  />
+                ))}
+              </div>
+            )}
+
+            <BossNotes
+              notes={sheet.notes ?? ""}
+              onChange={notes => onChange({ ...sheet, notes: notes || undefined })}
             />
-          ))}
+          </div>
         </div>
-      )}
+      </div>
+    </div>
+  );
+}
 
-      <BossNotes
-        notes={sheet.notes ?? ""}
-        onChange={notes => onChange({ ...sheet, notes: notes || undefined })}
-      />
+/* ──────────────────────────────────────────────────────────────────── */
+
+/**
+ * Left-rail strategy panel. Renders the boss's strategy diagram when
+ * one is configured; until the real images land it's a quiet accent-
+ * tinted placeholder that keeps the SSC/TK card geometry.
+ */
+function StrategyPanel({ boss }: { boss: PhaseBossMeta }) {
+  const [errored, setErrored] = useState(false);
+  if (boss.strategy && !errored) {
+    return (
+      <a
+        href={boss.strategy}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block group/strategy"
+        title="Open full size"
+      >
+        <img
+          src={boss.strategy}
+          alt={`${boss.name} strategy diagram`}
+          loading="lazy"
+          onError={() => setErrored(true)}
+          className="w-full rounded-md border border-[#2e3a55] transition group-hover/strategy:border-amber-400/60 group-hover/strategy:shadow-[0_0_0_2px_rgba(212,175,55,0.15)]"
+        />
+      </a>
+    );
+  }
+  return (
+    <div
+      className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 rounded-md border border-dashed border-[#2e3a55] px-3 text-center"
+      style={{ background: `linear-gradient(160deg, ${boss.accent}0c, transparent 70%)` }}
+    >
+      <Eye size={18} aria-hidden style={{ color: `${boss.accent}88` }} />
+      <span className="text-[11px] leading-snug text-slate-500">
+        Strategy image
+        <br />
+        coming soon
+      </span>
     </div>
   );
 }

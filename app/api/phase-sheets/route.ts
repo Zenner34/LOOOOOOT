@@ -26,8 +26,25 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "unknown sheet" }, { status: 400 });
   }
   const data = body?.data;
-  if (!data || typeof data !== "object") {
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
     return NextResponse.json({ error: "data required" }, { status: 400 });
+  }
+  // Light structural guard — hydratePhaseData sanitizes deeply on every
+  // read, so this only needs to reject blobs that are the wrong shape
+  // entirely or implausibly large for a 25-man sheet.
+  const d = data as Record<string, unknown>;
+  for (const key of ["members", "buffs", "tankAssignments"] as const) {
+    if (d[key] !== undefined && !Array.isArray(d[key])) {
+      return NextResponse.json({ error: `${key} must be an array` }, { status: 400 });
+    }
+  }
+  for (const key of ["groups", "bossSheets"] as const) {
+    if (d[key] !== undefined && (typeof d[key] !== "object" || d[key] === null || Array.isArray(d[key]))) {
+      return NextResponse.json({ error: `${key} must be an object` }, { status: 400 });
+    }
+  }
+  if (JSON.stringify(data).length > 1_500_000) {
+    return NextResponse.json({ error: "sheet too large" }, { status: 413 });
   }
 
   const sheet = await prisma.phaseSheet.upsert({

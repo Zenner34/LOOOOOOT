@@ -15,6 +15,7 @@ import {
   defaultTankAssignments,
   matchesEligibility,
   mergeMissingBuffBlocks,
+  newSectionId,
   suggestFillSections,
   suggestTankRoleSections,
   type AssignSection,
@@ -83,6 +84,10 @@ export type PhaseBossMeta = {
    *  using WCL's stable encounter ids — BT 601-609, Hyjal 618-622. The
    *  card hides the img on load error, so a dead URL degrades cleanly. */
   readonly icon?: string;
+  /** Strategy diagram for the card's left rail (SSC/TK-style layout).
+   *  Unset renders a placeholder panel until the real images land in
+   *  /public/strategies/. */
+  readonly strategy?: string;
 };
 
 const WCL_BOSS_ICON = (encounterId: number) =>
@@ -162,6 +167,10 @@ export type PhaseAssignmentData = {
   importedAt?: string;
   /** The Raid-Helper event/comp title, if present in the export. */
   raidTitle?: string;
+  /** Highest member id ever issued on this sheet. Monotonic across
+   *  imports so a departed raider's id is never recycled onto a
+   *  newcomer (stale highlight locks would light up the wrong chip). */
+  memberIdSeq?: number;
 };
 
 export function emptyPhaseData(): PhaseAssignmentData {
@@ -177,26 +186,120 @@ export function emptyPhaseData(): PhaseAssignmentData {
   };
 }
 
+/* ── Defensive sanitizers ─────────────────────────────────────────────
+   The blob is written by admin-gated coarse saves, but it renders on
+   the PUBLIC page server-side — a malformed element (bad manual PUT,
+   old shape, partial write) must degrade to defaults, never 500. */
+
+const isNum = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
+const numArr = (v: unknown): number[] => (Array.isArray(v) ? v.filter(isNum) : []);
+
+function sanitizeSection(s: unknown): AssignSection | null {
+  if (!s || typeof s !== "object") return null;
+  const o = s as Record<string, unknown>;
+  const addOns = Array.isArray(o.addOns)
+    ? o.addOns
+        .filter((a): a is Record<string, unknown> => !!a && typeof a === "object")
+        .map(a => ({
+          ...(a as object),
+          id: typeof a.id === "string" ? a.id : newSectionId(),
+          iconSlug: typeof a.iconSlug === "string" ? a.iconSlug : "",
+          maxSlots: isNum(a.maxSlots) ? a.maxSlots : 1,
+          characterIds: numArr(a.characterIds),
+        }))
+    : undefined;
+  return {
+    ...(o as object),
+    id: typeof o.id === "string" ? o.id : newSectionId(),
+    title: typeof o.title === "string" ? o.title : "Untitled",
+    characterIds: numArr(o.characterIds),
+    ...(addOns ? { addOns } : {}),
+  } as AssignSection;
+}
+
+function sanitizeSections(v: unknown): AssignSection[] {
+  return Array.isArray(v) ? v.map(sanitizeSection).filter((s): s is AssignSection => s !== null) : [];
+}
+
+function sanitizeMember(m: unknown): PhaseMember | null {
+  if (!m || typeof m !== "object") return null;
+  const o = m as Record<string, unknown>;
+  if (!isNum(o.id) || o.id <= 0 || typeof o.name !== "string" || !o.name) return null;
+  const role = o.role === "tank" || o.role === "heal" || o.role === "dps" ? o.role : "dps";
+  return {
+    id: o.id,
+    name: o.name,
+    className: typeof o.className === "string" ? o.className : "",
+    spec: typeof o.spec === "string" ? o.spec : "",
+    role,
+    group: isNum(o.group) ? o.group : 0,
+    slot: isNum(o.slot) ? o.slot : 0,
+    confirmed: o.confirmed !== false,
+    rhSpecName: typeof o.rhSpecName === "string" ? o.rhSpecName : "",
+  };
+}
+
 /**
  * Normalize a saved blob against the current template: default any
- * missing top-level field, append buff blocks added since last save,
- * and make sure every current boss has a sheet entry. Admin-edited
- * rows are never modified.
+ * missing/malformed field, append buff blocks added since last save,
+ * and make sure every current boss has a well-formed sheet entry.
+ * Admin-edited rows are never modified beyond shape repair.
  */
 export function hydratePhaseData(raw: unknown): PhaseAssignmentData {
   const base = emptyPhaseData();
   if (!raw || typeof raw !== "object") return base;
-  const d = raw as Partial<PhaseAssignmentData>;
-  const bossSheets = { ...base.bossSheets, ...(d.bossSheets ?? {}) };
+  const d = raw as Record<string, unknown>;
+
+  const g = (d.groups && typeof d.groups === "object" ? d.groups : {}) as Record<string, unknown>;
+  const groups: PhaseAssignmentData["groups"] = {
+    "1": numArr(g["1"]), "2": numArr(g["2"]), "3": numArr(g["3"]),
+    "4": numArr(g["4"]), "5": numArr(g["5"]),
+  };
+
+  const buffs = sanitizeSections(d.buffs);
+
+  const tankAssignments = Array.isArray(d.tankAssignments) && d.tankAssignments.length
+    ? d.tankAssignments
+        .filter((t): t is Record<string, unknown> => !!t && typeof t === "object")
+        .map(t => ({
+          id: typeof t.id === "string" ? t.id : newSectionId(),
+          marker: (["skull", "cross", "square", "moon", "triangle", "diamond"] as const)
+            .find(m => m === t.marker) ?? "skull",
+          tankId: isNum(t.tankId) ? t.tankId : null,
+          healerIds: numArr(t.healerIds),
+        }))
+    : base.tankAssignments;
+
+  // Per-boss entries: keep only known slugs, and only well-formed
+  // entries — a malformed one falls back to the empty default instead
+  // of clobbering it.
+  const rawSheets = (d.bossSheets && typeof d.bossSheets === "object" ? d.bossSheets : {}) as Record<string, unknown>;
+  const bossSheets: PhaseAssignmentData["bossSheets"] = {};
+  for (const b of PHASE_BOSSES) {
+    const entry = rawSheets[b.slug];
+    if (entry && typeof entry === "object") {
+      const e = entry as Record<string, unknown>;
+      bossSheets[b.slug] = {
+        sections: sanitizeSections(e.sections),
+        ...(typeof e.notes === "string" && e.notes ? { notes: e.notes } : {}),
+      };
+    } else {
+      bossSheets[b.slug] = { sections: [] };
+    }
+  }
+
   return {
-    groups: d.groups ?? base.groups,
-    buffs: mergeMissingBuffBlocks(Array.isArray(d.buffs) && d.buffs.length ? d.buffs : base.buffs),
+    groups,
+    buffs: mergeMissingBuffBlocks(buffs.length ? buffs : base.buffs),
     bosses: {},
-    tankAssignments: d.tankAssignments?.length ? d.tankAssignments : base.tankAssignments,
-    members: Array.isArray(d.members) ? d.members : [],
+    tankAssignments,
+    members: Array.isArray(d.members)
+      ? d.members.map(sanitizeMember).filter((m): m is PhaseMember => m !== null)
+      : [],
     bossSheets,
-    importedAt: d.importedAt,
-    raidTitle: d.raidTitle,
+    importedAt: typeof d.importedAt === "string" ? d.importedAt : undefined,
+    raidTitle: typeof d.raidTitle === "string" ? d.raidTitle : undefined,
+    memberIdSeq: isNum(d.memberIdSeq) ? d.memberIdSeq : undefined,
   };
 }
 
@@ -373,7 +476,11 @@ export function parseRaidHelperExport(text: string): ParsedImport {
 
   const groups: PhaseAssignmentData["groups"] = { "1": [], "2": [], "3": [], "4": [], "5": [] };
   for (const g of ["1", "2", "3", "4", "5"] as const) {
-    const inGroup = members.filter(m => m.group === Number(g)).sort((a, b) => a.slot - b.slot);
+    // Declared slots first, slot-less stragglers last — so a missing
+    // slotNumber never displaces someone from their Discord position.
+    const inGroup = members
+      .filter(m => m.group === Number(g))
+      .sort((a, b) => (a.slot || 9) - (b.slot || 9));
     const slots: number[] = [];
     for (const m of inGroup) {
       const idx = Math.max(0, Math.min(4, (m.slot || slots.length + 1) - 1));
@@ -438,11 +545,18 @@ export function prunePhaseData(data: PhaseAssignmentData): PhaseAssignmentData {
       "5": data.groups["5"].map(id => (ok(id) ? id : 0)),
     },
     buffs: data.buffs.map(pruneSection),
-    tankAssignments: data.tankAssignments?.map(t => ({
-      ...t,
-      tankId: t.tankId && ok(t.tankId) ? t.tankId : null,
-      healerIds: t.healerIds.filter(ok),
-    })),
+    tankAssignments: data.tankAssignments?.map(t => {
+      // Healer slots are positional (0 = deliberately empty column), so
+      // blank stale ids in place rather than filtering — otherwise a
+      // healer parked in priority slot 2 shifts into slot 1 on re-import.
+      const healerIds = t.healerIds.map(id => (ok(id) ? id : 0));
+      while (healerIds.length && healerIds[healerIds.length - 1] === 0) healerIds.pop();
+      return {
+        ...t,
+        tankId: t.tankId && ok(t.tankId) ? t.tankId : null,
+        healerIds,
+      };
+    }),
     bossSheets,
   };
 }
@@ -459,7 +573,9 @@ export function prunePhaseData(data: PhaseAssignmentData): PhaseAssignmentData {
  */
 export function applyImport(prev: PhaseAssignmentData, parsed: ParsedImport): PhaseAssignmentData {
   const prevByName = new Map(prev.members.map(m => [m.name.toLowerCase(), m.id]));
-  let nextId = Math.max(0, ...prev.members.map(m => m.id)) + 1;
+  // Start above every id this sheet has EVER issued (memberIdSeq), not
+  // just the current members' max — ids must never be recycled.
+  let nextId = Math.max(prev.memberIdSeq ?? 0, 0, ...prev.members.map(m => m.id)) + 1;
 
   const idMap = new Map<number, number>(); // parsed id → final id
   const usedFinal = new Set<number>();
@@ -488,6 +604,7 @@ export function applyImport(prev: PhaseAssignmentData, parsed: ParsedImport): Ph
     groups,
     raidTitle: parsed.raidTitle ?? prev.raidTitle,
     importedAt: new Date().toISOString(),
+    memberIdSeq: nextId - 1,
   });
 
   const eligibles = members.map(memberToEligible);

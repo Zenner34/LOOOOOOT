@@ -71,7 +71,13 @@ export default function PhaseAssignmentsClient({
 
   // Debounced coarse save, one PUT per dirty day. Edits normally touch
   // only the active day, but diffing every day means a pending save
-  // never gets dropped by switching tabs mid-debounce.
+  // never gets dropped by switching tabs mid-debounce. Saves are
+  // serialized through a promise chain, and each run re-reads the
+  // LATEST state via the ref — so a slow earlier PUT can never land
+  // after (or race past) a newer one and leave the server stale.
+  const dataByDayRef = useRef(dataByDay);
+  dataByDayRef.current = dataByDay;
+  const saveChainRef = useRef<Promise<void>>(Promise.resolve());
   useEffect(() => {
     if (!admin) return;
     const snaps = lastSavedRef.current!;
@@ -79,24 +85,30 @@ export default function PhaseAssignmentsClient({
       .filter(k => JSON.stringify(dataByDay[k]) !== snaps[k]);
     if (dirty.length === 0) { setSavingState("idle"); return; }
     setSavingState("saving");
-    const t = setTimeout(async () => {
-      try {
-        for (const k of dirty) {
-          const json = JSON.stringify(dataByDay[k]);
-          const r = await fetch("/api/phase-sheets", {
-            method: "PUT",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ slug: phaseDaySlug(k), data: dataByDay[k] }),
-          });
-          if (!r.ok) throw new Error("save failed");
-          snaps[k] = json;
+    const t = setTimeout(() => {
+      saveChainRef.current = saveChainRef.current.then(async () => {
+        const current = dataByDayRef.current;
+        const dirtyNow = PHASE_DAYS.map(d => d.key)
+          .filter(k => JSON.stringify(current[k]) !== snaps[k]);
+        if (dirtyNow.length === 0) return;
+        try {
+          for (const k of dirtyNow) {
+            const json = JSON.stringify(current[k]);
+            const r = await fetch("/api/phase-sheets", {
+              method: "PUT",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ slug: phaseDaySlug(k), data: current[k] }),
+            });
+            if (!r.ok) throw new Error("save failed");
+            snaps[k] = json;
+          }
+          setSavingState("saved");
+          setTimeout(() => setSavingState(curr => (curr === "saved" ? "idle" : curr)), 1200);
+        } catch {
+          setSavingState("error");
+          toast.error("Failed to save assignments.");
         }
-        setSavingState("saved");
-        setTimeout(() => setSavingState(curr => (curr === "saved" ? "idle" : curr)), 1200);
-      } catch {
-        setSavingState("error");
-        toast.error("Failed to save assignments.");
-      }
+      });
     }, 600);
     return () => clearTimeout(t);
   }, [dataByDay, admin]);
@@ -643,6 +655,15 @@ function MemberSpotlightPicker({ characters }: { characters: AssignableCharacter
     () => characters.find(c => lockedIds.has(c.id)) ?? null,
     [characters, lockedIds],
   );
+
+  // Self-heal a stale lock left over from an older import: its id no
+  // longer exists in the roster, so every chip would dim while nothing
+  // gets the gold ring — and the pill would offer no way to clear it.
+  useEffect(() => {
+    if (lockedIds.size === 0 || characters.length === 0) return;
+    const valid = [...lockedIds].filter(id => characters.some(c => c.id === id));
+    if (valid.length !== lockedIds.size) setLocked(valid);
+  }, [lockedIds, characters, setLocked]);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
