@@ -942,44 +942,40 @@ export function prunePhaseData(data: PhaseAssignmentData): PhaseAssignmentData {
  *      touched; per-caster blocks regenerate as they always have).
  */
 export function applyImport(prev: PhaseAssignmentData, parsed: ParsedImport): PhaseAssignmentData {
-  const prevByName = new Map(prev.members.map(m => [m.name.toLowerCase(), m.id]));
-  // Start above every id this sheet has EVER issued (memberIdSeq), not
-  // just the current members' max — ids must never be recycled.
-  let nextId = Math.max(prev.memberIdSeq ?? 0, 0, ...prev.members.map(m => m.id)) + 1;
+  // An import WIPES the night and rebuilds it from the paste alone —
+  // no assignments, buff picks, or notes carry over. (Predictability
+  // beats preservation: picks left over from the previous comp were
+  // leaking into the new week.) Only memberIdSeq survives, keeping ids
+  // monotonic so a departed raider's id is never recycled where a
+  // viewer's highlight lock might still reference it.
+  const base = Math.max(prev.memberIdSeq ?? 0, 0, ...prev.members.map(m => m.id));
 
   const idMap = new Map<number, number>(); // parsed id → final id
-  const usedFinal = new Set<number>();
-  const members: PhaseMember[] = parsed.members.map(m => {
-    const kept = prevByName.get(m.name.toLowerCase());
-    // Reuse the previous id when the name matches and no other imported
-    // member has already claimed it (duplicate names in one export).
-    const id = kept !== undefined && !usedFinal.has(kept) ? kept : nextId++;
-    usedFinal.add(id);
+  const members: PhaseMember[] = parsed.members.map((m, i) => {
+    const id = base + i + 1;
     idMap.set(m.id, id);
     return { ...m, id };
   });
 
   const remapGroup = (ids: number[]) => ids.map(id => idMap.get(id) ?? 0);
-  const groups: PhaseAssignmentData["groups"] = {
-    "1": remapGroup(parsed.groups["1"]),
-    "2": remapGroup(parsed.groups["2"]),
-    "3": remapGroup(parsed.groups["3"]),
-    "4": remapGroup(parsed.groups["4"]),
-    "5": remapGroup(parsed.groups["5"]),
-  };
+  const fresh = emptyPhaseData();
 
-  const pruned = prunePhaseData({
-    ...prev,
+  // Fill every templated boss slot, the tank/healer rows, and the buff
+  // blocks from the new comp — one paste sets the whole sheet.
+  return recomputeAutoAssignments({
+    ...fresh,
     members,
-    groups,
-    raidTitle: parsed.raidTitle ?? prev.raidTitle,
+    groups: {
+      "1": remapGroup(parsed.groups["1"]),
+      "2": remapGroup(parsed.groups["2"]),
+      "3": remapGroup(parsed.groups["3"]),
+      "4": remapGroup(parsed.groups["4"]),
+      "5": remapGroup(parsed.groups["5"]),
+    },
+    raidTitle: parsed.raidTitle,
     importedAt: new Date().toISOString(),
-    memberIdSeq: nextId - 1,
+    memberIdSeq: base + members.length,
   });
-
-  // Recompute every templated boss slot, the tank/healer rows, and the
-  // buff blocks from the fresh comp — one paste sets the whole sheet.
-  return recomputeAutoAssignments(pruned);
 }
 
 /**

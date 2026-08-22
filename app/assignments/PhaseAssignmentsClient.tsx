@@ -576,9 +576,9 @@ function ImportModal({
 
             {existingCount > 0 && parsed.ok && (
               <p className="text-[11px] text-amber-300/90">
-                {targetMeta.label} already has {existingCount} raiders — importing replaces its group
-                grid. Raiders keeping the same name keep their assignments; anyone no longer in the
-                comp is cleared from every slot. Other nights are untouched.
+                {targetMeta.label} already has {existingCount} raiders — importing WIPES that night's
+                entire sheet (roster, buffs, tank rows, boss assignments, notes) and rebuilds it fresh
+                from this paste. Other nights are untouched.
               </p>
             )}
             {parsed.ok && (
