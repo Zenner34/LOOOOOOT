@@ -55,16 +55,30 @@ export function PhaseBossCard({
       style={{ background: "linear-gradient(180deg, #1a2236, #111827)" }}
     >
       <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
-        <div
-          className="text-xs font-bold uppercase tracking-wider text-white px-3 py-1 border rounded inline-flex items-center gap-2"
-          style={{
-            background: "linear-gradient(180deg, #234876, #1e3a5f)",
-            borderColor: "#2c5494",
-            textShadow: "0 1px 0 rgba(0,0,0,0.4)",
-          }}
-        >
-          <span aria-hidden className="inline-block w-2 h-2 rounded-full" style={{ background: boss.accent }} />
-          {boss.name}
+        <div className="flex items-center gap-2.5 min-w-0">
+          {boss.icon && (
+            <img
+              src={boss.icon}
+              alt=""
+              width={40}
+              height={40}
+              loading="lazy"
+              onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+              className="w-10 h-10 shrink-0 rounded-md border border-black/60 object-cover shadow-[0_2px_8px_rgba(0,0,0,0.45)]"
+              style={{ boxShadow: `0 0 0 1px ${boss.accent}55, 0 2px 8px rgba(0,0,0,0.45)` }}
+            />
+          )}
+          <div
+            className="text-xs font-bold uppercase tracking-wider text-white px-3 py-1 border rounded inline-flex items-center gap-2 min-w-0"
+            style={{
+              background: "linear-gradient(180deg, #234876, #1e3a5f)",
+              borderColor: "#2c5494",
+              textShadow: "0 1px 0 rgba(0,0,0,0.4)",
+            }}
+          >
+            <span aria-hidden className="inline-block w-2 h-2 shrink-0 rounded-full" style={{ background: boss.accent }} />
+            <span className="truncate">{boss.name}</span>
+          </div>
         </div>
         <EditOnly>
           <button

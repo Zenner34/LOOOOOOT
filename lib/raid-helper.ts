@@ -78,23 +78,31 @@ export type PhaseBossMeta = {
   readonly raidShort: "BT" | "MH";
   readonly name: string;
   readonly accent: string;
+  /** Small square boss portrait shown top-left on the card. Hotlinked
+   *  from the Warcraft Logs CDN (same host as the footer's WCL favicon)
+   *  using WCL's stable encounter ids — BT 601-609, Hyjal 618-622. The
+   *  card hides the img on load error, so a dead URL degrades cleanly. */
+  readonly icon?: string;
 };
 
+const WCL_BOSS_ICON = (encounterId: number) =>
+  `https://assets.rpglogs.com/img/warcraft/bosses/${encounterId}-icon.jpg`;
+
 export const PHASE_BOSSES = [
-  { slug: "najentus",   raidShort: "BT", name: "High Warlord Naj'entus", accent: "#5edfff" },
-  { slug: "supremus",   raidShort: "BT", name: "Supremus",               accent: "#ff7a3c" },
-  { slug: "shade",      raidShort: "BT", name: "Shade of Akama",         accent: "#8b9dff" },
-  { slug: "teron",      raidShort: "BT", name: "Teron Gorefiend",        accent: "#a78bfa" },
-  { slug: "gurtogg",    raidShort: "BT", name: "Gurtogg Bloodboil",      accent: "#ff5e6c" },
-  { slug: "reliquary",  raidShort: "BT", name: "Reliquary of Souls",     accent: "#ff7ad4" },
-  { slug: "shahraz",    raidShort: "BT", name: "Mother Shahraz",         accent: "#e08bff" },
-  { slug: "council",    raidShort: "BT", name: "Illidari Council",       accent: "#c58bff" },
-  { slug: "illidan",    raidShort: "BT", name: "Illidan Stormrage",      accent: "#a3ff5e" },
-  { slug: "rage",       raidShort: "MH", name: "Rage Winterchill",       accent: "#7ec8ff" },
-  { slug: "anetheron",  raidShort: "MH", name: "Anetheron",              accent: "#ff8a4c" },
-  { slug: "kazrogal",   raidShort: "MH", name: "Kaz'rogal",              accent: "#b18bff" },
-  { slug: "azgalor",    raidShort: "MH", name: "Az'galor",               accent: "#ff5e6c" },
-  { slug: "archimonde", raidShort: "MH", name: "Archimonde",             accent: "#ffd24c" },
+  { slug: "najentus",   raidShort: "BT", name: "High Warlord Naj'entus", accent: "#5edfff", icon: WCL_BOSS_ICON(601) },
+  { slug: "supremus",   raidShort: "BT", name: "Supremus",               accent: "#ff7a3c", icon: WCL_BOSS_ICON(602) },
+  { slug: "shade",      raidShort: "BT", name: "Shade of Akama",         accent: "#8b9dff", icon: WCL_BOSS_ICON(603) },
+  { slug: "teron",      raidShort: "BT", name: "Teron Gorefiend",        accent: "#a78bfa", icon: WCL_BOSS_ICON(604) },
+  { slug: "gurtogg",    raidShort: "BT", name: "Gurtogg Bloodboil",      accent: "#ff5e6c", icon: WCL_BOSS_ICON(605) },
+  { slug: "reliquary",  raidShort: "BT", name: "Reliquary of Souls",     accent: "#ff7ad4", icon: WCL_BOSS_ICON(606) },
+  { slug: "shahraz",    raidShort: "BT", name: "Mother Shahraz",         accent: "#e08bff", icon: WCL_BOSS_ICON(607) },
+  { slug: "council",    raidShort: "BT", name: "Illidari Council",       accent: "#c58bff", icon: WCL_BOSS_ICON(608) },
+  { slug: "illidan",    raidShort: "BT", name: "Illidan Stormrage",      accent: "#a3ff5e", icon: WCL_BOSS_ICON(609) },
+  { slug: "rage",       raidShort: "MH", name: "Rage Winterchill",       accent: "#7ec8ff", icon: WCL_BOSS_ICON(618) },
+  { slug: "anetheron",  raidShort: "MH", name: "Anetheron",              accent: "#ff8a4c", icon: WCL_BOSS_ICON(619) },
+  { slug: "kazrogal",   raidShort: "MH", name: "Kaz'rogal",              accent: "#b18bff", icon: WCL_BOSS_ICON(620) },
+  { slug: "azgalor",    raidShort: "MH", name: "Az'galor",               accent: "#ff5e6c", icon: WCL_BOSS_ICON(621) },
+  { slug: "archimonde", raidShort: "MH", name: "Archimonde",             accent: "#ffd24c", icon: WCL_BOSS_ICON(622) },
 ] as const satisfies readonly PhaseBossMeta[];
 
 export type PhaseBossSlug = (typeof PHASE_BOSSES)[number]["slug"];
