@@ -80,67 +80,85 @@ export default function BossGuide({
       <article className="space-y-5">
         <SectionHeader accent={accent} tag={section.tag} title={section.title} subtitle={section.subtitle} />
 
-        {section.lead && (
-          <div className="space-y-3">
-            {section.lead.map((p, i) => (
-              <p key={i} className="text-[15px] leading-relaxed text-neutral-300 max-w-3xl">{p}</p>
-            ))}
-          </div>
-        )}
-
-        {section.image && (
-          <figure className="space-y-2">
-            {/* Compact thumbnail — capped height so the section stays
-                scannable; click opens the full-size image. */}
-            <a
-              href={section.image}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mx-auto block w-fit max-w-full overflow-hidden rounded-xl border transition hover:brightness-110"
-              style={{ borderColor: `${accent}33` }}
-              title="Open full size"
-            >
-              <img
-                src={section.image}
-                alt={section.imageAlt ?? `${boss.name} strategy diagram`}
-                loading="lazy"
-                className="block h-auto max-h-64 w-auto max-w-full bg-black/30 sm:max-h-80"
-              />
-            </a>
-            <figcaption className="text-[11px] text-neutral-500 text-center">
-              {section.imageCaption ?? ""}{section.imageCaption ? " · " : ""}click to enlarge
-            </figcaption>
-          </figure>
-        )}
-
-        {section.images && section.images.length > 0 && (
-          <div className={`grid gap-3 ${section.images.length > 1 ? "sm:grid-cols-2" : ""}`}>
-            {section.images.map((img, i) => (
-              <figure key={i} className="space-y-2">
-                <a
-                  href={img.src}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mx-auto block w-fit max-w-full overflow-hidden rounded-xl border transition hover:brightness-110"
-                  style={{ borderColor: `${accent}33` }}
-                  title="Open full size"
-                >
-                  <img
-                    src={img.src}
-                    alt={img.alt ?? `${boss.name} — ${section.title} diagram`}
-                    loading="lazy"
-                    className="block h-auto max-h-52 w-auto max-w-full bg-black/30 sm:max-h-64"
-                  />
-                </a>
-                {img.caption && (
-                  <figcaption className="text-[11px] text-neutral-500 text-center">{img.caption}</figcaption>
-                )}
-              </figure>
-            ))}
-          </div>
-        )}
-
-        {section.callout && <Callout accent={accent} {...section.callout} />}
+        {/* Text left, imagery right — the split keeps sections short so
+            the reader isn't scrolling past a full-width diagram to reach
+            the strategy. Stacks (text first) below lg. */}
+        {(() => {
+          const hasImg = !!(section.image || (section.images && section.images.length > 0));
+          const lead = section.lead && (
+            <div className="space-y-3">
+              {section.lead.map((p, i) => (
+                <p key={i} className="text-[15px] leading-relaxed text-neutral-300 max-w-3xl">{p}</p>
+              ))}
+            </div>
+          );
+          const callout = section.callout && <Callout accent={accent} {...section.callout} />;
+          if (!hasImg) {
+            return (
+              <>
+                {lead}
+                {callout}
+              </>
+            );
+          }
+          const imagery = (
+            <div className="space-y-3">
+              {section.image && (
+                <figure className="space-y-1.5">
+                  <a
+                    href={section.image}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mx-auto block w-fit max-w-full overflow-hidden rounded-xl border transition hover:brightness-110"
+                    style={{ borderColor: `${accent}33` }}
+                    title="Open full size"
+                  >
+                    <img
+                      src={section.image}
+                      alt={section.imageAlt ?? `${boss.name} strategy diagram`}
+                      loading="lazy"
+                      className="block h-auto max-h-64 w-auto max-w-full bg-black/30 sm:max-h-72"
+                    />
+                  </a>
+                  <figcaption className="text-[11px] text-neutral-500 text-center">
+                    {section.imageCaption ?? ""}{section.imageCaption ? " · " : ""}click to enlarge
+                  </figcaption>
+                </figure>
+              )}
+              {section.images?.map((img, i) => (
+                <figure key={i} className="space-y-1.5">
+                  <a
+                    href={img.src}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mx-auto block w-fit max-w-full overflow-hidden rounded-xl border transition hover:brightness-110"
+                    style={{ borderColor: `${accent}33` }}
+                    title="Open full size"
+                  >
+                    <img
+                      src={img.src}
+                      alt={img.alt ?? `${boss.name} — ${section.title} diagram`}
+                      loading="lazy"
+                      className="block h-auto max-h-52 w-auto max-w-full bg-black/30 sm:max-h-60"
+                    />
+                  </a>
+                  {img.caption && (
+                    <figcaption className="text-[11px] text-neutral-500 text-center">{img.caption}</figcaption>
+                  )}
+                </figure>
+              ))}
+            </div>
+          );
+          return (
+            <div className="grid gap-4 lg:grid-cols-5 lg:items-start">
+              <div className="space-y-4 lg:col-span-3">
+                {lead}
+                {callout}
+              </div>
+              <div className="lg:col-span-2">{imagery}</div>
+            </div>
+          );
+        })()}
 
         {section.roles?.map((r, i) => <RoleCallout key={i} accent={accent} role={r} />)}
 
