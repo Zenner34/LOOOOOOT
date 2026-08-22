@@ -171,8 +171,18 @@ export function PhaseBossCard({
                   : "No assignments yet — add sections by hand, or wait for the boss-sheet templates."}
               </div>
             ) : (
-              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                {sections.map(s => {
+              // Sections cluster under their template's fight phase (when
+              // set — Illidan P1/P2/P3/P5); phaseless sections render in a
+              // single unlabeled group.
+              (() => {
+                const clusters: Array<{ phase: string | null; secs: AssignSection[] }> = [];
+                for (const s of sections) {
+                  const phase = tplById.get(s.id)?.phase ?? null;
+                  const last = clusters[clusters.length - 1];
+                  if (last && last.phase === phase) last.secs.push(s);
+                  else clusters.push({ phase, secs: [s] });
+                }
+                const renderSec = (s: AssignSection) => {
                   const tpl = tplById.get(s.id);
                   return tpl ? (
                     <TplSectionBox
@@ -195,8 +205,34 @@ export function PhaseBossCard({
                       charsById={charsById}
                     />
                   );
-                })}
-              </div>
+                };
+                return (
+                  <div className="space-y-3">
+                    {clusters.map((c, i) => (
+                      <div key={i} className="space-y-2">
+                        {c.phase && (
+                          <div className="flex items-center gap-2 pt-0.5">
+                            <span
+                              className="text-[11px] font-bold uppercase tracking-[0.16em]"
+                              style={{ color: boss.accent }}
+                            >
+                              {c.phase}
+                            </span>
+                            <span
+                              aria-hidden
+                              className="h-px flex-1"
+                              style={{ background: `linear-gradient(90deg, ${boss.accent}44, transparent)` }}
+                            />
+                          </div>
+                        )}
+                        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                          {c.secs.map(renderSec)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()
             )}
 
             <BossNotes

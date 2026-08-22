@@ -153,6 +153,9 @@ export type PhaseSectionTpl = {
   /** Stable key — the stored section id is `tpl:<key>`. */
   key: string;
   title: string;
+  /** Fight-phase grouping — consecutive sections sharing a phase render
+   *  under one phase divider on the card (Illidan P1/P2/P3/P5). */
+  phase?: string;
   /** Secondary header row under the title ("If Not using NPC"). */
   subtitle?: string;
   slots?: PhaseSlotRule[];
@@ -272,19 +275,42 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
       staticItems: ["Council Heal Kick"] },
   ],
   illidan: [
-    // Shear tank: Prot Warrior when one is in the comp, otherwise the
-    // Prot Paladin (tiered pool).
-    { key: "mt", title: "Main Tank",
+    // ── Phase 1 — shear tank on the boss. Prot Warrior when one is in
+    // the comp, otherwise the Prot Paladin (tiered pool).
+    { key: "mt", title: "Main Tank", phase: "Phase 1",
       slots: [
         { label: "Prot 1", specs: ["Protection Warrior", "Protection Paladin"], tiered: true, nth: 1 },
         md(S.surv(1)),
         S.openMd(),
       ] },
-    { key: "lefttank", title: "Left Ele Tank",
+    { key: "p1notes", title: "P1 Notes", phase: "Phase 1",
+      staticItems: [
+        "Pally/Warrior tank — shear cap 102.4%",
+        "Move the boss after Flame Crash",
+        "Parasites run to the marked spot — Hunter Trap / Earthbind Totem there",
+      ] },
+    // ── Phase 2 — Fire Res tanks each pick up a Flame of Azzinoth.
+    { key: "lefttank", title: "Left Ele Tank", phase: "Phase 2",
       slots: [S.feral(1), md(S.hunter(1))] },
-    { key: "righttank", title: "Right Ele Tank",
+    { key: "righttank", title: "Right Ele Tank", phase: "Phase 2",
       slots: [S.feral(2), md(S.hunter(2))] },
-    { key: "p5", title: "Phase 5",
+    { key: "p2notes", title: "P2 Notes", phase: "Phase 2",
+      staticItems: [
+        "Fire Res tanks pick up the Flames — kite within 1-24 yds of its glaive or Enrage = wipe",
+        "Tanks do NOT frontal the raid (cone + fire under your feet)",
+        "Dodge Eye Blast — the blue fire line lasts 1 min, don't walk into it",
+        "Raid splits into 3 groups — 2 ranged / 1 melee",
+        "Focus ONE Elemental then switch",
+      ] },
+    // ── Phase 3 — P1 again with demons; lust here to skip P4 entirely.
+    { key: "p3notes", title: "P3 Notes", phase: "Phase 3",
+      staticItems: [
+        "Repeat P1 with slight changes — raid spreads",
+        "LUST P3 to skip P4",
+        "Earthbind Totem / Frost Trap on the drops",
+      ] },
+    // ── Phase 5
+    { key: "p5", title: "Phase 5", phase: "Phase 5",
       staticItems: [
         "Repeat of P3",
         "Illidan Enrages & needs to be kited over a trap to Soothe him",
