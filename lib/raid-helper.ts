@@ -84,10 +84,11 @@ export type PhaseBossMeta = {
    *  using WCL's stable encounter ids — BT 601-609, Hyjal 618-622. The
    *  card hides the img on load error, so a dead URL degrades cleanly. */
   readonly icon?: string;
-  /** Strategy diagram for the card's left rail (SSC/TK-style layout).
-   *  Unset renders a placeholder panel until the real images land in
-   *  /public/strategies/. */
+  /** Strategy diagram for the card's left rail (SSC/TK-style layout). */
   readonly strategy?: string;
+  /** Multi-image rail for phase fights (Illidan P1/P2/P3) — takes
+   *  precedence over `strategy` when set. */
+  readonly strategies?: readonly { label: string; src: string }[];
   /** Matching boss id in the /guides data — powers the card's guide
    *  popup. */
   readonly guideId?: string;
@@ -97,20 +98,20 @@ const WCL_BOSS_ICON = (encounterId: number) =>
   `https://assets.rpglogs.com/img/warcraft/bosses/${encounterId}-icon.jpg`;
 
 export const PHASE_BOSSES = [
-  { slug: "najentus",   raidShort: "BT", name: "High Warlord Naj'entus", accent: "#5edfff", icon: WCL_BOSS_ICON(601), guideId: "najentus" },
-  { slug: "supremus",   raidShort: "BT", name: "Supremus",               accent: "#ff7a3c", icon: WCL_BOSS_ICON(602), guideId: "supremus" },
-  { slug: "shade",      raidShort: "BT", name: "Shade of Akama",         accent: "#8b9dff", icon: WCL_BOSS_ICON(603), guideId: "shade-of-akama" },
-  { slug: "teron",      raidShort: "BT", name: "Teron Gorefiend",        accent: "#a78bfa", icon: WCL_BOSS_ICON(604), guideId: "teron-gorefiend" },
-  { slug: "gurtogg",    raidShort: "BT", name: "Gurtogg Bloodboil",      accent: "#ff5e6c", icon: WCL_BOSS_ICON(605), guideId: "gurtogg-bloodboil" },
-  { slug: "reliquary",  raidShort: "BT", name: "Reliquary of Souls",     accent: "#ff7ad4", icon: WCL_BOSS_ICON(606), guideId: "reliquary-of-souls" },
-  { slug: "shahraz",    raidShort: "BT", name: "Mother Shahraz",         accent: "#e08bff", icon: WCL_BOSS_ICON(607), guideId: "mother-shahraz" },
-  { slug: "council",    raidShort: "BT", name: "Illidari Council",       accent: "#c58bff", icon: WCL_BOSS_ICON(608), guideId: "illidari-council" },
-  { slug: "illidan",    raidShort: "BT", name: "Illidan Stormrage",      accent: "#a3ff5e", icon: WCL_BOSS_ICON(609), guideId: "illidan" },
-  { slug: "rage",       raidShort: "MH", name: "Rage Winterchill",       accent: "#7ec8ff", icon: WCL_BOSS_ICON(618), guideId: "rage-winterchill" },
-  { slug: "anetheron",  raidShort: "MH", name: "Anetheron",              accent: "#ff8a4c", icon: WCL_BOSS_ICON(619), guideId: "anetheron" },
-  { slug: "kazrogal",   raidShort: "MH", name: "Kaz'rogal",              accent: "#b18bff", icon: WCL_BOSS_ICON(620), guideId: "kazrogal" },
-  { slug: "azgalor",    raidShort: "MH", name: "Az'galor",               accent: "#ff5e6c", icon: WCL_BOSS_ICON(621), guideId: "azgalor" },
-  { slug: "archimonde", raidShort: "MH", name: "Archimonde",             accent: "#ffd24c", icon: WCL_BOSS_ICON(622), guideId: "archimonde" },
+  { slug: "najentus",   raidShort: "BT", name: "High Warlord Naj'entus", accent: "#5edfff", icon: WCL_BOSS_ICON(601), guideId: "najentus", strategy: "/strategies/najentus.png" },
+  { slug: "supremus",   raidShort: "BT", name: "Supremus",               accent: "#ff7a3c", icon: WCL_BOSS_ICON(602), guideId: "supremus", strategy: "/strategies/supremus.png" },
+  { slug: "shade",      raidShort: "BT", name: "Shade of Akama",         accent: "#8b9dff", icon: WCL_BOSS_ICON(603), guideId: "shade-of-akama", strategy: "/strategies/shade.png" },
+  { slug: "teron",      raidShort: "BT", name: "Teron Gorefiend",        accent: "#a78bfa", icon: WCL_BOSS_ICON(604), guideId: "teron-gorefiend", strategy: "/strategies/teron.png" },
+  { slug: "gurtogg",    raidShort: "BT", name: "Gurtogg Bloodboil",      accent: "#ff5e6c", icon: WCL_BOSS_ICON(605), guideId: "gurtogg-bloodboil", strategy: "/strategies/gurtogg.png" },
+  { slug: "reliquary",  raidShort: "BT", name: "Reliquary of Souls",     accent: "#ff7ad4", icon: WCL_BOSS_ICON(606), guideId: "reliquary-of-souls", strategy: "/strategies/reliquary.png" },
+  { slug: "shahraz",    raidShort: "BT", name: "Mother Shahraz",         accent: "#e08bff", icon: WCL_BOSS_ICON(607), guideId: "mother-shahraz", strategy: "/strategies/shahraz.png" },
+  { slug: "council",    raidShort: "BT", name: "Illidari Council",       accent: "#c58bff", icon: WCL_BOSS_ICON(608), guideId: "illidari-council", strategy: "/strategies/council.png" },
+  { slug: "illidan",    raidShort: "BT", name: "Illidan Stormrage",      accent: "#a3ff5e", icon: WCL_BOSS_ICON(609), guideId: "illidan", strategies: [{ label: "Phase 1", src: "/strategies/illidan-p1.png" }, { label: "Phase 2", src: "/strategies/illidan-p2.png" }, { label: "Phase 3", src: "/strategies/illidan-p3.png" }] },
+  { slug: "rage",       raidShort: "MH", name: "Rage Winterchill",       accent: "#7ec8ff", icon: WCL_BOSS_ICON(618), guideId: "rage-winterchill", strategy: "/strategies/rage.png" },
+  { slug: "anetheron",  raidShort: "MH", name: "Anetheron",              accent: "#ff8a4c", icon: WCL_BOSS_ICON(619), guideId: "anetheron", strategy: "/strategies/anetheron.png" },
+  { slug: "kazrogal",   raidShort: "MH", name: "Kaz'rogal",              accent: "#b18bff", icon: WCL_BOSS_ICON(620), guideId: "kazrogal", strategy: "/strategies/kazrogal.png" },
+  { slug: "azgalor",    raidShort: "MH", name: "Az'galor",               accent: "#ff5e6c", icon: WCL_BOSS_ICON(621), guideId: "azgalor", strategy: "/strategies/azgalor.png" },
+  { slug: "archimonde", raidShort: "MH", name: "Archimonde",             accent: "#ffd24c", icon: WCL_BOSS_ICON(622), guideId: "archimonde", strategy: "/strategies/archimonde.png" },
 ] as const satisfies readonly PhaseBossMeta[];
 
 export type PhaseBossSlug = (typeof PHASE_BOSSES)[number]["slug"];

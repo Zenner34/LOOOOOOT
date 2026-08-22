@@ -251,29 +251,52 @@ export function PhaseBossCard({
 /* ──────────────────────────────────────────────────────────────────── */
 
 /**
- * Left-rail strategy panel. Renders the boss's strategy diagram when
- * one is configured; until the real images land it's a quiet accent-
- * tinted placeholder that keeps the SSC/TK card geometry.
+ * Left-rail strategy panel. Renders the boss's platform diagram(s) —
+ * multi-phase fights (Illidan) stack labeled images; each opens the
+ * full-size original in a new tab. Falls back to a quiet accent-tinted
+ * placeholder if no image is configured or it fails to load.
  */
 function StrategyPanel({ boss }: { boss: PhaseBossMeta }) {
-  const [errored, setErrored] = useState(false);
-  if (boss.strategy && !errored) {
+  const [erroredSrcs, setErroredSrcs] = useState<ReadonlySet<string>>(new Set());
+  const images: Array<{ label?: string; src: string }> =
+    boss.strategies?.length
+      ? [...boss.strategies]
+      : boss.strategy
+        ? [{ src: boss.strategy }]
+        : [];
+  const visible = images.filter(img => !erroredSrcs.has(img.src));
+
+  if (visible.length > 0) {
     return (
-      <a
-        href={boss.strategy}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block group/strategy"
-        title="Open full size"
-      >
-        <img
-          src={boss.strategy}
-          alt={`${boss.name} strategy diagram`}
-          loading="lazy"
-          onError={() => setErrored(true)}
-          className="w-full rounded-md border border-[#2e3a55] transition group-hover/strategy:border-amber-400/60 group-hover/strategy:shadow-[0_0_0_2px_rgba(212,175,55,0.15)]"
-        />
-      </a>
+      <div className="space-y-2">
+        {visible.map(img => (
+          <figure key={img.src}>
+            {img.label && (
+              <figcaption
+                className="mb-1 text-[10px] font-bold uppercase tracking-[0.14em]"
+                style={{ color: boss.accent }}
+              >
+                {img.label}
+              </figcaption>
+            )}
+            <a
+              href={img.src}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block group/strategy"
+              title="Open full size"
+            >
+              <img
+                src={img.src}
+                alt={`${boss.name}${img.label ? ` ${img.label}` : ""} strategy diagram`}
+                loading="lazy"
+                onError={() => setErroredSrcs(prev => new Set([...prev, img.src]))}
+                className="w-full rounded-md border border-[#2e3a55] transition group-hover/strategy:border-amber-400/60 group-hover/strategy:shadow-[0_0_0_2px_rgba(212,175,55,0.15)]"
+              />
+            </a>
+          </figure>
+        ))}
+      </div>
     );
   }
   return (
