@@ -160,11 +160,11 @@ export function PhaseBossCard({
 
         {/* Body: strategy rail | assignment sections */}
         <div className="grid grid-cols-12 gap-3">
-          <div className="col-span-12 md:col-span-5 lg:col-span-4">
+          <div className="col-span-12 md:col-span-5 lg:col-span-5">
             <StrategyPanel boss={boss} />
           </div>
 
-          <div className="col-span-12 md:col-span-7 lg:col-span-8 min-w-0">
+          <div className="col-span-12 md:col-span-7 lg:col-span-7 min-w-0">
             {sections.length === 0 ? (
               <div className="rounded-md border border-dashed border-[#2e3a55] px-3 py-6 text-center text-[12px] text-neutral-500 italic">
                 {readOnly

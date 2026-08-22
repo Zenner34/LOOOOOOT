@@ -111,7 +111,7 @@ export default function BossGuide({
                     alt={section.imageAlt ?? `${boss.name} strategy diagram`}
                     caption={section.imageCaption ?? section.title}
                     wrapperClassName="mx-auto w-fit max-w-full"
-                    imgClassName="block h-auto max-h-[22rem] w-auto max-w-full rounded-xl border bg-black/30 transition hover:brightness-110 sm:max-h-[26rem]"
+                    imgClassName="block h-auto max-h-[26rem] w-auto max-w-full rounded-xl border bg-black/30 transition hover:brightness-110 sm:max-h-[30rem]"
                     imgStyle={{ borderColor: `${accent}33` }}
                   />
                   <figcaption className="text-[11px] text-neutral-500 text-center">
@@ -126,7 +126,7 @@ export default function BossGuide({
                     alt={img.alt ?? `${boss.name} — ${section.title} diagram`}
                     caption={img.caption ?? `${boss.name} — ${section.title}`}
                     wrapperClassName="mx-auto w-fit max-w-full"
-                    imgClassName="block h-auto max-h-72 w-auto max-w-full rounded-xl border bg-black/30 transition hover:brightness-110 sm:max-h-80"
+                    imgClassName="block h-auto max-h-[20rem] w-auto max-w-full rounded-xl border bg-black/30 transition hover:brightness-110 sm:max-h-[24rem]"
                     imgStyle={{ borderColor: `${accent}33` }}
                   />
                   {img.caption && (
