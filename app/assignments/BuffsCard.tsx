@@ -93,13 +93,11 @@ export function BuffsCard({
   return (
     <div
       id="buffs"
-      className="rounded-lg border border-[#2a3650] p-3 scroll-mt-20"
-      style={{ background: "linear-gradient(180deg, #1a2236, #111827)" }}
+      className="sheet-panel scroll-mt-20"
     >
       <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
         <div
-          className="text-xs font-bold uppercase tracking-wider text-white text-center px-3 py-1 border border-[#2c5494] rounded"
-          style={{ background: "linear-gradient(180deg, #234876, #1e3a5f)", textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
+          className="navy-head"
         >
           Buffs &amp; Assignments
         </div>
@@ -279,7 +277,7 @@ function BuffGroup({
           </button>
         </EditOnly>
       </div>
-      <div className="flex flex-col gap-px">
+      <div className="flex flex-col gap-[3px]">
         {sections.map(s => (
           <BuffRow
             key={s.id}
@@ -377,7 +375,7 @@ function BuffRow({
       )}
 
       {/* Chip stack (middle) */}
-      <div className="relative flex flex-col gap-px min-w-0">
+      <div className="relative flex flex-col gap-[3px] min-w-0">
         {isFixed
           ? <FixedSlotStack
               section={section}
@@ -461,7 +459,7 @@ function FixedSlotStack({
       </div>
     );
   }
-  return <div className="flex flex-col gap-px">{slots}</div>;
+  return <div className="flex flex-col gap-[3px]">{slots}</div>;
 }
 
 function FixedSlot({
@@ -557,7 +555,7 @@ function GrowableSlotStack({
   }
 
   return (
-    <div ref={slotRef} className="relative flex flex-col gap-px">
+    <div ref={slotRef} className="relative flex flex-col gap-[3px]">
       {section.characterIds.map((id, idx) => {
         const c = charsById.get(id);
         if (!c) return null;

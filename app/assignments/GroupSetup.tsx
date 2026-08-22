@@ -59,12 +59,10 @@ export function GroupSetup<T extends Pick<AssignmentData, "groups">>({
 
   return (
     <div
-      className="rounded-lg border border-[#2a3650] p-3"
-      style={{ background: "linear-gradient(180deg, #1a2236, #111827)" }}
+      className="sheet-panel"
     >
       <div
-        className="text-xs font-bold uppercase tracking-wider text-white text-center px-3 py-1 mb-2 border border-[#2c5494] rounded"
-        style={{ background: "linear-gradient(180deg, #234876, #1e3a5f)", textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
+        className="navy-head mb-2"
       >
         {title}
       </div>
@@ -74,8 +72,8 @@ export function GroupSetup<T extends Pick<AssignmentData, "groups">>({
           const slots: Array<number | null> = [...filled];
           while (slots.length < 5) slots.push(null);
           return (
-            <div key={g} className="flex flex-col gap-px">
-              <div className="bg-[#1a1a1a] text-center text-[10px] font-bold uppercase tracking-wider text-white py-1 border border-black">
+            <div key={g} className="flex flex-col gap-[3px]">
+              <div className="cell-head">
                 Group {g}
               </div>
               {slots.map((charId, idx) => {

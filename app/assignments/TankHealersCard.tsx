@@ -78,17 +78,15 @@ export function TankHealersCard({
   return (
     <div
       id="tank-heal"
-      className="rounded-lg border border-[#2a3650] p-3 scroll-mt-20"
-      style={{ background: "linear-gradient(180deg, #1a2236, #111827)" }}
+      className="sheet-panel scroll-mt-20"
     >
       <div
-        className="text-xs font-bold uppercase tracking-wider text-white text-center px-3 py-1 mb-2 border border-[#2c5494] rounded"
-        style={{ background: "linear-gradient(180deg, #234876, #1e3a5f)", textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
+        className="navy-head mb-2"
       >
         Tanks &amp; Tank Healers (Based on Roster)
       </div>
 
-      <div className="flex flex-col gap-px">
+      <div className="flex flex-col gap-[3px]">
         {rows.map(row => (
           <TankRow
             key={row.id}
@@ -131,7 +129,7 @@ function TankRow({
         const { glyph, color } = tankMarkerGlyph(row.marker);
         return (
           <div
-            className="flex items-center justify-center bg-[#1a1a1a] border border-black font-bold"
+            className="flex items-center justify-center rounded-[4px] bg-white/[0.06] border border-white/[0.08] font-bold"
             title={tankMarkerLabel(row.marker)}
             style={{ color, fontSize: 16, lineHeight: 1 }}
           >

@@ -578,7 +578,7 @@ function AssignBox({
   const { readOnly } = useViewMode();
 
   return (
-    <div className="group/box flex flex-col gap-px">
+    <div className="group/box flex flex-col gap-[3px]">
       {/* Header */}
       {editingTitle && !readOnly ? (
         <input
@@ -637,7 +637,7 @@ function AssignBox({
             className="grid gap-px"
             style={{ gridTemplateColumns: "22px minmax(0, 1fr)" }}
           >
-            <div className="flex items-center justify-center bg-[#1a1a1a] border border-black">
+            <div className="flex items-center justify-center rounded-[4px] bg-white/[0.06] border border-white/[0.08]">
               <img
                 src={`${SPEC_ICON_BASE}${section.chipIconSlug}.jpg`}
                 alt=""
@@ -731,7 +731,7 @@ function GroupedSectionBlock({
   patchSection: (id: string, patch: Partial<AssignSection>) => void;
 }) {
   return (
-    <div className="flex flex-col gap-px">
+    <div className="flex flex-col gap-[3px]">
       <div
         className="text-[11px] font-bold uppercase tracking-wider text-white text-center bg-[#1e3a5f] border border-[#2c5494] px-2 py-1 truncate"
         style={{ letterSpacing: "0.02em", textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
@@ -822,7 +822,7 @@ function GroupedRow({
  */
 function StaticItemsBlock({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="flex flex-col gap-px">
+    <div className="flex flex-col gap-[3px]">
       <div
         className="w-full text-[11px] font-bold uppercase tracking-wider text-white text-center bg-[#1e3a5f] border border-[#2c5494] px-2 py-1 truncate"
         style={{ letterSpacing: "0.02em", textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
@@ -888,7 +888,7 @@ function AddOnRow({
   const excludeIds = new Set(filled);
 
   return (
-    <div className="flex flex-col gap-px">
+    <div className="flex flex-col gap-[3px]">
       {filled.map((charId, idx) => {
         const c = charsById.get(charId);
         if (!c) return null;
@@ -901,7 +901,7 @@ function AddOnRow({
             {icons.map((slug, iconIdx) => (
               <div
                 key={iconIdx}
-                className="flex items-center justify-center bg-[#1a1a1a] border border-black"
+                className="flex items-center justify-center rounded-[4px] bg-white/[0.06] border border-white/[0.08]"
               >
                 <img
                   src={`${SPEC_ICON_BASE}${slug}.jpg`}

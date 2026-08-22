@@ -89,13 +89,13 @@ export function PhaseBossCard({
   return (
     <div
       id={`boss-${boss.slug}`}
-      className="relative rounded-lg border border-[#2a3650] overflow-visible scroll-mt-20"
+      className="relative rounded-xl border border-[#2a3650]/80 overflow-visible scroll-mt-20 shadow-[0_14px_34px_-22px_rgba(0,0,0,0.9)]"
       style={{ background: "linear-gradient(180deg, #131b2c, #0e1525)" }}
     >
       {/* Subtle gold sheen at the top, matching the SSC/TK cards */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-lg"
+        className="pointer-events-none absolute inset-0 rounded-xl"
         style={{ background: "linear-gradient(180deg, rgba(255,215,128,0.06), transparent 30%)" }}
       />
 
@@ -333,19 +333,19 @@ function TplSectionBox({
   }
 
   return (
-    <div className="rounded border border-black/50 bg-black/20 overflow-visible">
-      <div className="bg-[#1a1a1a] border-b border-black text-center text-[10px] font-bold uppercase tracking-wider text-white py-1 px-2 truncate">
+    <div className="rounded-lg border border-white/[0.08] bg-black/25 overflow-visible">
+      <div className="rounded-t-lg bg-white/[0.07] border-b border-white/[0.07] text-center text-[10px] font-bold uppercase tracking-[0.14em] text-neutral-200 py-1 px-2 truncate">
         {tpl.title}
       </div>
       {tpl.subtitle && (
         <div
-          className="border-b border-black text-center text-[10px] font-bold text-white py-0.5 px-2 truncate"
+          className="border-b border-white/[0.07] text-center text-[10px] font-bold text-white py-0.5 px-2 truncate"
           style={{ background: "linear-gradient(180deg, #234876, #1e3a5f)", textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
         >
           {tpl.subtitle}
         </div>
       )}
-      <div className="flex flex-col gap-px p-px">
+      <div className="flex flex-col gap-[3px] p-1">
         {slots.map((rule, i) => (
           <TplSlotRow
             key={i}
@@ -373,7 +373,7 @@ function TplSectionBox({
         {tpl.staticItems?.map((item, i) => (
           <div
             key={`static-${i}`}
-            className="bg-white/[0.07] px-2 py-1 text-center text-[11px] font-semibold italic text-neutral-300"
+            className="rounded-[4px] bg-white/[0.05] px-2 py-1 text-center text-[11px] font-semibold italic text-neutral-300"
           >
             {item}
           </div>
@@ -424,14 +424,14 @@ function TplSlotRow({
     <div ref={slotRef} className="relative flex items-stretch gap-px">
       {rule.pos && (
         <span
-          className="flex w-7 shrink-0 items-center justify-center text-[10px] font-bold"
+          className="flex w-7 shrink-0 items-center justify-center rounded-[4px] text-[10px] font-bold"
           style={{ background: "#c9897a", color: "#1a1a1a" }}
         >
           {rule.pos}
         </span>
       )}
       {rule.icon && (
-        <span className="flex w-6 shrink-0 items-center justify-center bg-black/40">
+        <span className="flex w-6 shrink-0 items-center justify-center rounded-[4px] bg-black/40">
           <img
             src={`${ICON_BASE}${rule.icon}.jpg`}
             alt=""
@@ -457,7 +457,7 @@ function TplSlotRow({
             onClick={readOnly ? undefined : onToggle}
             disabled={readOnly}
             title={readOnly ? rule.label : `Assign ${rule.label}`}
-            className={`flex w-full items-center justify-center border px-2 py-1 text-[12px] font-semibold italic leading-snug transition ${
+            className={`flex w-full items-center justify-start rounded-[4px] border border-dashed px-2 py-1 text-left text-[12px] font-semibold italic leading-snug transition ${
               readOnly ? "cursor-default" : "hover:brightness-125"
             }`}
             style={
@@ -509,8 +509,8 @@ function PhaseSectionBox({
   }
 
   return (
-    <div className="group/sec rounded border border-black/50 bg-black/20 overflow-visible">
-      <div className="relative flex items-center bg-[#1a1a1a] border-b border-black">
+    <div className="group/sec rounded-lg border border-white/[0.08] bg-black/25 overflow-visible">
+      <div className="relative flex items-center rounded-t-lg bg-white/[0.07] border-b border-white/[0.07]">
         {editingTitle && !readOnly ? (
           <input
             autoFocus
@@ -543,7 +543,7 @@ function PhaseSectionBox({
           </button>
         )}
       </div>
-      <div className="flex flex-col gap-px p-px">
+      <div className="flex flex-col gap-[3px] p-1">
         {chips.map(id => {
           const c = charsById.get(id);
           if (!c) return null;

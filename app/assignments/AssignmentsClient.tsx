@@ -431,20 +431,18 @@ function RoleTallies({ roleCounts }: { roleCounts: Array<{ key: string; label: s
   const total = roleCounts.reduce((sum, r) => sum + r.chars.length, 0);
   return (
     <div
-      className="rounded-lg border border-[#2a3650] p-3"
-      style={{ background: "linear-gradient(180deg, #1a2236, #111827)" }}
+      className="sheet-panel"
     >
       <div
-        className="text-xs font-bold uppercase tracking-wider text-white text-center px-3 py-1 mb-1 border border-[#2c5494] rounded"
-        style={{ background: "linear-gradient(180deg, #234876, #1e3a5f)", textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
+        className="navy-head mb-1"
       >
         Gruul / Mag Roster
       </div>
       <div className="text-center text-[10px] text-slate-400 mb-2 tabular-nums">{total} / 25</div>
       <div className="grid grid-cols-2 gap-2">
         {roleCounts.map(r => (
-          <div key={r.key} className="flex flex-col gap-px">
-            <div className="bg-[#1a1a1a] text-center text-[10px] font-bold uppercase tracking-wider text-white py-1 border border-black">
+          <div key={r.key} className="flex flex-col gap-[3px]">
+            <div className="cell-head">
               {r.label} · {r.chars.length}
             </div>
             {r.chars.length === 0 ? (

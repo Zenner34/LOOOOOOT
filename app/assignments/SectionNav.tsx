@@ -78,13 +78,11 @@ export function SectionNav({ groups: groupsProp }: { groups?: SectionNavGroup[] 
 
   return (
     <nav
-      className="rounded-lg border border-[#2a3650] p-3 sticky top-[4.5rem] max-h-[calc(100vh-5.5rem)] overflow-y-auto"
-      style={{ background: "linear-gradient(180deg, #1a2236, #111827)" }}
+      className="sheet-panel sticky top-[4.5rem] max-h-[calc(100vh-5.5rem)] overflow-y-auto"
       aria-label="Jump to section"
     >
       <div
-        className="text-xs font-bold uppercase tracking-wider text-white text-center px-3 py-1 mb-2 border border-[#2c5494] rounded"
-        style={{ background: "linear-gradient(180deg, #234876, #1e3a5f)", textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
+        className="navy-head mb-2"
       >
         Jump to
       </div>
@@ -96,7 +94,7 @@ export function SectionNav({ groups: groupsProp }: { groups?: SectionNavGroup[] 
                 {g.heading}
               </div>
             )}
-            <ul className="flex flex-col gap-px">
+            <ul className="flex flex-col gap-[3px]">
               {g.items.map(item => {
                 const active = item.id === activeId;
                 return (

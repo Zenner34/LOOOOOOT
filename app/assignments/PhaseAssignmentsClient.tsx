@@ -633,7 +633,7 @@ function ImportPreview({ parsed }: { parsed: ParsedImport }) {
           const byId = new Map(parsed.members.map(m => [m.id, m]));
           return (
             <div key={g} className="rounded-md border border-white/[0.07] bg-black/20 overflow-hidden">
-              <div className="bg-[#1a1a1a] text-center text-[9px] font-bold uppercase tracking-wider text-neutral-300 py-0.5">
+              <div className="bg-white/[0.07] text-center text-[9px] font-bold uppercase tracking-[0.14em] text-neutral-300 py-0.5">
                 Group {g}
               </div>
               <ul className="p-1 space-y-0.5">

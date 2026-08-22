@@ -24,12 +24,10 @@ export function RosterSidebar({ teamRosterChars }: { teamRosterChars: Assignable
 
   return (
     <div
-      className="rounded-lg border border-[#2a3650] p-3 sticky top-4"
-      style={{ background: "linear-gradient(180deg, #1a2236, #111827)" }}
+      className="sheet-panel sticky top-4"
     >
       <div
-        className="text-xs font-bold uppercase tracking-wider text-white text-center px-3 py-1 mb-2 border border-[#2c5494] rounded"
-        style={{ background: "linear-gradient(180deg, #234876, #1e3a5f)", textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
+        className="navy-head mb-2"
       >
         Roster · {all.length}/25
       </div>
@@ -51,8 +49,8 @@ export function RosterSidebar({ teamRosterChars }: { teamRosterChars: Assignable
 
 function RosterColumn({ title, list }: { title: string; list: AssignableCharacter[] }) {
   return (
-    <div className="flex flex-col gap-px">
-      <div className="bg-[#1a1a1a] text-center text-[10px] font-bold uppercase tracking-wider text-white py-1 border border-black">
+    <div className="flex flex-col gap-[3px]">
+      <div className="cell-head">
         {title} · {list.length}
       </div>
       {list.map(c => (
