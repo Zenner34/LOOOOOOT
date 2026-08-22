@@ -20,15 +20,16 @@ import { PageHeader } from "@/app/components/ui/PageHeader";
 import { EmptyState } from "@/app/components/ui/EmptyState";
 import { ChevronDown, Inbox, Pencil, Plus, X } from "@/app/components/ui/Icon";
 import { ASSIGNMENT_BOSSES, suggestFillSections, suggestTankRoleSections, defaultTankAssignments } from "@/lib/assignments";
-import { CharacterChip, EmptySlot, type AssignableCharacter } from "./CharacterChip";
-import { CharacterPicker } from "./CharacterPicker";
+import { CharacterChip, type AssignableCharacter } from "./CharacterChip";
+import { GroupSetup } from "./GroupSetup";
+import { SaveIndicator, ViewModeToggle, type SavingState } from "./SheetChrome";
 import { BuffsCard } from "./BuffsCard";
 import { BossCard } from "./BossCard";
 import { RosterSidebar } from "./RosterSidebar";
 import { TankHealersCard } from "./TankHealersCard";
 import { SectionNav } from "./SectionNav";
 import { HighlightProvider, useHighlight } from "./HighlightContext";
-import { ViewModeProvider, useViewMode, EditOnly } from "./ViewModeContext";
+import { ViewModeProvider, EditOnly } from "./ViewModeContext";
 
 type Team = {
   id: number;
@@ -101,7 +102,7 @@ export default function AssignmentsClient({
   // null = closed; "create" = new-team modal; { team } = editing that team
   const [teamModal, setTeamModal] = useState<null | "create" | { team: Team }>(null);
   const [data, setData] = useState<AssignmentData>(hydrateSheetData(sheet?.data));
-  const [savingState, setSavingState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [savingState, setSavingState] = useState<SavingState>("idle");
   const charsById = useMemo(() => new Map(characters.map(c => [c.id, c])), [characters]);
   const selectedTeam = teams.find(t => t.id === selectedTeamId) ?? null;
 
@@ -142,7 +143,7 @@ export default function AssignmentsClient({
 
   function setTeam(id: number) {
     const team = teams.find(t => t.id === id);
-    if (team) router.push(`/assignments/${team.slug}`);
+    if (team) router.push(`/admin/assignments/${team.slug}`);
   }
 
   // Roster character ids drawn from the team's group setup. Picker
@@ -245,7 +246,7 @@ function AssignmentsBody({
   sheet: Sheet | null;
   data: AssignmentData;
   setData: (d: AssignmentData) => void;
-  savingState: "idle" | "saving" | "saved" | "error";
+  savingState: SavingState;
   setTeam: (id: number) => void;
   teamModal: null | "create" | { team: Team };
   setTeamModal: (m: null | "create" | { team: Team }) => void;
@@ -260,9 +261,9 @@ function AssignmentsBody({
   return (
     <div className="space-y-5 animate-fade-in">
       <PageHeader
-        eyebrow="Admin"
-        title="Assignments"
-        subtitle="One persistent sheet per raid team. Pick characters into groups; role tallies, buff-eligibility, and boss-assignment pickers all derive from the team's roster."
+        eyebrow="Admin · Archive"
+        title="Assignments — SSC / TK"
+        subtitle="The previous phase's team sheets, kept for reference. The live Black Temple / Hyjal sheet is on the public Assignments page."
       />
 
       {/* Top bar: team tabs + create button */}
@@ -420,131 +421,6 @@ function AssignmentsBody({
           }}
         />
       )}
-    </div>
-  );
-}
-
-/* ──────────────────────────────────────────────────────────────────── */
-
-function SaveIndicator({ state }: { state: "idle" | "saving" | "saved" | "error" }) {
-  // Always render a fixed-width span so appearing / disappearing the
-  // text never shifts the rest of the top bar (and by extension the
-  // boss cards below). Idle just leaves the slot blank.
-  const cls = state === "saving" ? "text-neutral-500"
-            : state === "saved"  ? "text-emerald-300"
-            : state === "error"  ? "text-rose-300"
-            : "text-transparent";
-  const text = state === "saving" ? "Saving…"
-             : state === "saved"  ? "Saved"
-             : state === "error"  ? "Save failed"
-             : "";
-  return (
-    <span
-      aria-live="polite"
-      className={`tabular-nums text-[11px] inline-block text-right ${cls}`}
-      style={{ minWidth: 72 }}
-    >
-      {text || " "}
-    </span>
-  );
-}
-
-/* ──────────────────────────────────────────────────────────────────── */
-
-function GroupSetup({
-  data,
-  setData,
-  characters,
-  charsById,
-}: {
-  data: AssignmentData;
-  setData: (d: AssignmentData) => void;
-  characters: AssignableCharacter[];
-  charsById: Map<number, AssignableCharacter>;
-}) {
-  // Track which slot is currently showing the picker (keyed by
-  // "group:slotIndex"; null when none).
-  const [openSlot, setOpenSlot] = useState<string | null>(null);
-  const slotRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  const allRosterIds = useMemo(() => new Set(rosterCharacterIds(data)), [data]);
-
-  function addToSlot(group: "1" | "2" | "3" | "4" | "5", slotIdx: number, c: AssignableCharacter) {
-    const current = [...data.groups[group]];
-    while (current.length <= slotIdx) current.push(0);
-    current[slotIdx] = c.id;
-    setData({ ...data, groups: { ...data.groups, [group]: current } });
-    setOpenSlot(null);
-  }
-
-  function removeFromSlot(group: "1" | "2" | "3" | "4" | "5", slotIdx: number) {
-    // Blank the slot in place (0 = empty) rather than splicing it out, so
-    // the remaining members keep their positions instead of shifting up.
-    const current = [...data.groups[group]];
-    current[slotIdx] = 0;
-    while (current.length > 0 && current[current.length - 1] === 0) current.pop();
-    setData({ ...data, groups: { ...data.groups, [group]: current } });
-  }
-
-  return (
-    <div
-      className="rounded-lg border border-[#2a3650] p-3"
-      style={{ background: "linear-gradient(180deg, #1a2236, #111827)" }}
-    >
-      <div
-        className="text-xs font-bold uppercase tracking-wider text-white text-center px-3 py-1 mb-2 border border-[#2c5494] rounded"
-        style={{ background: "linear-gradient(180deg, #234876, #1e3a5f)", textShadow: "0 1px 0 rgba(0,0,0,0.4)" }}
-      >
-        Group Setup
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        {(["1", "2", "3", "4", "5"] as const).map(g => {
-          const filled = data.groups[g] ?? [];
-          const slots: Array<number | null> = [...filled];
-          while (slots.length < 5) slots.push(null);
-          return (
-            <div key={g} className="flex flex-col gap-px">
-              <div className="bg-[#1a1a1a] text-center text-[10px] font-bold uppercase tracking-wider text-white py-1 border border-black">
-                Group {g}
-              </div>
-              {slots.map((charId, idx) => {
-                const slotKey = `${g}:${idx}`;
-                const char = charId ? charsById.get(charId) : null;
-                return (
-                  <div
-                    key={slotKey}
-                    ref={el => { slotRefs.current[slotKey] = el; }}
-                    className="relative"
-                  >
-                    {char ? (
-                      <CharacterChip
-                        character={char}
-                        size="sm"
-                        onRemove={() => removeFromSlot(g, idx)}
-                        onClick={() => setOpenSlot(prev => prev === slotKey ? null : slotKey)}
-                      />
-                    ) : (
-                      <EmptySlot
-                        size="sm"
-                        onClick={() => setOpenSlot(prev => prev === slotKey ? null : slotKey)}
-                      />
-                    )}
-                    {openSlot === slotKey && (
-                      <CharacterPicker
-                        characters={characters}
-                        excludeIds={allRosterIds}
-                        onPick={c => addToSlot(g, idx, c)}
-                        onClose={() => setOpenSlot(null)}
-                        anchorRef={{ current: slotRefs.current[slotKey] }}
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 }
@@ -900,35 +776,3 @@ function PlayerSpotlightPicker({
   );
 }
 
-/* ──────────────────────────────────────────────────────────────────── */
-
-/**
- * Edit / Raider view toggle pill. When flipped to Raider view, every
- * editing affordance on the page hides (Add buttons, Suggest, Reset,
- * row delete, title rename, +team, team pencil). The toggle itself
- * persists to localStorage via the ViewModeContext.
- *
- * Visible only to admins (the whole route is admin-gated) — when an
- * admin clicks this they're previewing what a non-admin would see if
- * the page were ever exposed read-only.
- */
-function ViewModeToggle() {
-  const { readOnly, setReadOnly, forced } = useViewMode();
-  // Non-admins are pinned to raider view — no toggle, no preview.
-  if (forced) return null;
-  return (
-    <button
-      type="button"
-      onClick={() => setReadOnly(!readOnly)}
-      title={readOnly ? "Switch to Edit mode" : "Preview what a raider would see"}
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition min-h-[28px] ${
-        readOnly
-          ? "border-amber-400/40 bg-amber-500/10 text-amber-200 hover:bg-amber-500/15"
-          : "border-white/10 bg-[var(--surface)] text-neutral-200 hover:border-white/20 hover:bg-white/[0.03]"
-      }`}
-    >
-      <span aria-hidden className="inline-block w-2 h-2 rounded-full" style={{ background: readOnly ? "#d4af37" : "#4ade80" }} />
-      {readOnly ? "Raider view" : "Edit mode"}
-    </button>
-  );
-}

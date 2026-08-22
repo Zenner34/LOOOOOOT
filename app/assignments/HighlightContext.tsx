@@ -34,7 +34,15 @@ const Ctx = createContext<HighlightCtx | null>(null);
 
 const EMPTY_SET: ReadonlySet<number> = new Set();
 
-export function HighlightProvider({ children }: { children: ReactNode }) {
+export function HighlightProvider({
+  children,
+  storageKey = STORAGE_KEY,
+}: {
+  children: ReactNode;
+  /** Override so sheets with different id-spaces (the BT/Hyjal member
+   *  sheet vs the old character-based sheet) don't share locks. */
+  storageKey?: string;
+}) {
   const [hoverId, setHoverId] = useState<number | null>(null);
   const [lockedIds, setLockedIdsRaw] = useState<ReadonlySet<number>>(EMPTY_SET);
 
@@ -43,7 +51,7 @@ export function HighlightProvider({ children }: { children: ReactNode }) {
   // legacy single-integer string so old saved locks still work.
   useEffect(() => {
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
+      const raw = window.localStorage.getItem(storageKey);
       if (!raw) return;
       const ids = raw
         .split(",")
@@ -51,14 +59,15 @@ export function HighlightProvider({ children }: { children: ReactNode }) {
         .filter(n => Number.isFinite(n) && n > 0);
       if (ids.length > 0) setLockedIdsRaw(new Set(ids));
     } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function setLocked(ids: number[] | null) {
     const next: ReadonlySet<number> = ids && ids.length > 0 ? new Set(ids) : EMPTY_SET;
     setLockedIdsRaw(next);
     try {
-      if (next.size === 0) window.localStorage.removeItem(STORAGE_KEY);
-      else window.localStorage.setItem(STORAGE_KEY, [...next].join(","));
+      if (next.size === 0) window.localStorage.removeItem(storageKey);
+      else window.localStorage.setItem(storageKey, [...next].join(","));
     } catch {}
   }
 

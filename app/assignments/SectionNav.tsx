@@ -12,10 +12,12 @@ import { ASSIGNMENT_BOSSES } from "@/lib/assignments";
  * the viewport via IntersectionObserver.
  */
 type Link = { id: string; label: string };
-type Group = { heading?: string; items: Link[] };
+export type SectionNavGroup = { heading?: string; items: Link[] };
 
-export function SectionNav() {
-  const groups: Group[] = [
+/** Default target list — the archived SSC/TK sheet's sections. The
+ *  BT/Hyjal page passes its own `groups` instead. */
+function defaultGroups(): SectionNavGroup[] {
+  return [
     {
       items: [
         { id: "buffs", label: "Buffs" },
@@ -37,6 +39,10 @@ export function SectionNav() {
       })),
     },
   ];
+}
+
+export function SectionNav({ groups: groupsProp }: { groups?: SectionNavGroup[] } = {}) {
+  const groups = groupsProp ?? defaultGroups();
 
   const allIds = groups.flatMap(g => g.items.map(i => i.id));
   const [activeId, setActiveId] = useState<string>(allIds[0] ?? "");

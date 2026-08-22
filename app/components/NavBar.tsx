@@ -9,6 +9,7 @@ import { Menu, X } from "@/app/components/ui/Icon";
 const NAV = [
   { href: "/guides",             label: "Guides"                       },
   { href: "/assignments",        label: "Assignments"                  },
+  { href: "/admin/assignments",  label: "SSC/TK",      adminOnly: true },
   { href: "/overview",    label: "Overview"                  },
   { href: "/loot",        label: "Loot",        adminOnly: true },
   { href: "/loot/assign",        label: "Assign",      adminOnly: true },

@@ -1,0 +1,461 @@
+// Raid-Helper (Discord bot) composition import + the standalone
+// per-phase assignment sheet it feeds (Black Temple / Mount Hyjal).
+//
+// Unlike the SSC/TK-era AssignmentSheet, this sheet has NO link to the
+// Player/Character tables — the roster is exactly what the admin pasted
+// from Raid-Helper's export JSON. Members carry Discord display names
+// ("rfx", "Kali/Kuleana/Fishynethers"), a canonical class/spec mapped
+// from Raid-Helper's spec vocabulary, and the group/slot they were
+// placed in on the Discord comp. Everything else (buffs, tank rows,
+// boss sections) assigns those member ids, reusing the same
+// AssignSection machinery as the old sheet.
+
+import {
+  defaultBuffs,
+  defaultTankAssignments,
+  matchesEligibility,
+  mergeMissingBuffBlocks,
+  suggestFillSections,
+  suggestTankRoleSections,
+  type AssignSection,
+  type TankAssignment,
+} from "./assignments";
+import { SPEC_BY_KEY, type Role } from "./specs";
+
+export const PHASE_SLUG = "bt-hyjal";
+
+/* ────────────────────────────────────────────────────────────────────
+   BOSSES — Black Temple + Mount Hyjal card shells. Accents mirror the
+   guide pages so the two surfaces read as one system. Per-boss section
+   templates (what auto-fills from the import) land here once the
+   assignment spreadsheet content is supplied.
+   ──────────────────────────────────────────────────────────────────── */
+
+export type PhaseBossMeta = {
+  readonly slug: string;
+  readonly raidShort: "BT" | "MH";
+  readonly name: string;
+  readonly accent: string;
+};
+
+export const PHASE_BOSSES = [
+  { slug: "najentus",   raidShort: "BT", name: "High Warlord Naj'entus", accent: "#5edfff" },
+  { slug: "supremus",   raidShort: "BT", name: "Supremus",               accent: "#ff7a3c" },
+  { slug: "shade",      raidShort: "BT", name: "Shade of Akama",         accent: "#8b9dff" },
+  { slug: "teron",      raidShort: "BT", name: "Teron Gorefiend",        accent: "#a78bfa" },
+  { slug: "gurtogg",    raidShort: "BT", name: "Gurtogg Bloodboil",      accent: "#ff5e6c" },
+  { slug: "reliquary",  raidShort: "BT", name: "Reliquary of Souls",     accent: "#ff7ad4" },
+  { slug: "shahraz",    raidShort: "BT", name: "Mother Shahraz",         accent: "#e08bff" },
+  { slug: "council",    raidShort: "BT", name: "Illidari Council",       accent: "#c58bff" },
+  { slug: "illidan",    raidShort: "BT", name: "Illidan Stormrage",      accent: "#a3ff5e" },
+  { slug: "rage",       raidShort: "MH", name: "Rage Winterchill",       accent: "#7ec8ff" },
+  { slug: "anetheron",  raidShort: "MH", name: "Anetheron",              accent: "#ff8a4c" },
+  { slug: "kazrogal",   raidShort: "MH", name: "Kaz'rogal",              accent: "#b18bff" },
+  { slug: "azgalor",    raidShort: "MH", name: "Az'galor",               accent: "#ff5e6c" },
+  { slug: "archimonde", raidShort: "MH", name: "Archimonde",             accent: "#ffd24c" },
+] as const satisfies readonly PhaseBossMeta[];
+
+export type PhaseBossSlug = (typeof PHASE_BOSSES)[number]["slug"];
+
+export const PHASE_RAIDS: Array<{ short: "BT" | "MH"; name: string }> = [
+  { short: "BT", name: "Black Temple" },
+  { short: "MH", name: "Mount Hyjal" },
+];
+
+/* ────────────────────────────────────────────────────────────────────
+   SHEET SHAPE
+   ──────────────────────────────────────────────────────────────────── */
+
+/** One imported raider. `id` is a synthetic per-sheet integer (stable
+ *  across re-imports for members whose name is unchanged, so their
+ *  manual assignments survive a roster refresh). */
+export type PhaseMember = {
+  id: number;
+  /** Display name exactly as it appears in Raid-Helper (may list alts —
+   *  "Kali/Kuleana/Fishynethers"). */
+  name: string;
+  /** Canonical class ("Druid", "Warrior", …). */
+  className: string;
+  /** Canonical spec key from lib/specs.ts ("Feral Druid (DPS)"). */
+  spec: string;
+  role: Role;
+  /** Discord comp group 1-5 (0 when the export put them outside G1-5). */
+  group: number;
+  /** Slot 1-5 within the group. */
+  slot: number;
+  confirmed: boolean;
+  /** Raid-Helper's original spec name, kept for display/debugging
+   *  ("Dreamstate", "Protection1"). */
+  rhSpecName: string;
+};
+
+export type PhaseBossSheet = {
+  sections: AssignSection[];
+  notes?: string;
+};
+
+/**
+ * The PhaseSheet.data blob. Deliberately a structural superset of the
+ * old AssignmentData (groups/buffs/bosses/tankAssignments) so shared
+ * cards (BuffsCard, TankHealersCard, GroupSetup) accept it unchanged —
+ * `bosses` stays an empty vestige; the real per-boss sheets live in
+ * `bossSheets` keyed by PhaseBossSlug.
+ */
+export type PhaseAssignmentData = {
+  groups: Record<"1" | "2" | "3" | "4" | "5", number[]>;
+  buffs: AssignSection[];
+  bosses: Record<string, never>;
+  tankAssignments?: TankAssignment[];
+  members: PhaseMember[];
+  bossSheets: Partial<Record<PhaseBossSlug, PhaseBossSheet>>;
+  /** ISO timestamp of the last Raid-Helper import. */
+  importedAt?: string;
+  /** The Raid-Helper event/comp title, if present in the export. */
+  raidTitle?: string;
+};
+
+export function emptyPhaseData(): PhaseAssignmentData {
+  const bossSheets: Partial<Record<PhaseBossSlug, PhaseBossSheet>> = {};
+  for (const b of PHASE_BOSSES) bossSheets[b.slug] = { sections: [] };
+  return {
+    groups: { "1": [], "2": [], "3": [], "4": [], "5": [] },
+    buffs: defaultBuffs(),
+    bosses: {},
+    tankAssignments: defaultTankAssignments(),
+    members: [],
+    bossSheets,
+  };
+}
+
+/**
+ * Normalize a saved blob against the current template: default any
+ * missing top-level field, append buff blocks added since last save,
+ * and make sure every current boss has a sheet entry. Admin-edited
+ * rows are never modified.
+ */
+export function hydratePhaseData(raw: unknown): PhaseAssignmentData {
+  const base = emptyPhaseData();
+  if (!raw || typeof raw !== "object") return base;
+  const d = raw as Partial<PhaseAssignmentData>;
+  const bossSheets = { ...base.bossSheets, ...(d.bossSheets ?? {}) };
+  return {
+    groups: d.groups ?? base.groups,
+    buffs: mergeMissingBuffBlocks(Array.isArray(d.buffs) && d.buffs.length ? d.buffs : base.buffs),
+    bosses: {},
+    tankAssignments: d.tankAssignments?.length ? d.tankAssignments : base.tankAssignments,
+    members: Array.isArray(d.members) ? d.members : [],
+    bossSheets,
+    importedAt: d.importedAt,
+    raidTitle: d.raidTitle,
+  };
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   RAID-HELPER SPEC VOCABULARY → canonical spec keys
+   ──────────────────────────────────────────────────────────────────── */
+
+/**
+ * Raid-Helper's TBC spec names, mapped to our canonical spec keys.
+ * Quirks handled:
+ *   - Duplicate spec names across classes get a "1" suffix on the later
+ *     class (Protection1/Holy1 = Paladin, Restoration1 = Shaman).
+ *   - "Beastmastery" is one word; our key is "Beast Mastery Hunter".
+ *   - "Dreamstate" (resto-hybrid druid) counts as a Restoration Druid.
+ *   - "Smite" priests map to Holy Priest but count as DPS, not healers.
+ *   - Meta-classes ("Tank"/"Healer"/"DPS" instead of a real className)
+ *     are resolved through this table too — the spec name alone
+ *     identifies the class ("Protection1" → Paladin).
+ */
+const RH_SPECS: Record<string, { spec: string; role?: Role }> = {
+  // Warrior
+  Arms:          { spec: "Arms Warrior" },
+  Fury:          { spec: "Fury Warrior" },
+  Protection:    { spec: "Protection Warrior" },
+  // Paladin ("1"-suffixed duplicates)
+  Holy1:         { spec: "Holy Paladin" },
+  Protection1:   { spec: "Protection Paladin" },
+  Retribution:   { spec: "Retribution Paladin" },
+  // Hunter
+  Beastmastery:  { spec: "Beast Mastery Hunter" },
+  Marksmanship:  { spec: "Marksmanship Hunter" },
+  Survival:      { spec: "Survival Hunter" },
+  // Rogue
+  Assassination: { spec: "Assassination Rogue" },
+  Combat:        { spec: "Combat Rogue" },
+  Subtlety:      { spec: "Subtlety Rogue" },
+  // Priest
+  Discipline:    { spec: "Discipline Priest" },
+  Holy:          { spec: "Holy Priest" },
+  Shadow:        { spec: "Shadow Priest" },
+  Smite:         { spec: "Holy Priest", role: "dps" },
+  // Shaman
+  Elemental:     { spec: "Elemental Shaman" },
+  Enhancement:   { spec: "Enhancement Shaman" },
+  Restoration1:  { spec: "Restoration Shaman" },
+  // Mage
+  Arcane:        { spec: "Arcane Mage" },
+  Fire:          { spec: "Fire Mage" },
+  Frost:         { spec: "Frost Mage" },
+  // Warlock
+  Affliction:    { spec: "Affliction Warlock" },
+  Demonology:    { spec: "Demonology Warlock" },
+  Destruction:   { spec: "Destruction Warlock" },
+  // Druid
+  Balance:       { spec: "Balance Druid" },
+  Dreamstate:    { spec: "Restoration Druid" },
+  Feral:         { spec: "Feral Druid (DPS)" },
+  Guardian:      { spec: "Feral Druid (Tank)" },
+  Restoration:   { spec: "Restoration Druid" },
+};
+
+/** Raid-Helper statuses that are sign-up states, not raiders in the
+ *  comp. Slots with these classNames are skipped on import. */
+const RH_NON_PLAYER_CLASSES = new Set([
+  "Bench", "Late", "Tentative", "Absence", "Absent", "Declined",
+]);
+
+/* ────────────────────────────────────────────────────────────────────
+   PARSER
+   ──────────────────────────────────────────────────────────────────── */
+
+type RhSlot = {
+  name?: unknown;
+  specName?: unknown;
+  className?: unknown;
+  groupNumber?: unknown;
+  slotNumber?: unknown;
+  isConfirmed?: unknown;
+};
+
+export type ParsedImport = {
+  members: PhaseMember[];
+  groups: PhaseAssignmentData["groups"];
+  raidTitle?: string;
+  warnings: string[];
+};
+
+/**
+ * Parse a pasted Raid-Helper composition export. Never throws on bad
+ * member rows — problems land in `warnings` so the admin can eyeball
+ * them in the preview before confirming. Throws only when the paste
+ * isn't JSON or has no usable `slots` array.
+ */
+export function parseRaidHelperExport(text: string): ParsedImport {
+  // Tolerate a paste wrapped in a Markdown code fence.
+  const cleaned = text.trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "");
+  let root: unknown;
+  try {
+    root = JSON.parse(cleaned);
+  } catch {
+    throw new Error("That doesn't parse as JSON — paste the raw Raid-Helper export.");
+  }
+  const slots = (root as { slots?: unknown })?.slots;
+  if (!Array.isArray(slots) || slots.length === 0) {
+    throw new Error("No \"slots\" array found — is this the Raid-Helper composition export?");
+  }
+
+  const warnings: string[] = [];
+  const members: PhaseMember[] = [];
+  let skippedNonPlayers = 0;
+
+  for (const rawSlot of slots as RhSlot[]) {
+    const name = typeof rawSlot?.name === "string" ? rawSlot.name.trim() : "";
+    const specName = typeof rawSlot?.specName === "string" ? rawSlot.specName.trim() : "";
+    const className = typeof rawSlot?.className === "string" ? rawSlot.className.trim() : "";
+    if (!name) continue;
+    if (RH_NON_PLAYER_CLASSES.has(className)) { skippedNonPlayers++; continue; }
+
+    const mapped = RH_SPECS[specName];
+    let spec: string;
+    let role: Role;
+    if (mapped) {
+      spec = mapped.spec;
+      role = mapped.role ?? SPEC_BY_KEY[mapped.spec].role;
+    } else {
+      // Unknown spec name — fall back to the first canonical spec of the
+      // slot's class so the member still imports (with a warning).
+      const classFallback = Object.values(RH_SPECS).find(v => SPEC_BY_KEY[v.spec].class === className);
+      if (!classFallback) {
+        warnings.push(`Skipped "${name}" — unrecognized spec "${specName}" / class "${className}".`);
+        continue;
+      }
+      spec = classFallback.spec;
+      role = SPEC_BY_KEY[spec].role;
+      warnings.push(`"${name}": unknown spec "${specName}" — imported as ${spec}.`);
+    }
+
+    const group = Number(rawSlot?.groupNumber) || 0;
+    const slot = Number(rawSlot?.slotNumber) || 0;
+    if (group < 1 || group > 5) {
+      warnings.push(`"${name}" is in group ${group || "?"} — outside Groups 1-5, kept on the roster but left out of the group grid.`);
+    }
+
+    members.push({
+      id: 0, // assigned below / by applyImport
+      name,
+      className: SPEC_BY_KEY[spec].class,
+      spec,
+      role,
+      group: group >= 1 && group <= 5 ? group : 0,
+      slot,
+      confirmed: rawSlot?.isConfirmed !== "unconfirmed",
+      rhSpecName: specName,
+    });
+  }
+
+  if (members.length === 0) {
+    throw new Error("No importable raiders found in the export.");
+  }
+  if (skippedNonPlayers > 0) {
+    warnings.push(`Skipped ${skippedNonPlayers} bench/late/tentative/absence entr${skippedNonPlayers === 1 ? "y" : "ies"}.`);
+  }
+  if (members.length > 25) {
+    warnings.push(`${members.length} raiders imported — more than a 25-man comp.`);
+  }
+  const unconfirmed = members.filter(m => !m.confirmed).length;
+  if (unconfirmed > 0) {
+    warnings.push(`${unconfirmed} raider${unconfirmed === 1 ? " is" : "s are"} still unconfirmed in Raid-Helper.`);
+  }
+
+  // Stable ordering: by group then slot, stragglers (group 0) last.
+  members.sort((a, b) => (a.group || 9) - (b.group || 9) || a.slot - b.slot || a.name.localeCompare(b.name));
+  members.forEach((m, i) => { m.id = i + 1; });
+
+  const groups: PhaseAssignmentData["groups"] = { "1": [], "2": [], "3": [], "4": [], "5": [] };
+  for (const g of ["1", "2", "3", "4", "5"] as const) {
+    const inGroup = members.filter(m => m.group === Number(g)).sort((a, b) => a.slot - b.slot);
+    const slots: number[] = [];
+    for (const m of inGroup) {
+      const idx = Math.max(0, Math.min(4, (m.slot || slots.length + 1) - 1));
+      while (slots.length <= idx) slots.push(0);
+      if (slots[idx] === 0) slots[idx] = m.id;
+      else slots.push(m.id); // duplicate slot number — append rather than clobber
+    }
+    while (slots.length && slots[slots.length - 1] === 0) slots.pop();
+    groups[g] = slots;
+  }
+
+  const raidTitle = typeof (root as { title?: unknown })?.title === "string"
+    ? ((root as { title: string }).title || undefined)
+    : undefined;
+
+  return { members, groups, raidTitle, warnings };
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   APPLYING AN IMPORT
+   ──────────────────────────────────────────────────────────────────── */
+
+/** matchesEligibility-compatible view of a member. */
+export function memberToEligible(m: PhaseMember): { id: number; class: string; role: string; spec: string } {
+  return { id: m.id, class: m.className, role: m.role, spec: m.spec };
+}
+
+/**
+ * Strip member ids that no longer exist from every assignment area.
+ * Fixed-slot rows keep their positions (removed id → empty slot);
+ * growable lists just drop the id. Same contract as the old sheet's
+ * pruneAssignmentsToRoster, minus the groups-derived roster.
+ */
+export function prunePhaseData(data: PhaseAssignmentData): PhaseAssignmentData {
+  const roster = new Set(data.members.map(m => m.id));
+  const ok = (id: number) => roster.has(id);
+
+  const pruneSection = (s: AssignSection): AssignSection => {
+    let characterIds: number[];
+    if ((s.fixedSlots ?? 0) > 0 || (s.slotEligibility?.length ?? 0) > 0) {
+      characterIds = s.characterIds.map(id => (ok(id) ? id : 0));
+      while (characterIds.length && characterIds[characterIds.length - 1] === 0) characterIds.pop();
+    } else {
+      characterIds = s.characterIds.filter(ok);
+    }
+    const addOns = s.addOns?.map(a => ({ ...a, characterIds: a.characterIds.filter(ok) }));
+    return { ...s, characterIds, ...(addOns ? { addOns } : {}) };
+  };
+
+  const bossSheets: PhaseAssignmentData["bossSheets"] = {};
+  for (const [slug, sheet] of Object.entries(data.bossSheets) as [PhaseBossSlug, PhaseBossSheet | undefined][]) {
+    bossSheets[slug] = sheet ? { ...sheet, sections: sheet.sections.map(pruneSection) } : sheet;
+  }
+
+  return {
+    ...data,
+    groups: {
+      "1": data.groups["1"].map(id => (ok(id) ? id : 0)),
+      "2": data.groups["2"].map(id => (ok(id) ? id : 0)),
+      "3": data.groups["3"].map(id => (ok(id) ? id : 0)),
+      "4": data.groups["4"].map(id => (ok(id) ? id : 0)),
+      "5": data.groups["5"].map(id => (ok(id) ? id : 0)),
+    },
+    buffs: data.buffs.map(pruneSection),
+    tankAssignments: data.tankAssignments?.map(t => ({
+      ...t,
+      tankId: t.tankId && ok(t.tankId) ? t.tankId : null,
+      healerIds: t.healerIds.filter(ok),
+    })),
+    bossSheets,
+  };
+}
+
+/**
+ * Apply a parsed import onto the existing sheet:
+ *   1. Members matching a previous member by name (case-insensitive)
+ *      keep their old id — their manual buff/boss assignments survive.
+ *      New names get fresh ids.
+ *   2. Groups come from the import verbatim.
+ *   3. Everything referencing a departed member is pruned.
+ *   4. Buff auto-fill runs over the new roster (only empty rows are
+ *      touched; per-caster blocks regenerate as they always have).
+ */
+export function applyImport(prev: PhaseAssignmentData, parsed: ParsedImport): PhaseAssignmentData {
+  const prevByName = new Map(prev.members.map(m => [m.name.toLowerCase(), m.id]));
+  let nextId = Math.max(0, ...prev.members.map(m => m.id)) + 1;
+
+  const idMap = new Map<number, number>(); // parsed id → final id
+  const usedFinal = new Set<number>();
+  const members: PhaseMember[] = parsed.members.map(m => {
+    const kept = prevByName.get(m.name.toLowerCase());
+    // Reuse the previous id when the name matches and no other imported
+    // member has already claimed it (duplicate names in one export).
+    const id = kept !== undefined && !usedFinal.has(kept) ? kept : nextId++;
+    usedFinal.add(id);
+    idMap.set(m.id, id);
+    return { ...m, id };
+  });
+
+  const remapGroup = (ids: number[]) => ids.map(id => idMap.get(id) ?? 0);
+  const groups: PhaseAssignmentData["groups"] = {
+    "1": remapGroup(parsed.groups["1"]),
+    "2": remapGroup(parsed.groups["2"]),
+    "3": remapGroup(parsed.groups["3"]),
+    "4": remapGroup(parsed.groups["4"]),
+    "5": remapGroup(parsed.groups["5"]),
+  };
+
+  const pruned = prunePhaseData({
+    ...prev,
+    members,
+    groups,
+    raidTitle: parsed.raidTitle ?? prev.raidTitle,
+    importedAt: new Date().toISOString(),
+  });
+
+  const eligibles = members.map(memberToEligible);
+  const byId = new Map(eligibles.map(e => [e.id, e]));
+  return {
+    ...pruned,
+    buffs: suggestTankRoleSections(
+      suggestFillSections(pruned.buffs, eligibles),
+      pruned.groups,
+      id => byId.get(id),
+    ),
+  };
+}
+
+/** All member ids referenced anywhere on the sheet (for pickers that
+ *  need "who's not yet in a group"-style exclusions). */
+export function phaseRosterIds(data: PhaseAssignmentData): number[] {
+  return data.members.map(m => m.id);
+}
+
+export { matchesEligibility };

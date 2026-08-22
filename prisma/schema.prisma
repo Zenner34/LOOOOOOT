@@ -219,3 +219,16 @@ model AssignmentSheet {
   updatedAt DateTime  @updatedAt
   team      RaidTeam  @relation(fields: [teamId], references: [id], onDelete: Cascade)
 }
+
+// One row per raid phase — the standalone Raid-Helper-imported assignment
+// sheet (Black Temple / Mount Hyjal, future phases add new slugs). No FK
+// to teams or characters: the whole roster lives inside `data` as members
+// parsed from the Discord bot's composition export. Shape is documented
+// in lib/raid-helper.ts.
+model PhaseSheet {
+  id        Int      @id @default(autoincrement())
+  slug      String   @unique
+  data      Json     @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
