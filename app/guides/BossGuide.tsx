@@ -90,11 +90,13 @@ export default function BossGuide({
 
         {section.image && (
           <figure className="space-y-2">
+            {/* Compact thumbnail — capped height so the section stays
+                scannable; click opens the full-size image. */}
             <a
               href={section.image}
               target="_blank"
               rel="noopener noreferrer"
-              className="block overflow-hidden rounded-xl border transition hover:brightness-110"
+              className="mx-auto block w-fit max-w-full overflow-hidden rounded-xl border transition hover:brightness-110"
               style={{ borderColor: `${accent}33` }}
               title="Open full size"
             >
@@ -102,12 +104,12 @@ export default function BossGuide({
                 src={section.image}
                 alt={section.imageAlt ?? `${boss.name} strategy diagram`}
                 loading="lazy"
-                className="w-full h-auto block bg-black/30"
+                className="block h-auto max-h-64 w-auto max-w-full bg-black/30 sm:max-h-80"
               />
             </a>
-            {section.imageCaption && (
-              <figcaption className="text-[11px] text-neutral-500 text-center">{section.imageCaption}</figcaption>
-            )}
+            <figcaption className="text-[11px] text-neutral-500 text-center">
+              {section.imageCaption ?? ""}{section.imageCaption ? " · " : ""}click to enlarge
+            </figcaption>
           </figure>
         )}
 
@@ -119,7 +121,7 @@ export default function BossGuide({
                   href={img.src}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block overflow-hidden rounded-xl border transition hover:brightness-110"
+                  className="mx-auto block w-fit max-w-full overflow-hidden rounded-xl border transition hover:brightness-110"
                   style={{ borderColor: `${accent}33` }}
                   title="Open full size"
                 >
@@ -127,7 +129,7 @@ export default function BossGuide({
                     src={img.src}
                     alt={img.alt ?? `${boss.name} — ${section.title} diagram`}
                     loading="lazy"
-                    className="w-full h-auto block bg-black/30"
+                    className="block h-auto max-h-52 w-auto max-w-full bg-black/30 sm:max-h-64"
                   />
                 </a>
                 {img.caption && (
