@@ -979,9 +979,19 @@ export function applyImport(prev: PhaseAssignmentData, parsed: ParsedImport): Ph
 
   // Recompute every templated boss slot, the tank/healer rows, and the
   // buff blocks from the fresh comp — one paste sets the whole sheet.
-  const filled = autoFillTankRows(autoFillPhaseBossSheets(pruned, { onlyEmpty: false }));
+  return recomputeAutoAssignments(pruned);
+}
 
-  const eligibles = members.map(memberToEligible);
+/**
+ * Re-derive everything auto-derivable from the current members: boss
+ * template slots (overwrite), tank & healer rows (overwrite), and buff
+ * blocks (fill empties / regenerate per-caster rows). Manual slots and
+ * admin-set buff rows are untouched. Shared by imports and per-night
+ * spec changes so assignments always follow the specs.
+ */
+export function recomputeAutoAssignments(data: PhaseAssignmentData): PhaseAssignmentData {
+  const filled = autoFillTankRows(autoFillPhaseBossSheets(data, { onlyEmpty: false }));
+  const eligibles = filled.members.map(memberToEligible);
   const byId = new Map(eligibles.map(e => [e.id, e]));
   return {
     ...filled,
@@ -991,6 +1001,27 @@ export function applyImport(prev: PhaseAssignmentData, parsed: ParsedImport): Ph
       id => byId.get(id),
     ),
   };
+}
+
+/**
+ * Change members' specs for THIS night's sheet only (Raid-Helper's
+ * Composition Tool exports whatever specs it last held, so a raider
+ * who plays different specs on different nights needs a per-night
+ * override). Class is fixed — only same-class specs apply — and every
+ * auto-assignment recomputes from the new specs.
+ */
+export function applySpecChanges(
+  data: PhaseAssignmentData,
+  changes: Record<number, string>,
+): PhaseAssignmentData {
+  const members = data.members.map(m => {
+    const spec = changes[m.id];
+    if (!spec || spec === m.spec) return m;
+    const def = SPEC_BY_KEY[spec];
+    if (!def || def.class !== m.className) return m;
+    return { ...m, spec, role: def.role };
+  });
+  return recomputeAutoAssignments({ ...data, members });
 }
 
 /** All member ids referenced anywhere on the sheet (for pickers that

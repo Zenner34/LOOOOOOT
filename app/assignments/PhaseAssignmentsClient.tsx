@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { isMeleeSpec } from "@/lib/assignments";
 import {
   applyImport,
+  applySpecChanges,
   emptyPhaseData,
   hydratePhaseData,
   parseRaidHelperExport,
@@ -20,7 +21,8 @@ import {
   type PhaseDayKey,
 } from "@/lib/raid-helper";
 import { PageHeader } from "@/app/components/ui/PageHeader";
-import { Calendar, Inbox, Plus, Search, X } from "@/app/components/ui/Icon";
+import { Calendar, Inbox, Pencil, Plus, Search, X } from "@/app/components/ui/Icon";
+import { RosterSpecsModal } from "./RosterSpecsModal";
 import { type AssignableCharacter } from "./CharacterChip";
 import { GroupSetup } from "./GroupSetup";
 import { BuffsCard } from "./BuffsCard";
@@ -57,6 +59,7 @@ export default function PhaseAssignmentsClient({
   });
   const [savingState, setSavingState] = useState<SavingState>("idle");
   const [importOpen, setImportOpen] = useState(false);
+  const [specsOpen, setSpecsOpen] = useState(false);
 
   // Per-day snapshots of the last persisted state — seeded from the
   // hydrated initial states (NOT fresh hydrate calls, which would mint
@@ -233,6 +236,17 @@ export default function PhaseAssignmentsClient({
                   <Plus size={12} aria-hidden />
                   Import Raid-Helper comp
                 </button>
+                {data.members.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setSpecsOpen(true)}
+                    className="btn-ghost btn-xs inline-flex items-center gap-1.5"
+                    title={`Correct ${dayMeta.label}-only specs — the export carries whatever the Comp Tool last held`}
+                  >
+                    <Pencil size={11} aria-hidden />
+                    Edit {dayMeta.label} specs
+                  </button>
+                )}
               </EditOnly>
               {importedStamp && (
                 <span className="inline-flex items-center gap-1.5 text-neutral-500">
@@ -336,6 +350,19 @@ export default function PhaseAssignmentsClient({
           dataByDay={dataByDay}
           onClose={() => setImportOpen(false)}
           onApply={handleImport}
+        />
+      )}
+
+      {specsOpen && (
+        <RosterSpecsModal
+          members={data.members}
+          dayLabel={dayMeta.label}
+          onClose={() => setSpecsOpen(false)}
+          onSave={changes => {
+            setData(applySpecChanges(data, changes));
+            setSpecsOpen(false);
+            toast.success(`${dayMeta.label}: specs updated — assignments recomputed for this night.`);
+          }}
         />
       )}
     </ViewModeProvider>
@@ -552,6 +579,13 @@ function ImportModal({
                 {targetMeta.label} already has {existingCount} raiders — importing replaces its group
                 grid. Raiders keeping the same name keep their assignments; anyone no longer in the
                 comp is cleared from every slot. Other nights are untouched.
+              </p>
+            )}
+            {parsed.ok && (
+              <p className="text-[11px] text-neutral-500">
+                Specs come from whatever the Comp Tool currently holds — if someone plays a different
+                spec on {targetMeta.label}, fix it after with &ldquo;Edit {targetMeta.label} specs&rdquo;
+                (that night only) and everything recomputes.
               </p>
             )}
           </div>
