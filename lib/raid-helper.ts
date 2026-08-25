@@ -248,6 +248,9 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
       slots: [S.groupSlot(3, 1), S.groupSlot(3, 2), S.groupSlot(3, 3), S.groupSlot(3, 4), S.groupSlot(3, 5)] },
     { key: "bb2", title: "Blood Boil Group 2", subtitle: "Raid Group 4",
       slots: [S.groupSlot(4, 1), S.groupSlot(4, 2), S.groupSlot(4, 3), S.groupSlot(4, 4), S.groupSlot(4, 5)] },
+    // Third rotation is hand-picked — five free slots, whole roster.
+    { key: "bb3", title: "Blood Boil Group 3", subtitle: "Manual picks",
+      slots: [S.open(), S.open(), S.open(), S.open(), S.open()] },
     { key: "felrage", title: "Fel Rage BoP",
       slots: [S.hpal(1), S.ret(1), S.prot(1), S.openPala(), S.openPala()] },
     { key: "tips", title: "Fel Rage Tips",
