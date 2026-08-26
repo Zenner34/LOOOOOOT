@@ -149,6 +149,8 @@ export type PhaseSlotRule = {
   fromGroup?: number;
   /** Class-level eligibility for manual slots ("Reck 1" → any Paladin). */
   classes?: string[];
+  /** Role-bucket eligibility for manual slots (kick columns). */
+  roles?: Array<"tank" | "heal" | "melee" | "ranged">;
   /** 1-based ordinal into the spec pool for auto-fill; omit = manual. */
   nth?: number;
   /** Wowhead icon slug rendered before the slot (Misdirection rows). */
@@ -248,8 +250,8 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
       slots: [S.groupSlot(3, 1), S.groupSlot(3, 2), S.groupSlot(3, 3), S.groupSlot(3, 4), S.groupSlot(3, 5)] },
     { key: "bb2", title: "Blood Boil Group 2", subtitle: "Raid Group 4",
       slots: [S.groupSlot(4, 1), S.groupSlot(4, 2), S.groupSlot(4, 3), S.groupSlot(4, 4), S.groupSlot(4, 5)] },
-    // Third rotation is hand-picked — five free slots, whole roster.
-    { key: "bb3", title: "Blood Boil Group 3", subtitle: "Manual picks",
+    // Hand-picked backups — five free slots, whole roster.
+    { key: "bb3", title: "Backup Priority Bloodboil", subtitle: "Manual picks",
       slots: [S.open(), S.open(), S.open(), S.open(), S.open()] },
     { key: "felrage", title: "Fel Rage BoP",
       slots: [S.hpal(1), S.ret(1), S.prot(1), S.openPala(), S.openPala()] },
@@ -292,6 +294,18 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
       slots: [S.prot(1), md(S.surv(1)), S.openMd()] },
     { key: "magetank", title: "Mage Tank",
       slots: [S.mage(1)] },
+    { key: "physkicks", title: "Physical Kicks", subtitle: "Malande",
+      slots: [
+        { label: "Kick 1", roles: ["melee"] }, { label: "Kick 2", roles: ["melee"] },
+        { label: "Kick 3", roles: ["melee"] }, { label: "Kick 4", roles: ["melee"] },
+      ] },
+    { key: "magickicks", title: "Magic Kicks", subtitle: "Malande",
+      slots: [
+        { label: "Kick 1", roles: ["ranged"] }, { label: "Kick 2", roles: ["ranged"] },
+        { label: "Kick 3", roles: ["ranged"] }, { label: "Kick 4", roles: ["ranged"] },
+      ] },
+    { key: "kickprio", title: "Kick Priority",
+      staticItems: ["1. Circle of Healing", "2. Divine Wrath", "3. Everything else"] },
     { key: "bop", title: "BoP Mage on Pull",
       slots: [S.hpal(1)] },
     { key: "wa", title: "Helpful WA",
@@ -559,9 +573,12 @@ export function autoFillPhaseBossSheets(
 }
 
 /** Picker eligibility for a templated slot. */
-export function slotEligibility(rule: PhaseSlotRule): { specs?: string[]; classes?: string[] } | undefined {
+export function slotEligibility(
+  rule: PhaseSlotRule,
+): { specs?: string[]; classes?: string[]; roles?: Array<"tank" | "heal" | "melee" | "ranged"> } | undefined {
   if (rule.specs?.length) return { specs: rule.specs };
   if (rule.classes?.length) return { classes: rule.classes };
+  if (rule.roles?.length) return { roles: rule.roles };
   return undefined;
 }
 
