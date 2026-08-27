@@ -280,7 +280,23 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
     { key: "ot", title: "OT",
       slots: [S.feral(2)] },
     { key: "kicks", title: "Kick Rotation", subtitle: "P2 — Spirit Shock",
-      staticItems: ["1. Group 1", "2. Group 2", "3. Groups 3 + 4 (combined)"] },
+      staticItems: ["1. Group 1", "2. Group 2"] },
+    // P2 Curse of Tongues on the Essence — first lock in the comp.
+    { key: "cot", title: "Curse of Tongues", subtitle: "P2",
+      slots: [{
+        label: "CoT", nth: 1, icon: "spell_shadow_curseoftounges",
+        specs: ["Affliction Warlock", "Destruction Warlock", "Demonology Warlock"],
+      }] },
+    // Groups 3 + 4 handle Deaden exclusively — listed side by side so
+    // everyone sees their duty; fills straight from the Discord comp.
+    { key: "deaden", title: "Deaden", subtitle: "Groups 3 + 4 only", paired: true, wide: true,
+      slots: [
+        S.groupSlot(3, 1), S.groupSlot(4, 1),
+        S.groupSlot(3, 2), S.groupSlot(4, 2),
+        S.groupSlot(3, 3), S.groupSlot(4, 3),
+        S.groupSlot(3, 4), S.groupSlot(4, 4),
+        S.groupSlot(3, 5), S.groupSlot(4, 5),
+      ] },
   ],
   shahraz: [
     { key: "mt", title: "Main Tank",
