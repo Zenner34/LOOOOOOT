@@ -186,8 +186,8 @@ export function PhaseBossCard({
                 const renderSec = (s: AssignSection) => {
                   const tpl = tplById.get(s.id);
                   return tpl ? (
+                    <div key={s.id} className={tpl.wide ? "sm:col-span-2" : undefined}>
                     <TplSectionBox
-                      key={s.id}
                       tpl={tpl}
                       section={s}
                       accent={boss.accent}
@@ -195,6 +195,7 @@ export function PhaseBossCard({
                       characters={characters}
                       charsById={charsById}
                     />
+                    </div>
                   ) : (
                     <PhaseSectionBox
                       key={s.id}
@@ -453,7 +454,7 @@ function TplSlotRow({
     <div ref={slotRef} className="relative flex items-stretch gap-px">
       {rule.pos && (
         <span
-          className="flex w-7 shrink-0 items-center justify-center rounded-[4px] text-[10px] font-bold"
+          className="flex min-w-7 shrink-0 items-center justify-center rounded-[4px] px-1 text-[10px] font-bold"
           style={{ background: "#c9897a", color: "#1a1a1a" }}
         >
           {rule.pos}

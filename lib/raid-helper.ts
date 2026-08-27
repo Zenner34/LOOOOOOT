@@ -170,6 +170,8 @@ export type PhaseSectionTpl = {
   title: string;
   /** Render slots two-per-row (caster | target pairs — Innervates). */
   paired?: boolean;
+  /** Span two grid columns — paired boxes need the width to read. */
+  wide?: boolean;
   /** Fight-phase grouping — consecutive sections sharing a phase render
    *  under one phase divider on the card (Illidan P1/P2/P3/P5). */
   phase?: string;
@@ -298,8 +300,9 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
       slots: [S.feral(2), md(S.hunter(2))] },
     { key: "malande", title: "Malande Tank",
       slots: [S.prot(1), md(S.surv(1)), S.openMd()] },
+    // Mage tank + the pull BoP live in one box, rows tagged on the left.
     { key: "magetank", title: "Mage Tank",
-      slots: [S.mage(1)] },
+      slots: [at("Tank", S.mage(1)), at("BoP", S.hpal(1))] },
     { key: "physkicks", title: "Physical Kicks", subtitle: "Malande",
       slots: [
         { label: "Kick 1", roles: ["melee"] }, { label: "Kick 2", roles: ["melee"] },
@@ -311,21 +314,18 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
         { label: "Kick 3", roles: ["ranged"] }, { label: "Kick 4", roles: ["ranged"] },
       ] },
     { key: "kickprio", title: "Kick Priority",
-      staticItems: ["1. Circle of Healing", "2. Divine Wrath", "3. Everything else"] },
-    { key: "bop", title: "BoP Mage on Pull",
-      slots: [S.hpal(1)] },
+      staticItems: ["1. Circle of Healing", "2. Divine Wrath", "3. Everything else"],
+      links: [{ label: "Council Heal Kick", href: "https://wago.io/tdQDtUTrZ" }] },
     // Every druid lines up an Innervate — boomie/resto first, then the
     // feral tanks bottom-up (3rd tank, OT, MT last). Targets are
-    // assigned by hand.
-    { key: "innervates", title: "Innervates", paired: true,
+    // assigned by hand. Double-wide so giver -> getter reads fully.
+    { key: "innervates", title: "Innervates", paired: true, wide: true,
       slots: [
         { label: "Druid 1", innervate: 1, classes: ["Druid"], icon: "spell_nature_lightning" }, S.open(),
         { label: "Druid 2", innervate: 2, classes: ["Druid"], icon: "spell_nature_lightning" }, S.open(),
         { label: "Druid 3", innervate: 3, classes: ["Druid"], icon: "spell_nature_lightning" }, S.open(),
         { label: "Druid 4", innervate: 4, classes: ["Druid"], icon: "spell_nature_lightning" }, S.open(),
       ] },
-    { key: "wa", title: "Helpful WA",
-      links: [{ label: "Council Heal Kick", href: "https://wago.io/tdQDtUTrZ" }] },
   ],
   illidan: [
     // ── Phase 1 — shear tank on the boss. Prot Warrior when one is in
