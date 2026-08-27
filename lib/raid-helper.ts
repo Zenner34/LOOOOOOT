@@ -147,6 +147,10 @@ export type PhaseSlotRule = {
    *  group in slot order (Gurtogg's Blood Boil soak groups = raid
    *  Groups 3 & 4). */
   fromGroup?: number;
+  /** Innervate caster order: nth druid, walking boomies, then restos,
+   *  then the feral tanks in REVERSE hierarchy order (3rd tank, OT,
+   *  and the MT only when there are enough druids). */
+  innervate?: number;
   /** Class-level eligibility for manual slots ("Reck 1" → any Paladin). */
   classes?: string[];
   /** Role-bucket eligibility for manual slots (kick columns). */
@@ -164,6 +168,8 @@ export type PhaseSectionTpl = {
   /** Stable key — the stored section id is `tpl:<key>`. */
   key: string;
   title: string;
+  /** Render slots two-per-row (caster | target pairs — Innervates). */
+  paired?: boolean;
   /** Fight-phase grouping — consecutive sections sharing a phase render
    *  under one phase divider on the card (Illidan P1/P2/P3/P5). */
   phase?: string;
@@ -308,6 +314,16 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
       staticItems: ["1. Circle of Healing", "2. Divine Wrath", "3. Everything else"] },
     { key: "bop", title: "BoP Mage on Pull",
       slots: [S.hpal(1)] },
+    // Every druid lines up an Innervate — boomie/resto first, then the
+    // feral tanks bottom-up (3rd tank, OT, MT last). Targets are
+    // assigned by hand.
+    { key: "innervates", title: "Innervates", subtitle: "Caster \u2192 gets it", paired: true,
+      slots: [
+        { label: "Druid 1", innervate: 1, classes: ["Druid"] }, S.open(),
+        { label: "Druid 2", innervate: 2, classes: ["Druid"] }, S.open(),
+        { label: "Druid 3", innervate: 3, classes: ["Druid"] }, S.open(),
+        { label: "Druid 4", innervate: 4, classes: ["Druid"] }, S.open(),
+      ] },
     { key: "wa", title: "Helpful WA",
       links: [{ label: "Council Heal Kick", href: "https://wago.io/tdQDtUTrZ" }] },
   ],
@@ -488,6 +504,19 @@ export function pickForSlot(members: SlotPickable[], rule: PhaseSlotRule): numbe
     const pool = members.filter(m => m.group === rule.fromGroup);
     return pool[(rule.nth ?? 1) - 1]?.id ?? 0;
   }
+  if (rule.innervate) {
+    const casters = [
+      ...members.filter(m => m.spec === "Balance Druid"),
+      ...members.filter(m => m.spec === "Restoration Druid"),
+    ];
+    const byId = new Map(members.map(m => [m.id, m]));
+    const ferals = tankHierarchy(members)
+      .map(id => byId.get(id)!)
+      .filter(m => m.spec.startsWith("Feral Druid"))
+      .reverse();
+    const order = [...casters, ...ferals];
+    return order[rule.innervate - 1]?.id ?? 0;
+  }
   if (!rule.nth || !rule.specs?.length) return 0;
   const pool = rule.tiered
     ? rule.specs.flatMap(spec => members.filter(m => m.spec === spec))
@@ -513,7 +542,7 @@ export function autoFillBossSheet(
     const characterIds = [...s.characterIds];
     while (characterIds.length < tpl.slots.length) characterIds.push(0);
     tpl.slots.forEach((rule, i) => {
-      if (!rule.nth && !rule.tankSlot && !rule.fromGroup) return;
+      if (!rule.nth && !rule.tankSlot && !rule.fromGroup && !rule.innervate) return;
       if (opts.onlyEmpty && characterIds[i]) return;
       characterIds[i] = pickForSlot(members, rule);
     });
