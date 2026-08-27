@@ -317,7 +317,7 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
     // Every druid lines up an Innervate — boomie/resto first, then the
     // feral tanks bottom-up (3rd tank, OT, MT last). Targets are
     // assigned by hand.
-    { key: "innervates", title: "Innervates", subtitle: "Caster \u2192 gets it", paired: true,
+    { key: "innervates", title: "Innervates", paired: true,
       slots: [
         { label: "Druid 1", innervate: 1, classes: ["Druid"] }, S.open(),
         { label: "Druid 2", innervate: 2, classes: ["Druid"] }, S.open(),
