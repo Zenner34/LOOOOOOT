@@ -319,10 +319,10 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
     // assigned by hand.
     { key: "innervates", title: "Innervates", paired: true,
       slots: [
-        { label: "Druid 1", innervate: 1, classes: ["Druid"] }, S.open(),
-        { label: "Druid 2", innervate: 2, classes: ["Druid"] }, S.open(),
-        { label: "Druid 3", innervate: 3, classes: ["Druid"] }, S.open(),
-        { label: "Druid 4", innervate: 4, classes: ["Druid"] }, S.open(),
+        { label: "Druid 1", innervate: 1, classes: ["Druid"], icon: "spell_nature_lightning" }, S.open(),
+        { label: "Druid 2", innervate: 2, classes: ["Druid"], icon: "spell_nature_lightning" }, S.open(),
+        { label: "Druid 3", innervate: 3, classes: ["Druid"], icon: "spell_nature_lightning" }, S.open(),
+        { label: "Druid 4", innervate: 4, classes: ["Druid"], icon: "spell_nature_lightning" }, S.open(),
       ] },
     { key: "wa", title: "Helpful WA",
       links: [{ label: "Council Heal Kick", href: "https://wago.io/tdQDtUTrZ" }] },
