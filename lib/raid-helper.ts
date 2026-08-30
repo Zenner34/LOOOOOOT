@@ -1227,14 +1227,56 @@ export function applySpecChanges(
   data: PhaseAssignmentData,
   changes: Record<number, string>,
 ): PhaseAssignmentData {
-  const members = data.members.map(m => {
-    const spec = changes[m.id];
-    if (!spec || spec === m.spec) return m;
-    const def = SPEC_BY_KEY[spec];
-    if (!def || def.class !== m.className) return m;
-    return { ...m, spec, role: def.role };
-  });
-  return recomputeAutoAssignments({ ...data, members });
+  return applyRosterEdits(data, { specChanges: changes, additions: [], removals: [] });
+}
+
+/**
+ * On-the-fly roster surgery for one night: per-night spec changes,
+ * hand-added raiders (subs who weren't in the Raid-Helper comp — any
+ * name + spec; class/role derive from the spec, no group until an
+ * admin slots them), and removals (leavers drop out of every slot).
+ * Everything auto-derivable recomputes afterward so ordinals, tank
+ * hierarchy, buffs, and boss slots stay consistent.
+ */
+export function applyRosterEdits(
+  data: PhaseAssignmentData,
+  edits: {
+    specChanges: Record<number, string>;
+    additions: Array<{ name: string; spec: string }>;
+    removals: number[];
+  },
+): PhaseAssignmentData {
+  const removed = new Set(edits.removals);
+  const members = data.members
+    .filter(m => !removed.has(m.id))
+    .map(m => {
+      const spec = edits.specChanges[m.id];
+      if (!spec || spec === m.spec) return m;
+      const def = SPEC_BY_KEY[spec];
+      if (!def || def.class !== m.className) return m;
+      return { ...m, spec, role: def.role };
+    });
+
+  let seq = Math.max(data.memberIdSeq ?? 0, 0, ...data.members.map(m => m.id));
+  for (const add of edits.additions) {
+    const name = add.name.trim();
+    const def = SPEC_BY_KEY[add.spec];
+    if (!name || !def) continue;
+    members.push({
+      id: ++seq,
+      name,
+      className: def.class,
+      spec: add.spec,
+      role: def.role,
+      group: 0,
+      slot: 0,
+      confirmed: true,
+      rhSpecName: "manual",
+    });
+  }
+
+  const pruned = prunePhaseData({ ...data, members, memberIdSeq: seq });
+  return recomputeAutoAssignments(pruned);
 }
 
 /** All member ids referenced anywhere on the sheet (for pickers that

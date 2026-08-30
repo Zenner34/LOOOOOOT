@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { isMeleeSpec } from "@/lib/assignments";
 import {
   applyImport,
-  applySpecChanges,
+  applyRosterEdits,
   emptyPhaseData,
   hydratePhaseData,
   parseRaidHelperExport,
@@ -242,10 +242,10 @@ export default function PhaseAssignmentsClient({
                     type="button"
                     onClick={() => setSpecsOpen(true)}
                     className="btn-ghost btn-xs inline-flex items-center gap-1.5"
-                    title={`Correct ${dayMeta.label}-only specs — the export carries whatever the Comp Tool last held`}
+                    title={`Fix specs, add a sub, or drop a leaver — ${dayMeta.label} only`}
                   >
                     <Pencil size={11} aria-hidden />
-                    Edit {dayMeta.label} specs
+                    Edit {dayMeta.label} roster
                   </button>
                 )}
               </EditOnly>
@@ -364,10 +364,15 @@ export default function PhaseAssignmentsClient({
           members={data.members}
           dayLabel={dayMeta.label}
           onClose={() => setSpecsOpen(false)}
-          onSave={changes => {
-            setData(applySpecChanges(data, changes));
+          onSave={edits => {
+            setData(applyRosterEdits(data, edits));
             setSpecsOpen(false);
-            toast.success(`${dayMeta.label}: specs updated — assignments recomputed for this night.`);
+            const bits = [
+              Object.keys(edits.specChanges).length > 0 ? "specs updated" : "",
+              edits.additions.length > 0 ? `${edits.additions.length} added` : "",
+              edits.removals.length > 0 ? `${edits.removals.length} removed` : "",
+            ].filter(Boolean).join(", ");
+            toast.success(`${dayMeta.label}: ${bits || "roster updated"} — assignments recomputed for this night.`);
           }}
         />
       )}
