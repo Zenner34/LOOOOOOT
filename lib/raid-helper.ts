@@ -219,6 +219,12 @@ const S = {
   spriest:(n: number) => ({ label: `Spriest ${n}`, specs: ["Shadow Priest"], nth: n }),
   /** The nth member of a Discord raid group, any class. */
   groupSlot: (g: number, n: number): PhaseSlotRule => ({ label: `G${g} \u00b7 ${n}`, fromGroup: g, nth: n }),
+  // Prot Pally main-tanks most fights; falls back down the tank chain
+  // on nights without one.
+  pallyMt: (): PhaseSlotRule => ({
+    label: "Prot 1", nth: 1, tiered: true,
+    specs: ["Protection Paladin", "Protection Warrior", "Feral Druid (Tank)", "Feral Druid (DPS)"],
+  }),
   openMd:  (): PhaseSlotRule => md({ label: "Open", classes: ["Hunter"] }),
   openPala:(): PhaseSlotRule => ({ label: "Open", classes: ["Paladin"] }),
   open:    (): PhaseSlotRule => ({ label: "Open" }),
@@ -227,11 +233,11 @@ const S = {
 export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl[]>> = {
   najentus: [
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
+      slots: [S.pallyMt(), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
   ],
   supremus: [
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2))] },
+      slots: [S.pallyMt(), md(S.hunter(1)), md(S.hunter(2))] },
     { key: "hateful", title: "Hateful Tank",
       slots: [S.feral(2), md(S.surv(1)), S.openMd()] },
   ],
@@ -245,14 +251,14 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
   ],
   teron: [
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
+      slots: [S.pallyMt(), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
     { key: "minigame", title: "Construct Mini-Game",
       staticItems: ["Practice the construct kill before raid :)"],
       links: [{ label: "teron.faldorn.net/terongame", href: "https://teron.faldorn.net/terongame/" }] },
   ],
   gurtogg: [
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2))] },
+      slots: [S.pallyMt(), md(S.hunter(1)), md(S.hunter(2))] },
     { key: "ot", title: "OT",
       slots: [S.feral(2), md(S.hunter(3)), md(S.surv(1)), S.openMd()] },
     // Two soak groups rotate — the raid's Groups 3 and 4, straight from
@@ -297,9 +303,9 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
   ],
   shahraz: [
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
+      slots: [S.pallyMt(), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
     { key: "ot", title: "OT",
-      slots: [S.feral(2), S.prot(1)] },
+      slots: [S.feral(1), S.feral(2)] },
     { key: "was", title: "Helpful WAs",
       links: [
         { label: "Prismatic Shield Checker", href: "https://wago.io/2WMUU1Xr-" },
@@ -398,7 +404,7 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
   ],
   rage: [
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
+      slots: [S.pallyMt(), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
     { key: "healerpos", title: "Healer Pos",
       slots: [
         at("H1", S.hpal(1)), at("H2", S.disc(1)), at("H3", S.rdruid(1)),
@@ -419,20 +425,20 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
   kazrogal: [
     // The sheet's Low Mana Warning WeakAura link rides under the MT box.
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()],
+      slots: [S.pallyMt(), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()],
       links: [{ label: "Kaz'rogal — Low Mana Warning WA", href: "https://wago.io/xOs30kx6E" }] },
     { key: "cleave", title: "Cleave Eaters", subtitle: "If Not using NPC",
       slots: [S.feral(1), S.feral(2), S.prot(1)] },
   ],
   azgalor: [
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
+      slots: [S.pallyMt(), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
     { key: "dg", title: "DG Tank",
       slots: [S.feral(2)] },
   ],
   archimonde: [
     { key: "mt", title: "Main Tank",
-      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
+      slots: [S.pallyMt(), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
     { key: "fearward", title: "Fear Ward",
       slots: [S.disc(1), S.spriest(1)] },
     { key: "healerpos", title: "Healer Pos",
