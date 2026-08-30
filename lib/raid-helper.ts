@@ -463,7 +463,22 @@ export function reconcileTplSections(tpls: PhaseSectionTpl[], stored: AssignSect
   for (const t of tpls) {
     const id = tplSectionId(t.key);
     const existing = stored.find(s => s.id === id);
-    out.push(existing ? { ...existing, title: t.title } : { id, title: t.title, characterIds: [] });
+    if (existing) {
+      // Clamp stored picks to the template's CURRENT slot count — when a
+      // box's shape shrinks (Deaden went 10 paired slots -> 3), leftover
+      // hidden entries would otherwise still count as "assigned" and
+      // block those raiders from every visible slot's picker.
+      const slotCount = t.slots?.length;
+      out.push({
+        ...existing,
+        title: t.title,
+        characterIds: slotCount != null
+          ? existing.characterIds.slice(0, slotCount)
+          : existing.characterIds,
+      });
+    } else {
+      out.push({ id, title: t.title, characterIds: [] });
+    }
   }
   out.push(...stored.filter(s => !s.id.startsWith("tpl:")));
   return out;
