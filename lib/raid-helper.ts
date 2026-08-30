@@ -927,6 +927,7 @@ export function parseRaidHelperExport(text: string): ParsedImport {
 
   const warnings: string[] = [];
   const members: PhaseMember[] = [];
+  const tentativeNames: string[] = [];
   let skippedNonPlayers = 0;
 
   for (const rawSlot of slots as RhSlot[]) {
@@ -934,9 +935,16 @@ export function parseRaidHelperExport(text: string): ParsedImport {
     const specName = typeof rawSlot?.specName === "string" ? rawSlot.specName.trim() : "";
     const className = typeof rawSlot?.className === "string" ? rawSlot.className.trim() : "";
     if (!name) continue;
-    if (RH_NON_PLAYER_CLASSES.has(className)) { skippedNonPlayers++; continue; }
 
     const mapped = RH_SPECS[specName];
+    // A signup-state className (Tentative/Bench/…) only skips the slot
+    // when there's no real spec behind it — raid leads drag tentative
+    // sign-ups into the comp with a spec assigned, and those ARE
+    // raiders (their class comes from the spec anyway).
+    if (RH_NON_PLAYER_CLASSES.has(className)) {
+      if (!mapped) { skippedNonPlayers++; continue; }
+      tentativeNames.push(name);
+    }
     let spec: string;
     let role: Role;
     if (mapped) {
@@ -979,6 +987,9 @@ export function parseRaidHelperExport(text: string): ParsedImport {
   }
   if (skippedNonPlayers > 0) {
     warnings.push(`Skipped ${skippedNonPlayers} bench/late/tentative/absence entr${skippedNonPlayers === 1 ? "y" : "ies"}.`);
+  }
+  if (tentativeNames.length > 0) {
+    warnings.push(`Placed in the comp but flagged Tentative/Bench in Raid-Helper: ${tentativeNames.join(", ")}.`);
   }
   if (members.length > 25) {
     warnings.push(`${members.length} raiders imported — more than a 25-man comp.`);
