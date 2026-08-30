@@ -286,6 +286,7 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   // marked noAutoFill to keep the generic eligibility filler off them.
   { title: "Tanks · MT",                        iconSlug: "ability_warrior_defensivestance",       eligibility: { roles: ["tank"] }, fixedSlots: 1, noAutoFill: true },
   { title: "Tanks · OT",                        iconSlug: "ability_warrior_defensivestance",       eligibility: { roles: ["tank"] }, fixedSlots: 1, noAutoFill: true },
+  { title: "Tanks · OT2",                       iconSlug: "ability_warrior_defensivestance",       eligibility: { roles: ["tank"] }, fixedSlots: 1, noAutoFill: true },
   { title: "Tanks · Adds",                      iconSlug: "ability_warrior_defensivestance",       eligibility: { roles: ["tank"] }, fixedSlots: 1, noAutoFill: true },
   { title: "Prayer of Fortitude · G1-3",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] }, fixedSlots: 1 },
   { title: "Prayer of Fortitude · G4-5",        iconSlug: "spell_holy_prayeroffortitude",          eligibility: { classes: ["Priest"] }, fixedSlots: 1 },

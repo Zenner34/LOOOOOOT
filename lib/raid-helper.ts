@@ -814,9 +814,31 @@ export function hydratePhaseData(raw: unknown): PhaseAssignmentData {
     }
   }
 
+  let mergedBuffs = mergeMissingBuffBlocks(buffs.length ? buffs : base.buffs);
+  // Saved sheets from before the OT2 row exist with only MT/OT/Adds —
+  // splice the new row in after OT (category-level merge skips it).
+  if (mergedBuffs.some(b => b.title.startsWith("Tanks")) && !mergedBuffs.some(b => b.title.trim() === "Tanks \u00b7 OT2")) {
+    const otIdx = mergedBuffs.findIndex(b => b.title.trim() === "Tanks \u00b7 OT");
+    if (otIdx >= 0) {
+      mergedBuffs = [
+        ...mergedBuffs.slice(0, otIdx + 1),
+        {
+          id: newSectionId(),
+          title: "Tanks \u00b7 OT2",
+          iconSlug: "ability_warrior_defensivestance",
+          eligibility: { roles: ["tank"] },
+          fixedSlots: 1,
+          noAutoFill: true,
+          characterIds: [],
+        },
+        ...mergedBuffs.slice(otIdx + 1),
+      ];
+    }
+  }
+
   return {
     groups,
-    buffs: mergeMissingBuffBlocks(buffs.length ? buffs : base.buffs),
+    buffs: mergedBuffs,
     bosses: {},
     tankAssignments,
     members: Array.isArray(d.members)
@@ -1175,7 +1197,8 @@ function fillTankBuffRows(buffs: AssignSection[], members: PhaseMember[]): Assig
   const pick: Record<string, number | null> = {
     MT: h[0] ?? null,
     OT: h[1] ?? null,
-    Adds: pala ?? h[2] ?? null,
+    OT2: h[2] ?? null,
+    Adds: pala ?? h[3] ?? null,
   };
   return buffs.map(s => {
     if (!s.title.startsWith("Tanks")) return s;
