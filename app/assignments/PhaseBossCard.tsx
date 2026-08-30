@@ -374,6 +374,14 @@ function TplSectionBox({
           >
             {rowIdxs.map(i => { const rule = slots[i]; return (
               <div key={i} className={rowIdxs.length > 1 ? "min-w-0 flex-1" : undefined}>
+          {rule.dividerBefore && (
+            <div className="flex items-center gap-1.5 px-0.5 pb-1 pt-1.5">
+              <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-neutral-500">
+                {rule.dividerBefore}
+              </span>
+              <span aria-hidden className="h-px flex-1 bg-white/10" />
+            </div>
+          )}
           <TplSlotRow
             rule={rule}
             char={ids[i] ? charsById.get(ids[i]) ?? null : null}

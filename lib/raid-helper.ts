@@ -162,6 +162,9 @@ export type PhaseSlotRule = {
   /** Position tag rendered as a small leading cell ("H1"…"H5" healer
    *  spots on the Hyjal platform maps). */
   pos?: string;
+  /** Render a thin labeled divider above this slot ("Healers" under the
+   *  Illidan ele tanks' Misdirect rows). */
+  dividerBefore?: string;
 };
 
 export type PhaseSectionTpl = {
@@ -287,16 +290,10 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
         label: "CoT", nth: 1, icon: "spell_shadow_curseoftounges",
         specs: ["Affliction Warlock", "Destruction Warlock", "Demonology Warlock"],
       }] },
-    // Groups 3 + 4 handle Deaden exclusively — listed side by side so
-    // everyone sees their duty; fills straight from the Discord comp.
-    { key: "deaden", title: "Deaden", subtitle: "Groups 3 + 4 only", paired: true, wide: true,
-      slots: [
-        S.groupSlot(3, 1), S.groupSlot(4, 1),
-        S.groupSlot(3, 2), S.groupSlot(4, 2),
-        S.groupSlot(3, 3), S.groupSlot(4, 3),
-        S.groupSlot(3, 4), S.groupSlot(4, 4),
-        S.groupSlot(3, 5), S.groupSlot(4, 5),
-      ] },
+    // Deaden duty — mage + ele shaman prefill when the comp has them,
+    // third slot always open.
+    { key: "deaden", title: "Deaden",
+      slots: [S.mage(1), S.ele(1), S.open()] },
   ],
   shahraz: [
     { key: "mt", title: "Main Tank",
@@ -363,12 +360,18 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
       slots: [
         { label: "Feral 1", specs: ["Feral Druid (Tank)", "Feral Druid (DPS)"], tankSlot: 1 },
         md(S.hunter(2)),
+        { label: "Healer 1", roles: ["heal"], dividerBefore: "Healers" },
+        { label: "Healer 2", roles: ["heal"] },
+        { label: "Healer 3", roles: ["heal"] },
       ] },
     { key: "righttank", title: "Right Ele Tank", phase: "Phase 2",
       slots: [
         { label: "Feral 2", specs: ["Feral Druid (Tank)", "Feral Druid (DPS)"], tankSlot: 2 },
         md(S.surv(1)),
         S.openMd(),
+        { label: "Healer 1", roles: ["heal"], dividerBefore: "Healers" },
+        { label: "Healer 2", roles: ["heal"] },
+        { label: "Healer 3", roles: ["heal"] },
       ] },
     { key: "p2notes", title: "P2 Notes", phase: "Phase 2",
       staticItems: [
@@ -432,6 +435,11 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
       slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
     { key: "fearward", title: "Fear Ward",
       slots: [S.disc(1), S.spriest(1)] },
+    { key: "healerpos", title: "Healer Pos",
+      slots: [
+        at("H1", S.hpal(1)), at("H2", S.disc(1)), at("H3", S.rdruid(1)),
+        at("H4", S.rsham(1)), at("H5", S.rsham(2)),
+      ] },
     { key: "reminders", title: "Reminders",
       staticItems: [
         "If you die you should be banned",
