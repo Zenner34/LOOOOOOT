@@ -446,6 +446,17 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
         at("H1", S.hpal(1)), at("H2", S.disc(1)), at("H3", S.rdruid(1)),
         at("H4", S.rsham(1)), at("H5", S.rsham(2)),
       ] },
+    // Grip of the Legion decursing by direction — mages first, then
+    // boomkins/restos (dreamstate counts as resto).
+    { key: "decurse", title: "Decurse",
+      slots: [
+        at("North", { label: "Decurse 1", nth: 1, tiered: true,
+          specs: ["Arcane Mage", "Fire Mage", "Frost Mage", "Balance Druid", "Restoration Druid"] }),
+        at("East", { label: "Decurse 2", nth: 2, tiered: true,
+          specs: ["Arcane Mage", "Fire Mage", "Frost Mage", "Balance Druid", "Restoration Druid"] }),
+        at("West", { label: "Decurse 3", nth: 3, tiered: true,
+          specs: ["Arcane Mage", "Fire Mage", "Frost Mage", "Balance Druid", "Restoration Druid"] }),
+      ] },
     { key: "reminders", title: "Reminders",
       staticItems: [
         "If you die you should be banned",
