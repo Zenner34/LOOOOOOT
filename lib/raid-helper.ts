@@ -847,26 +847,35 @@ export function hydratePhaseData(raw: unknown): PhaseAssignmentData {
   }
 
   let mergedBuffs = mergeMissingBuffBlocks(buffs.length ? buffs : base.buffs);
-  // Saved sheets from before the OT2 row exist with only MT/OT/Adds —
-  // splice the new row in after OT (category-level merge skips it).
-  if (mergedBuffs.some(b => b.title.startsWith("Tanks")) && !mergedBuffs.some(b => b.title.trim() === "Tanks \u00b7 OT2")) {
-    const otIdx = mergedBuffs.findIndex(b => b.title.trim() === "Tanks \u00b7 OT");
-    if (otIdx >= 0) {
-      mergedBuffs = [
-        ...mergedBuffs.slice(0, otIdx + 1),
-        {
-          id: newSectionId(),
-          title: "Tanks \u00b7 OT2",
-          iconSlug: "ability_warrior_defensivestance",
-          eligibility: { roles: ["tank"] },
-          fixedSlots: 1,
-          noAutoFill: true,
-          characterIds: [],
-        },
-        ...mergedBuffs.slice(otIdx + 1),
-      ];
-    }
-  }
+  // Rows added to EXISTING template categories don't reach saved sheets
+  // through the category-level merge — splice them in after their
+  // anchor row instead.
+  const ensureRow = (afterTitle: string, row: Omit<AssignSection, "id">) => {
+    if (mergedBuffs.some(b => b.title.trim() === row.title)) return;
+    const idx = mergedBuffs.findIndex(b => b.title.trim() === afterTitle);
+    if (idx < 0) return;
+    mergedBuffs = [
+      ...mergedBuffs.slice(0, idx + 1),
+      { id: newSectionId(), ...row },
+      ...mergedBuffs.slice(idx + 1),
+    ];
+  };
+  ensureRow("Tanks \u00b7 OT", {
+    title: "Tanks \u00b7 OT2",
+    iconSlug: "ability_warrior_defensivestance",
+    eligibility: { roles: ["tank"] },
+    fixedSlots: 1,
+    noAutoFill: true,
+    characterIds: [],
+  });
+  ensureRow("Debuffs \u00b7 Thunderclap", {
+    title: "Debuffs \u00b7 Screech (Owl)",
+    iconSlug: "ability_warrior_warcry",
+    rowIconSlug: "ability_hunter_pet_owl",
+    eligibility: { specs: ["Survival Hunter"] },
+    fixedSlots: 1,
+    characterIds: [],
+  });
 
   return {
     groups,

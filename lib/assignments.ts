@@ -342,6 +342,7 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   { title: "Debuffs · Demoralizing Shout",      iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_warrior_warcry",         eligibility: { specs: ["Arms Warrior"] },  fixedSlots: 1 },
   { title: "Debuffs · Blood Frenzy",            iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_warrior_bloodfrenzy",    eligibility: { specs: ["Arms Warrior"] },  fixedSlots: 1 },
   { title: "Debuffs · Thunderclap",             iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_thunderclap",            eligibility: { specs: ["Arms Warrior"] },  fixedSlots: 1 },
+  { title: "Debuffs · Screech (Owl)",           iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_hunter_pet_owl",         eligibility: { specs: ["Survival Hunter"] }, fixedSlots: 1 },
 ];
 
 /**
