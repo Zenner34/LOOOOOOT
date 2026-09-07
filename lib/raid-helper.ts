@@ -608,38 +608,41 @@ export function autoFillBossSheet(
 }
 
 /**
- * Set the Tanks & Tank Healers rows from the roster: tanks take the
- * marker rows in sheet hierarchy order (bear ferals, then cat ferals
- * off-tanking, then the remaining tanks in roster order — mirroring
- * Feral 1 / Feral 2 / Prot), and healers are dealt round-robin so every
- * tank gets one healer before any tank gets a second.
+ * Tanks & Tank Healers marker rows, per the raid lead's fixed layout:
+ *   Skull    = the Group 2 feral (MT feral),  heals: G5 resto sham + Hpal
+ *   Cross    = the Group 1 feral (OT feral),  heals: 1st priest    + Hpal
+ *   Square   = the Prot Pally,                heals: other resto   + Hpal
+ *   Moon     = the Prot Pally,                heals: other resto   + Hpal
+ *   Triangle = the Prot Pally,                heals: 2nd priest    + Hpal
+ *   Diamond  = the Prot Pally,                heals: 2nd priest    + Hpal
+ * The Holy Paladin holds the second-healer column top to bottom. On
+ * pally-less nights the remaining hierarchy tanks fill in; missing
+ * healers leave their slot open.
  */
 export function autoFillTankRows(data: PhaseAssignmentData): PhaseAssignmentData {
-  // Skull = MT, Cross = OT (group hierarchy), Square = the pally
-  // ("pally is 3rd"), then everyone else tank-flavored.
-  const byId = new Map(data.members.map(m => [m.id, m]));
-  const hier = tankHierarchy(data.members).map(id => byId.get(id)!);
-  const seen = new Set(hier.map(m => m.id));
-  const palas = data.members.filter(m => m.spec === "Protection Paladin" && !seen.has(m.id));
-  const rest = data.members.filter(
-    m => m.role === "tank" && !seen.has(m.id) && m.spec !== "Protection Paladin",
-  );
-  const tankPool = [...hier.slice(0, 2), ...palas, ...hier.slice(2), ...rest];
-  const healers = data.members.filter(m => m.role === "heal");
+  const members = data.members;
+  const h = tankHierarchy(members); // [G2 feral/pwar, G1 feral/pwar, rest...]
+  const pala = members.find(m => m.spec === "Protection Paladin")?.id ?? null;
+  const rest = h.slice(2);
+  const tankFor = (i: number): number | null => {
+    if (i === 0) return h[0] ?? pala;
+    if (i === 1) return h[1] ?? pala;
+    return pala ?? rest[i - 2] ?? null;
+  };
 
-  const rows = (data.tankAssignments ?? defaultTankAssignments()).map((row, i) => ({
-    ...row,
-    tankId: tankPool[i]?.id ?? null,
-    healerIds: [] as number[],
-  }));
-  const occupied = rows.filter(r => r.tankId !== null);
-  let h = 0;
-  for (let round = 0; round < 2 && h < healers.length; round++) {
-    for (const row of occupied) {
-      if (h >= healers.length) break;
-      row.healerIds.push(healers[h++].id);
-    }
-  }
+  const restoShams = members.filter(m => m.spec === "Restoration Shaman");
+  const g5Sham = restoShams.find(m => m.group === 5) ?? restoShams[0] ?? null;
+  const otherSham = restoShams.find(m => m.id !== g5Sham?.id) ?? null;
+  const priests = members.filter(m => m.className === "Priest" && m.role === "heal");
+  const hpal = members.find(m => m.spec === "Holy Paladin") ?? null;
+  const firstHeal = [g5Sham, priests[0], otherSham, otherSham, priests[1], priests[1]];
+
+  const rows = (data.tankAssignments ?? defaultTankAssignments()).map((row, i) => {
+    const tankId = tankFor(i);
+    const healerIds = tankId ? [firstHeal[i]?.id ?? 0, hpal?.id ?? 0] : [];
+    while (healerIds.length && healerIds[healerIds.length - 1] === 0) healerIds.pop();
+    return { ...row, tankId, healerIds };
+  });
   return { ...data, tankAssignments: rows };
 }
 
