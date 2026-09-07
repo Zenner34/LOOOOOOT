@@ -1218,7 +1218,7 @@ export function applyImport(prev: PhaseAssignmentData, parsed: ParsedImport): Ph
 export function recomputeAutoAssignments(data: PhaseAssignmentData): PhaseAssignmentData {
   const filled = autoFillTankRows(autoFillPhaseBossSheets(data, { onlyEmpty: false }));
   const eligibles = filled.members.map(memberToEligible);
-  const buffs = fixSoulstoneTargets(
+  const buffs = fixBopTargets(fixSoulstoneTargets(
     fixFaerieFire(
       fixGiftOfTheWild(
         fillTankBuffRows(suggestFillSections(filled.buffs, eligibles), filled.members),
@@ -1227,8 +1227,26 @@ export function recomputeAutoAssignments(data: PhaseAssignmentData): PhaseAssign
       filled.members,
     ),
     filled.members,
-  );
+  ), filled.members);
   return { ...filled, buffs };
+}
+
+/** Blessing of Protection targets, row by row: the first mage, then
+ *  the comp's first two warlocks. Only fills empty target slots. */
+function fixBopTargets(buffs: AssignSection[], members: PhaseMember[]): AssignSection[] {
+  const targets = [
+    ...members.filter(m => m.className === "Mage").slice(0, 1),
+    ...members.filter(m => m.className === "Warlock").slice(0, 2),
+  ].map(m => m.id);
+  let t = 0;
+  return buffs.map(s => {
+    if (!s.title.startsWith("Blessing of Protection")) return s;
+    if (!s.characterIds[0]) return s; // no paladin generated for this row
+    const target = targets[t++] ?? 0;
+    const characterIds = [...s.characterIds];
+    characterIds[1] = characterIds[1] || target;
+    return { ...s, characterIds };
+  });
 }
 
 /** Faerie Fire goes to the Dreamstate druid first (spotted via the
@@ -1255,7 +1273,9 @@ function fillTankBuffRows(buffs: AssignSection[], members: PhaseMember[]): Assig
   const pick: Record<string, number | null> = {
     MT: h[0] ?? null,
     OT: h[1] ?? null,
-    OT2: h[2] ?? null,
+    // No third feral/pwar that night -> the prot pally covers OT2 (he
+    // keeps the Adds row too).
+    OT2: h[2] ?? pala ?? null,
     Adds: pala ?? h[3] ?? null,
   };
   return buffs.map(s => {
