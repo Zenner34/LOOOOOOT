@@ -337,7 +337,7 @@ const BUFF_TEMPLATE: BuffTpl[] = [
   // ── Physical raid debuffs — one row per boss-side debuff, one eligible
   // class per row (Druid FF, Rogue iEA, Warrior Demo/BF/TC). Same layout
   // as Curses: row icon on the left, one slot on the right.
-  { title: "Debuffs · Faerie Fire",             iconSlug: "ability_warrior_warcry",                rowIconSlug: "spell_nature_faeriefire",        eligibility: { specs: ["Balance Druid"] }, fixedSlots: 1 },
+  { title: "Debuffs · Faerie Fire",             iconSlug: "ability_warrior_warcry",                rowIconSlug: "spell_nature_faeriefire",        eligibility: { specs: ["Balance Druid", "Restoration Druid"] }, fixedSlots: 1 },
   { title: "Debuffs · Improved Expose Armor",   iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_warrior_riposte",        eligibility: { classes: ["Rogue"] },       fixedSlots: 1 },
   { title: "Debuffs · Demoralizing Shout",      iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_warrior_warcry",         eligibility: { specs: ["Arms Warrior"] },  fixedSlots: 1 },
   { title: "Debuffs · Blood Frenzy",            iconSlug: "ability_warrior_warcry",                rowIconSlug: "ability_warrior_bloodfrenzy",    eligibility: { specs: ["Arms Warrior"] },  fixedSlots: 1 },

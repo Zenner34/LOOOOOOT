@@ -1219,13 +1219,30 @@ export function recomputeAutoAssignments(data: PhaseAssignmentData): PhaseAssign
   const filled = autoFillTankRows(autoFillPhaseBossSheets(data, { onlyEmpty: false }));
   const eligibles = filled.members.map(memberToEligible);
   const buffs = fixSoulstoneTargets(
-    fixGiftOfTheWild(
-      fillTankBuffRows(suggestFillSections(filled.buffs, eligibles), filled.members),
+    fixFaerieFire(
+      fixGiftOfTheWild(
+        fillTankBuffRows(suggestFillSections(filled.buffs, eligibles), filled.members),
+        filled.members,
+      ),
       filled.members,
     ),
     filled.members,
   );
   return { ...filled, buffs };
+}
+
+/** Faerie Fire goes to the Dreamstate druid first (spotted via the
+ *  original Raid-Helper sign-up spec), then the boomkin, then a resto. */
+function fixFaerieFire(buffs: AssignSection[], members: PhaseMember[]): AssignSection[] {
+  const pool = [
+    ...members.filter(m => m.spec === "Restoration Druid" && m.rhSpecName === "Dreamstate"),
+    ...members.filter(m => m.spec === "Balance Druid"),
+    ...members.filter(m => m.spec === "Restoration Druid" && m.rhSpecName !== "Dreamstate"),
+  ];
+  return buffs.map(sec => {
+    if (!sec.title.includes("Faerie Fire")) return sec;
+    return { ...sec, characterIds: pool[0] ? [pool[0].id] : [] };
+  });
 }
 
 /** Tanks · MT / OT / Adds buff rows from the group hierarchy: MT = the
