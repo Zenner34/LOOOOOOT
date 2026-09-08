@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { isAdmin } from "@/lib/auth";
 import {
@@ -11,6 +12,27 @@ import {
 import PhaseAssignmentsClient from "./PhaseAssignmentsClient";
 
 export const dynamic = "force-dynamic";
+
+// Day-aware title so a shared link (Discord embed etc.) previews as
+// e.g. "Thursday Assignments \u2014 BT/Hyjal". No ?day= falls back to
+// the next upcoming raid night, matching what the page opens on.
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: { day?: string };
+}): Promise<Metadata> {
+  const day = isPhaseDayKey(searchParams.day)
+    ? searchParams.day
+    : nextPhaseDayKey(new Date());
+  const label = PHASE_DAYS.find(d => d.key === day)!.label;
+  const title = `${label} Assignments \u2014 BT/Hyjal`;
+  const description = `Rising Sun raid assignments for ${label} \u2014 Black Temple & Mount Hyjal: groups, buffs, tanks, and every boss.`;
+  return {
+    title,
+    description,
+    openGraph: { title, description },
+  };
+}
 
 // The live Black Temple / Mount Hyjal assignment sheets — one per raid
 // night (Tuesday / Thursday / Sunday), each imported independently from
