@@ -123,11 +123,10 @@ export default function PhaseAssignmentsClient({
 
   function switchDay(k: PhaseDayKey) {
     setDay(k);
-    // Deep-linkable without a server round-trip.
+    // Each night owns its URL; swap the path without a server
+    // round-trip (all three sheets are already loaded).
     try {
-      const url = new URL(window.location.href);
-      url.searchParams.set("day", k);
-      window.history.replaceState(null, "", url);
+      window.history.replaceState(null, "", `/assignments/${k}`);
     } catch {}
   }
 
