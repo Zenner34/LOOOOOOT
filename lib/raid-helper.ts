@@ -145,8 +145,12 @@ export type PhaseSlotRule = {
   tankSlot?: number;
   /** Fill from a specific Discord raid group — the nth member of that
    *  group in slot order (Gurtogg's Blood Boil soak groups = raid
-   *  Groups 3 & 4). */
+   *  Groups 3 & 4). Combines with `specs` (only those specs) and
+   *  `excludeSpecs`. */
   fromGroup?: number;
+  /** Specs excluded from a fromGroup pool (BB Group 2 skips the
+   *  shadow priest). */
+  excludeSpecs?: string[];
   /** Innervate caster order: nth druid, walking boomies, then restos,
    *  then the feral tanks in REVERSE hierarchy order (3rd tank, OT,
    *  and the MT only when there are enough druids). */
@@ -225,6 +229,11 @@ const S = {
     label: "Prot 1", nth: 1, tiered: true,
     specs: ["Protection Paladin", "Protection Warrior", "Feral Druid (Tank)", "Feral Druid (DPS)"],
   }),
+  rogue:  (n: number) => ({ label: `Rogue ${n}`, specs: ["Assassination Rogue", "Combat Rogue", "Subtlety Rogue"], nth: n }),
+  openTank: (): PhaseSlotRule => ({
+    label: "Open",
+    specs: ["Feral Druid (Tank)", "Feral Druid (DPS)", "Protection Warrior", "Protection Paladin"],
+  }),
   openMd:  (): PhaseSlotRule => md({ label: "Open", classes: ["Hunter"] }),
   openPala:(): PhaseSlotRule => ({ label: "Open", classes: ["Paladin"] }),
   open:    (): PhaseSlotRule => ({ label: "Open" }),
@@ -238,8 +247,8 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
   supremus: [
     { key: "mt", title: "Main Tank",
       slots: [S.pallyMt(), md(S.hunter(1)), md(S.hunter(2))] },
-    { key: "hateful", title: "Hateful Tank",
-      slots: [S.feral(2), md(S.surv(1)), S.openMd()] },
+    { key: "hateful", title: "Hateful Tanks",
+      slots: [S.feral(1), S.feral(2), S.openTank(), md(S.surv(1)), S.openMd()] },
   ],
   shade: [
     // Adds come down both sides — one tank each; the Surv's two MDs
@@ -260,13 +269,21 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
     { key: "mt", title: "Main Tank",
       slots: [S.pallyMt(), md(S.hunter(1)), md(S.hunter(2))] },
     { key: "ot", title: "OT",
-      slots: [S.feral(2), md(S.hunter(3)), md(S.surv(1)), S.openMd()] },
+      slots: [S.feral(2), S.openTank(), md(S.hunter(3)), md(S.surv(1))] },
     // Two soak groups rotate — the raid's Groups 3 and 4, straight from
     // the Discord comp.
     { key: "bb1", title: "Blood Boil Group 1", subtitle: "Raid Group 3",
       slots: [S.groupSlot(3, 1), S.groupSlot(3, 2), S.groupSlot(3, 3), S.groupSlot(3, 4), S.groupSlot(3, 5)] },
+    // Group 4 minus its shadow priest, with the G5 Holy Pally in the
+    // fifth seat instead.
     { key: "bb2", title: "Blood Boil Group 2", subtitle: "Raid Group 4",
-      slots: [S.groupSlot(4, 1), S.groupSlot(4, 2), S.groupSlot(4, 3), S.groupSlot(4, 4), S.groupSlot(4, 5)] },
+      slots: [
+        { ...S.groupSlot(4, 1), excludeSpecs: ["Shadow Priest"] },
+        { ...S.groupSlot(4, 2), excludeSpecs: ["Shadow Priest"] },
+        { ...S.groupSlot(4, 3), excludeSpecs: ["Shadow Priest"] },
+        { ...S.groupSlot(4, 4), excludeSpecs: ["Shadow Priest"] },
+        { label: "G5 Hpal", fromGroup: 5, specs: ["Holy Paladin"], nth: 1 },
+      ] },
     // Hand-picked backups — five free slots, whole roster.
     { key: "bb3", title: "Backup Priority Bloodboil", subtitle: "Manual picks",
       slots: [S.open(), S.open(), S.open(), S.open(), S.open()] },
@@ -299,13 +316,14 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
     // Deaden duty — mage + ele shaman prefill when the comp has them,
     // third slot always open.
     { key: "deaden", title: "Deaden",
-      slots: [S.mage(1), S.ele(1), S.open()] },
+      slots: [S.rogue(1), S.rogue(2), S.rogue(3)] },
   ],
   shahraz: [
+    // Shahraz keeps the G2 feral as MT (exception to the pally-MT list).
     { key: "mt", title: "Main Tank",
-      slots: [S.pallyMt(), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
+      slots: [S.feral(1), md(S.hunter(1)), md(S.hunter(2)), md(S.surv(1)), S.openMd()] },
     { key: "ot", title: "OT",
-      slots: [S.feral(1), S.feral(2)] },
+      slots: [S.feral(2), S.prot(1)] },
     { key: "was", title: "Helpful WAs",
       links: [
         { label: "Prismatic Shield Checker", href: "https://wago.io/2WMUU1Xr-" },
@@ -557,7 +575,10 @@ export function pickForSlot(members: SlotPickable[], rule: PhaseSlotRule): numbe
     return ids[rule.tankSlot - 1] ?? 0;
   }
   if (rule.fromGroup) {
-    const pool = members.filter(m => m.group === rule.fromGroup);
+    const pool = members.filter(m =>
+      m.group === rule.fromGroup &&
+      (!rule.specs?.length || rule.specs.includes(m.spec)) &&
+      !rule.excludeSpecs?.includes(m.spec));
     return pool[(rule.nth ?? 1) - 1]?.id ?? 0;
   }
   if (rule.innervate) {
