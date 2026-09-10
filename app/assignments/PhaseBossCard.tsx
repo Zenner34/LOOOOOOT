@@ -176,8 +176,22 @@ export function PhaseBossCard({
               // set — Illidan P1/P2/P3/P5); phaseless sections render in a
               // single unlabeled group.
               (() => {
+                // Raider view consolidates: a templated box with nothing
+                // assigned and no static/link rows disappears entirely
+                // (its empty phase header goes with it).
+                const visibleSections = readOnly
+                  ? sections.filter(s => {
+                      const tpl = tplById.get(s.id);
+                      if (!tpl) return true;
+                      return (
+                        s.characterIds.some(id => id > 0) ||
+                        (tpl.staticItems?.length ?? 0) > 0 ||
+                        (tpl.links?.length ?? 0) > 0
+                      );
+                    })
+                  : sections;
                 const clusters: Array<{ phase: string | null; secs: AssignSection[] }> = [];
-                for (const s of sections) {
+                for (const s of visibleSections) {
                   const phase = tplById.get(s.id)?.phase ?? null;
                   const last = clusters[clusters.length - 1];
                   if (last && last.phase === phase) last.secs.push(s);
@@ -363,21 +377,45 @@ function TplSectionBox({
         </div>
       )}
       <div className="flex flex-col gap-[3px] p-1">
-        {(tpl.paired
-          ? Array.from({ length: Math.ceil(slots.length / 2) }, (_, r) =>
-              [2 * r, 2 * r + 1].filter(i => i < slots.length))
-          : slots.map((_, i) => [i])
-        ).map(rowIdxs => (
+        {(() => {
+          // Edit mode shows every assignable slot (callsigns, Opens);
+          // raider view consolidates to just the filled chips.
+          const allRows = tpl.paired
+            ? Array.from({ length: Math.ceil(slots.length / 2) }, (_, r) =>
+                [2 * r, 2 * r + 1].filter(i => i < slots.length))
+            : slots.map((_, i) => [i]);
+          const rows = readOnly
+            ? allRows.filter(rowIdxs => rowIdxs.some(i => ids[i] > 0))
+            : allRows;
+          // Keep a "Healers"-style divider with its segment even when the
+          // slot that declares it is hidden in raider view: attach it to
+          // the first visible row at or after its declaration.
+          const dividerAt = new Map<number, string>();
+          slots.forEach((rule, d) => {
+            if (!rule.dividerBefore) return;
+            const nextDivider = slots.findIndex((r, j) => j > d && r.dividerBefore);
+            const segEnd = nextDivider === -1 ? slots.length : nextDivider;
+            const host = rows.find(rowIdxs => rowIdxs.some(i => i >= d && i < segEnd));
+            const hostIdx = host?.find(i => i >= d && i < segEnd);
+            if (hostIdx !== undefined) dividerAt.set(hostIdx, rule.dividerBefore);
+          });
+          return rows.map(rowIdxs => (
           <div
             key={rowIdxs[0]}
             className={rowIdxs.length > 1 ? "flex gap-[3px]" : undefined}
           >
-            {rowIdxs.map(i => { const rule = slots[i]; return (
+            {rowIdxs.map(i => { const rule = slots[i];
+              if (readOnly && !ids[i]) {
+                // Paired rows keep the empty cell as spacing so the
+                // filled half stays aligned.
+                return <div key={i} className={rowIdxs.length > 1 ? "min-w-0 flex-1" : undefined} />;
+              }
+              return (
               <div key={i} className={rowIdxs.length > 1 ? "min-w-0 flex-1" : undefined}>
-          {rule.dividerBefore && (
+          {dividerAt.get(i) && (
             <div className="flex items-center gap-1.5 px-0.5 pb-1 pt-1.5">
               <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-neutral-500">
-                {rule.dividerBefore}
+                {dividerAt.get(i)}
               </span>
               <span aria-hidden className="h-px flex-1 bg-white/10" />
             </div>
@@ -406,7 +444,8 @@ function TplSectionBox({
               </div>
             ); })}
           </div>
-        ))}
+          ));
+        })()}
         {tpl.staticItems?.map((item, i) => (
           <div
             key={`static-${i}`}
