@@ -284,9 +284,16 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
         { ...S.groupSlot(4, 4), excludeSpecs: ["Shadow Priest"] },
         { label: "G5 Hpal", fromGroup: 5, specs: ["Holy Paladin"], nth: 1 },
       ] },
-    // Hand-picked backups — five free slots, whole roster.
-    { key: "bb3", title: "Backup Priority Bloodboil", subtitle: "Manual picks",
-      slots: [S.open(), S.open(), S.open(), S.open(), S.open()] },
+    // Backups preset to every hunter in the comp (BM/MM first, Surv
+    // last); slots stay freely re-assignable.
+    { key: "bb3", title: "Backup Priority Bloodboil",
+      slots: [
+        { label: "Hunter 1", specs: ["Beast Mastery Hunter", "Marksmanship Hunter", "Survival Hunter"], tiered: true, nth: 1 },
+        { label: "Hunter 2", specs: ["Beast Mastery Hunter", "Marksmanship Hunter", "Survival Hunter"], tiered: true, nth: 2 },
+        { label: "Hunter 3", specs: ["Beast Mastery Hunter", "Marksmanship Hunter", "Survival Hunter"], tiered: true, nth: 3 },
+        { label: "Hunter 4", specs: ["Beast Mastery Hunter", "Marksmanship Hunter", "Survival Hunter"], tiered: true, nth: 4 },
+        { label: "Hunter 5", specs: ["Beast Mastery Hunter", "Marksmanship Hunter", "Survival Hunter"], tiered: true, nth: 5 },
+      ] },
     { key: "felrage", title: "Fel Rage BoP",
       slots: [S.hpal(1), S.ret(1), S.prot(1), S.openPala(), S.openPala()] },
     { key: "tips", title: "Fel Rage Tips",
