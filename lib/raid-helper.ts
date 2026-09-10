@@ -340,15 +340,21 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
     // Mage tank + the pull BoP live in one box, rows tagged on the left.
     { key: "magetank", title: "Mage Tank",
       slots: [at("Tank", S.mage(1)), at("BoP", S.hpal(1))] },
+    // Physical kicks are the rogues; magic kicks are the mages then the
+    // shamans — auto-filled on import, freely overridable.
     { key: "physkicks", title: "Physical Kicks", subtitle: "Malande",
       slots: [
-        { label: "Kick 1", roles: ["melee"] }, { label: "Kick 2", roles: ["melee"] },
-        { label: "Kick 3", roles: ["melee"] }, { label: "Kick 4", roles: ["melee"] },
+        { label: "Kick 1", specs: ["Assassination Rogue", "Combat Rogue", "Subtlety Rogue"], nth: 1 },
+        { label: "Kick 2", specs: ["Assassination Rogue", "Combat Rogue", "Subtlety Rogue"], nth: 2 },
+        { label: "Kick 3", specs: ["Assassination Rogue", "Combat Rogue", "Subtlety Rogue"], nth: 3 },
+        { label: "Kick 4", specs: ["Assassination Rogue", "Combat Rogue", "Subtlety Rogue"], nth: 4 },
       ] },
     { key: "magickicks", title: "Magic Kicks", subtitle: "Malande",
       slots: [
-        { label: "Kick 1", roles: ["ranged"] }, { label: "Kick 2", roles: ["ranged"] },
-        { label: "Kick 3", roles: ["ranged"] }, { label: "Kick 4", roles: ["ranged"] },
+        { label: "Kick 1", specs: ["Arcane Mage", "Fire Mage", "Frost Mage", "Elemental Shaman", "Enhancement Shaman", "Restoration Shaman"], tiered: true, nth: 1 },
+        { label: "Kick 2", specs: ["Arcane Mage", "Fire Mage", "Frost Mage", "Elemental Shaman", "Enhancement Shaman", "Restoration Shaman"], tiered: true, nth: 2 },
+        { label: "Kick 3", specs: ["Arcane Mage", "Fire Mage", "Frost Mage", "Elemental Shaman", "Enhancement Shaman", "Restoration Shaman"], tiered: true, nth: 3 },
+        { label: "Kick 4", specs: ["Arcane Mage", "Fire Mage", "Frost Mage", "Elemental Shaman", "Enhancement Shaman", "Restoration Shaman"], tiered: true, nth: 4 },
       ] },
     { key: "kickprio", title: "Kick Priority",
       staticItems: ["1. Circle of Healing", "2. Divine Wrath", "3. Everything else"],
