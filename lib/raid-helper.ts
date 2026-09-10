@@ -392,22 +392,24 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
         "Parasites run to the marked spot — Hunter Trap / Earthbind Totem there",
       ] },
     // ── Phase 2 — Fire Res tanks each pick up a Flame of Azzinoth.
+    // P2 heal teams preset on import: resto shams split the sides,
+    // holy priests split the sides, the holy pally covers both.
     { key: "lefttank", title: "Left Ele Tank", phase: "Phase 2",
       slots: [
         { label: "Feral 1", specs: ["Feral Druid (Tank)", "Feral Druid (DPS)"], tankSlot: 1 },
         md(S.hunter(2)),
-        { label: "Healer 1", roles: ["heal"], dividerBefore: "Healers" },
-        { label: "Healer 2", roles: ["heal"] },
-        { label: "Healer 3", roles: ["heal"] },
+        { ...S.rsham(1), dividerBefore: "Healers" },
+        { label: "Priest 1", specs: ["Holy Priest"], nth: 1 },
+        S.hpal(1),
       ] },
     { key: "righttank", title: "Right Ele Tank", phase: "Phase 2",
       slots: [
         { label: "Feral 2", specs: ["Feral Druid (Tank)", "Feral Druid (DPS)"], tankSlot: 2 },
         md(S.surv(1)),
         S.openMd(),
-        { label: "Healer 1", roles: ["heal"], dividerBefore: "Healers" },
-        { label: "Healer 2", roles: ["heal"] },
-        { label: "Healer 3", roles: ["heal"] },
+        { ...S.rsham(2), dividerBefore: "Healers" },
+        { label: "Priest 2", specs: ["Holy Priest"], nth: 2 },
+        S.hpal(1),
       ] },
     { key: "p2notes", title: "P2 Notes", phase: "Phase 2",
       staticItems: [
