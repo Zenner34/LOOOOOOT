@@ -162,6 +162,7 @@ export default function PhaseAssignmentsClient({
       items: PHASE_BOSSES.filter(b => b.raidShort === r.short).map(b => ({
         id: `boss-${b.slug}`,
         label: b.name,
+        icon: b.icon,
       })),
     })),
   ], []);

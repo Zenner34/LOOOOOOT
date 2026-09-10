@@ -11,7 +11,7 @@ import { ASSIGNMENT_BOSSES } from "@/lib/assignments";
  * header). Active link highlights as the corresponding section enters
  * the viewport via IntersectionObserver.
  */
-type Link = { id: string; label: string };
+type Link = { id: string; label: string; icon?: string };
 export type SectionNavGroup = { heading?: string; items: Link[] };
 
 /** Default target list — the archived SSC/TK sheet's sections. The
@@ -86,7 +86,7 @@ export function SectionNav({ groups: groupsProp }: { groups?: SectionNavGroup[] 
       >
         Jump to
       </div>
-      <ul className="flex flex-col gap-3 text-xs">
+      <ul className="flex flex-col gap-3 text-[13px]">
         {groups.map((g, gi) => (
           <li key={gi}>
             {g.heading && (
@@ -102,13 +102,24 @@ export function SectionNav({ groups: groupsProp }: { groups?: SectionNavGroup[] 
                     <button
                       type="button"
                       onClick={() => jump(item.id)}
-                      className={`group block w-full text-left px-2 py-1 rounded transition-colors border-l-2 ${
+                      className={`group flex w-full items-center gap-2 text-left px-2 py-1 rounded transition-colors border-l-2 ${
                         active
                           ? "border-vermillion-500 bg-vermillion-500/[0.08] text-vermillion-200 font-semibold"
                           : "border-transparent text-neutral-300 hover:text-vermillion-200 hover:bg-white/[0.03]"
                       }`}
                     >
-                      {item.label}
+                      {item.icon && (
+                        <img
+                          src={item.icon}
+                          alt=""
+                          width={18}
+                          height={18}
+                          loading="lazy"
+                          onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                          className="h-[18px] w-[18px] shrink-0 rounded-[3px] border border-black/50 object-cover"
+                        />
+                      )}
+                      <span className="min-w-0 truncate">{item.label}</span>
                     </button>
                   </li>
                 );
