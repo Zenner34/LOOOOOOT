@@ -685,6 +685,9 @@ export function autoFillPhaseBossSheets(
 export function slotEligibility(
   rule: PhaseSlotRule,
 ): { specs?: string[]; classes?: string[]; roles?: Array<"tank" | "heal" | "melee" | "ranged"> } | undefined {
+  // Misdirect rows: the spec callsign (Surv 1 / Hunter n) only drives
+  // the import preset — manual picks accept ANY hunter, any spec.
+  if (rule.icon === MD_ICON) return { classes: ["Hunter"] };
   if (rule.specs?.length) return { specs: rule.specs };
   if (rule.classes?.length) return { classes: rule.classes };
   if (rule.roles?.length) return { roles: rule.roles };
