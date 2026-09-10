@@ -86,11 +86,11 @@ export function SectionNav({ groups: groupsProp }: { groups?: SectionNavGroup[] 
       >
         Jump to
       </div>
-      <ul className="flex flex-col gap-3 text-[13px]">
+      <ul className="flex flex-col gap-3 text-[15px]">
         {groups.map((g, gi) => (
           <li key={gi}>
             {g.heading && (
-              <div className="text-[10px] font-semibold uppercase tracking-[0.15em] text-amber-200/80 mb-1 px-1">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.15em] text-amber-200/80 mb-1 px-1">
                 {g.heading}
               </div>
             )}
@@ -112,11 +112,11 @@ export function SectionNav({ groups: groupsProp }: { groups?: SectionNavGroup[] 
                         <img
                           src={item.icon}
                           alt=""
-                          width={18}
-                          height={18}
+                          width={26}
+                          height={26}
                           loading="lazy"
                           onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                          className="h-[18px] w-[18px] shrink-0 rounded-[3px] border border-black/50 object-cover"
+                          className="h-[26px] w-[26px] shrink-0 rounded-[4px] border border-black/50 object-cover"
                         />
                       )}
                       <span className="min-w-0 truncate">{item.label}</span>
