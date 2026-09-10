@@ -362,12 +362,18 @@ export const PHASE_BOSS_TEMPLATES: Partial<Record<PhaseBossSlug, PhaseSectionTpl
     // Every druid lines up an Innervate — boomie/resto first, then the
     // feral tanks bottom-up (3rd tank, OT, MT last). Targets are
     // assigned by hand. Double-wide so giver -> getter reads fully.
+    // Targets preset on import: the two holy priests, then a mage —
+    // freely re-assignable afterward.
     { key: "innervates", title: "Innervates", paired: true, wide: true,
       slots: [
-        { label: "Druid 1", innervate: 1, classes: ["Druid"], icon: "spell_nature_lightning" }, S.open(),
-        { label: "Druid 2", innervate: 2, classes: ["Druid"], icon: "spell_nature_lightning" }, S.open(),
-        { label: "Druid 3", innervate: 3, classes: ["Druid"], icon: "spell_nature_lightning" }, S.open(),
-        { label: "Druid 4", innervate: 4, classes: ["Druid"], icon: "spell_nature_lightning" }, S.open(),
+        { label: "Druid 1", innervate: 1, classes: ["Druid"], icon: "spell_nature_lightning" },
+        { label: "Priest 1", specs: ["Holy Priest"], nth: 1 },
+        { label: "Druid 2", innervate: 2, classes: ["Druid"], icon: "spell_nature_lightning" },
+        { label: "Priest 2", specs: ["Holy Priest"], nth: 2 },
+        { label: "Druid 3", innervate: 3, classes: ["Druid"], icon: "spell_nature_lightning" },
+        { label: "Mage 1", specs: ["Arcane Mage", "Fire Mage", "Frost Mage"], nth: 1 },
+        { label: "Druid 4", innervate: 4, classes: ["Druid"], icon: "spell_nature_lightning" },
+        S.open(),
       ] },
   ],
   illidan: [
