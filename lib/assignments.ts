@@ -399,7 +399,7 @@ export const BUFF_COLUMNS: Record<string, "left" | "middle" | "right"> = {
  * lose the tooltip.
  */
 export const BUFF_TOOLTIPS: Record<string, string> = {
-  "Tanks":                 "Main tank (Group 1), off-tank (Group 2), and the adds/pally tank. Auto-filled from the group setup.",
+  "Tanks":                 "Prot Paladin main-tanks and holds the adds; the Group 2 feral off-tanks and Group 1 takes OT2. Auto-filled from the group setup.",
   "Prayer of Fortitude":   "Priest raid buff — stamina to a class group.",
   "Arcane Brilliance":     "Mage raid buff — intellect to a class group.",
   "Gift of the Wild":      "Druid raid buff — all stats to a class group.",

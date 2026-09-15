@@ -1311,21 +1311,17 @@ function fixFaerieFire(buffs: AssignSection[], members: PhaseMember[]): AssignSe
   });
 }
 
-/** Tanks · MT / OT / Adds buff rows from the group hierarchy: MT = the
- *  Group 2 tank, OT = Group 1, and the Adds/3rd tank is always the
- *  Prot Paladin (else whoever's next in the hierarchy). Only fills
- *  empty rows, like every buff suggestion. */
+/** Tanks · MT / OT / OT2 / Adds buff rows. The Prot Paladin main-tanks
+ *  and holds the adds, so the ferals slide one row down the group
+ *  hierarchy: Group 2 takes OT, Group 1 takes OT2. Pally-less nights
+ *  fall back to the plain hierarchy with the Group 2 tank leading.
+ *  Only fills empty rows, like every buff suggestion. */
 function fillTankBuffRows(buffs: AssignSection[], members: PhaseMember[]): AssignSection[] {
   const h = tankHierarchy(members);
   const pala = members.find(m => m.spec === "Protection Paladin")?.id ?? null;
-  const pick: Record<string, number | null> = {
-    MT: h[0] ?? null,
-    OT: h[1] ?? null,
-    // No third feral/pwar that night -> the prot pally covers OT2 (he
-    // keeps the Adds row too).
-    OT2: h[2] ?? pala ?? null,
-    Adds: pala ?? h[3] ?? null,
-  };
+  const pick: Record<string, number | null> = pala
+    ? { MT: pala, OT: h[0] ?? null, OT2: h[1] ?? null, Adds: pala }
+    : { MT: h[0] ?? null, OT: h[1] ?? null, OT2: h[2] ?? null, Adds: h[3] ?? null };
   return buffs.map(s => {
     if (!s.title.startsWith("Tanks")) return s;
     if (s.characterIds.some(id => id > 0)) return s;
