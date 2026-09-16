@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ASSIGNMENT_BOSSES } from "@/lib/assignments";
+import { SafeImage } from "@/app/components/ui/SafeImage";
 
 /**
  * Sticky right-rail jump nav. Lists every scroll target on the
@@ -76,9 +77,11 @@ export function SectionNav({ groups: groupsProp }: { groups?: SectionNavGroup[] 
     setActiveId(id);
   }
 
+  // Sticky rail on desktop; a plain block on phones, where the nav may sit
+  // at the top of the flow as a table of contents.
   return (
     <nav
-      className="sheet-panel sticky top-[4.5rem] max-h-[calc(100vh-5.5rem)] overflow-y-auto"
+      className="sheet-panel lg:sticky lg:top-[4.5rem] lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto"
       aria-label="Jump to section"
     >
       <div
@@ -109,13 +112,10 @@ export function SectionNav({ groups: groupsProp }: { groups?: SectionNavGroup[] 
                       }`}
                     >
                       {item.icon && (
-                        <img
+                        <SafeImage
                           src={item.icon}
-                          alt=""
                           width={26}
                           height={26}
-                          loading="lazy"
-                          onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                           className="h-[26px] w-[26px] shrink-0 rounded-[4px] border border-black/50 object-cover"
                         />
                       )}

@@ -13,6 +13,7 @@ type Boss = { id: number; name: string; raid: { id: number; name: string; shortN
 
 const PAGES: Array<{ label: string; href: string; hint?: string; adminOnly?: boolean }> = [
   { label: "Overview",   href: "/overview",    hint: "go to overview" },
+  { label: "Classic Forever", href: "/classic-forever", hint: "racials for PvE & PvP" },
   { label: "Loot",       href: "/loot",        hint: "browse the loot catalog" },
   { label: "Assign",     href: "/loot/assign", hint: "award loot",                adminOnly: true },
   { label: "Roster",     href: "/rosters",     hint: "members and roles" },

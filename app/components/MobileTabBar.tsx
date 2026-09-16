@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type LucideIcon } from "lucide-react";
-import { Award, Calendar, Layers, Package, Shield, Swords, Users } from "@/app/components/ui/Icon";
+import { Award, Calendar, Layers, Package, Shield, Star, Swords, Users } from "@/app/components/ui/Icon";
 
 // Five most-used routes get prime thumb-reach real estate at the bottom of
 // the screen on phones. Mirrors the pattern of native apps (iOS tab bar,
@@ -21,9 +21,10 @@ const ITEMS: Array<{ href: string; label: string; icon: LucideIcon; adminOnly?: 
 // Public-only set — the three player-facing pages that survived the site
 // simplification. Everything else is admin-only now.
 const PUBLIC_ITEMS: Array<{ href: string; label: string; icon: LucideIcon }> = [
-  { href: "/guides",      label: "Guides",      icon: Shield },
-  { href: "/assignments", label: "Assignments", icon: Layers },
-  { href: "/overview",    label: "Overview",    icon: Swords },
+  { href: "/guides",          label: "Guides",      icon: Shield },
+  { href: "/assignments",     label: "Assignments", icon: Layers },
+  { href: "/classic-forever", label: "Forever",     icon: Star },
+  { href: "/overview",        label: "Overview",    icon: Swords },
 ];
 
 export default function MobileTabBar({ admin }: { admin: boolean }) {
