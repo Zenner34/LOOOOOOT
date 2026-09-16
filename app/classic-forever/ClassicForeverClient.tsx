@@ -3,13 +3,16 @@
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { SafeImage } from "@/app/components/ui/SafeImage";
 import { SectionNav, type SectionNavGroup } from "@/app/assignments/SectionNav";
+import { ClassIcon } from "@/app/components/ClassIcon";
 import { Info } from "@/app/components/ui/Icon";
+import { CLASS_COLOR } from "@/lib/specs";
 import {
-  CHANGE_NOTES,
+  CLASS_PICKS,
   FACTION_COLOR,
   PVE_TIERS,
   PVP_TIERS,
   RACES,
+  RACIALS,
   RIVALRY,
   TIER_META,
   VERDICTS,
@@ -24,11 +27,12 @@ const ICON_BASE = "https://wow.zamimg.com/images/wow/icons/large/";
 const NAV_GROUPS: SectionNavGroup[] = [
   {
     items: [
-      { id: "changed", label: "What changed", icon: `${ICON_BASE}spell_holy_magicalsentry.jpg` },
+      { id: "classes", label: "Pick by class", icon: `${ICON_BASE}spell_magic_greaterblessingofkings.jpg` },
+      { id: "racials", label: "Racial abilities", icon: `${ICON_BASE}spell_holy_magicalsentry.jpg` },
       { id: "pve", label: "PvE tiers", icon: `${ICON_BASE}ability_warrior_savageblow.jpg` },
       { id: "pvp", label: "PvP tiers", icon: `${ICON_BASE}ability_warrior_riposte.jpg` },
       { id: "rivalry", label: "Orc vs Undead", icon: `${ICON_BASE}ability_warrior_innerrage.jpg` },
-      { id: "verdict", label: "Best pick", icon: `${ICON_BASE}spell_magic_greaterblessingofkings.jpg` },
+      { id: "verdict", label: "Best pick", icon: `${ICON_BASE}spell_holy_auraoflight.jpg` },
     ],
   },
 ];
@@ -94,19 +98,16 @@ function RaceIcon({ raceKey, size = 34 }: { raceKey: string; size?: number }) {
   );
 }
 
-function TierPlate({ tier }: { tier: TierKey }) {
-  const meta = TIER_META[tier];
+/** Race portrait + name, the shared inline unit. */
+function RaceTag({ raceKey, size = 22 }: { raceKey: string; size?: number }) {
+  const race = RACES[raceKey];
+  if (!race) return null;
   return (
-    <span
-      className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-sm font-bold"
-      style={{
-        background: `${meta.color}1f`,
-        color: meta.color,
-        boxShadow: `inset 0 0 0 1px ${meta.color}66`,
-      }}
-      aria-hidden
-    >
-      {tier}
+    <span className="inline-flex items-center gap-1.5">
+      <RaceIcon raceKey={raceKey} size={size} />
+      <span className="font-semibold" style={{ color: FACTION_COLOR[race.faction] }}>
+        {race.name}
+      </span>
     </span>
   );
 }
@@ -118,18 +119,119 @@ function FactionChip({ faction }: { faction: keyof typeof FACTION_COLOR }) {
       className="rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em]"
       style={{ background: `${tint}1a`, color: tint }}
     >
-      {faction === "Both" ? "Both" : faction}
+      {faction}
     </span>
   );
 }
 
-/** One tier's cards, headed by the tier plate. */
+function UnconfirmedChip() {
+  return (
+    <span className="ml-1.5 inline-block rounded-full border border-gold-400/40 bg-gold-400/10 px-1.5 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-[0.1em] text-gold-200">
+      Unconfirmed
+    </span>
+  );
+}
+
+/* ── Pick by class ──────────────────────────────────────────────────── */
+
+function ClassCard({ pick }: { pick: (typeof CLASS_PICKS)[number] }) {
+  const color = CLASS_COLOR[pick.className] ?? "#9aa4b2";
+  return (
+    <article className="panel-elev overflow-hidden" style={{ borderLeft: `2px solid ${color}88` }}>
+      <header className="flex flex-wrap items-center gap-2 border-b border-white/[0.06] px-3 py-2">
+        <ClassIcon cls={pick.className} size={20} />
+        <h3 className="font-semibold" style={{ color }}>
+          {pick.className}
+        </h3>
+        {pick.scope && (
+          <span className="text-[11px] text-neutral-500">· {pick.scope}</span>
+        )}
+      </header>
+
+      {pick.uncovered ? (
+        <p className="px-3 py-2.5 text-[13px] italic leading-relaxed text-neutral-500">
+          {pick.uncovered}
+        </p>
+      ) : (
+        <ul>
+          {pick.recs.map((r, i) => (
+            <li
+              key={i}
+              className={`flex flex-col gap-1 px-3 py-2.5 sm:flex-row sm:gap-3 ${
+                i > 0 ? "border-t border-white/[0.04]" : ""
+              }`}
+            >
+              {/* Stacked so a two-word race name never wraps mid-name
+                  against the note column. */}
+              <div className="flex shrink-0 flex-row items-center gap-2 sm:w-36 sm:flex-col sm:items-start sm:gap-1">
+                <RaceTag raceKey={r.race} />
+                <span className="whitespace-nowrap rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-neutral-400">
+                  {r.label}
+                </span>
+              </div>
+              <p className="min-w-0 text-[13px] leading-relaxed text-neutral-400">
+                <RichText text={r.why} />
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </article>
+  );
+}
+
+/* ── Racial ability reference ───────────────────────────────────────── */
+
+function RacialCard({ entry }: { entry: (typeof RACIALS)[number] }) {
+  const race = RACES[entry.race];
+  const tint = race ? FACTION_COLOR[race.faction] : "#9aa4b2";
+  return (
+    <article className="panel-elev overflow-hidden" style={{ borderLeft: `2px solid ${tint}77` }}>
+      <header className="flex flex-wrap items-center gap-2 border-b border-white/[0.06] px-3 py-2">
+        <RaceIcon raceKey={entry.race} size={26} />
+        <h3 className="font-semibold text-neutral-100">{race?.name ?? entry.race}</h3>
+        {race && <FactionChip faction={race.faction} />}
+      </header>
+
+      {entry.gap ? (
+        <p className="px-3 py-2.5 text-[13px] italic leading-relaxed text-neutral-500">{entry.gap}</p>
+      ) : (
+        <dl className="divide-y divide-white/[0.04]">
+          {entry.abilities.map(a => (
+            <div key={a.name} className="px-3 py-2.5">
+              <dt className="text-[13px] font-semibold text-neutral-100">
+                {a.name}
+                {a.tag && <UnconfirmedChip />}
+              </dt>
+              <dd className="mt-0.5 text-[13px] leading-relaxed text-neutral-400">
+                <RichText text={a.text} />
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </article>
+  );
+}
+
+/* ── Tier lists ─────────────────────────────────────────────────────── */
+
 function TierGroup({ block }: { block: TierBlock }) {
   const meta = TIER_META[block.tier];
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2.5">
-        <TierPlate tier={block.tier} />
+        <span
+          className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-sm font-bold"
+          style={{
+            background: `${meta.color}1f`,
+            color: meta.color,
+            boxShadow: `inset 0 0 0 1px ${meta.color}66`,
+          }}
+          aria-hidden
+        >
+          {block.tier}
+        </span>
         <span
           className="text-[11px] font-semibold uppercase tracking-[0.16em]"
           style={{ color: meta.color }}
@@ -168,16 +270,19 @@ function TierGroup({ block }: { block: TierBlock }) {
   );
 }
 
-/** Page section shell — anchor target + heading, matching the guide look. */
+/* ── Section shell ──────────────────────────────────────────────────── */
+
 function Section({
   id,
   title,
   kicker,
+  lede,
   children,
 }: {
   id: string;
   title: string;
   kicker?: string;
+  lede?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -187,6 +292,7 @@ function Section({
         <h2 className="font-display text-2xl text-amber-200" style={{ letterSpacing: "0.03em" }}>
           {title}
         </h2>
+        {lede && <p className="mt-1.5 text-sm leading-relaxed text-neutral-400">{lede}</p>}
       </div>
       {children}
     </section>
@@ -201,53 +307,54 @@ export default function ClassicForeverClient() {
       <PageHeader
         eyebrow="Warcraft Forever"
         title="Classic Forever"
-        subtitle="Every race got a reason to matter in the racial rework. Here's how they actually grade out for raiding and for PvP, with the class pairings worth rolling for."
+        subtitle="Every race got a reason to matter in the racial rework. Find your class, see what to roll, and why."
       />
 
-      {/* Pre-release caveat — the write-up's own warning, kept visible. */}
       <div className="panel-elev flex items-start gap-3 p-3.5" style={{ borderLeft: "2px solid #ffd70066" }}>
         <Info size={16} className="mt-0.5 shrink-0 text-gold-200" aria-hidden />
         <p className="text-[13px] leading-relaxed text-neutral-400">
-          <strong className="font-semibold text-gold-200">Pre-release.</strong> Everything below is
-          reported from the BlizzCon 2026 <em className="italic">What&rsquo;s Next</em> and{" "}
-          <em className="italic">Deep Dive</em> panels plus hands-on demo access, verified against{" "}
-          Icy Veins&rsquo; racial rework write-up. Effects may still change before{" "}
-          <span className="font-semibold text-neutral-200">November 4, 2026</span>.
+          <strong className="font-semibold text-gold-200">Pre-release.</strong> Reported from the
+          BlizzCon 2026 panels and hands-on demo access. Effects may still change before{" "}
+          <span className="font-semibold text-neutral-200">November 4, 2026</span>. Anything the
+          source flagged as uncertain is marked <UnconfirmedChip /> below, and classes it never
+          covered say so rather than guess.
         </p>
       </div>
 
       <div className="grid grid-cols-12 gap-4">
-        {/* LEFT — the guide body */}
-        <div className="col-span-12 space-y-8 min-w-0 lg:col-span-9">
-          <Section id="changed" kicker="Corrections" title="What changed on re-check">
-            <p className="text-sm leading-relaxed text-neutral-400">
-              The original racial list holds up well — every ability, most numbers, and the general
-              shape of each kit are confirmed. A few specifics are worth correcting or flagging as
-              unconfirmed.
-            </p>
-            <ul className="space-y-2">
-              {CHANGE_NOTES.map((n, i) => (
-                <li key={i} className="panel-elev flex gap-3 p-3">
-                  <RaceIcon raceKey={n.race} size={28} />
-                  <p className="min-w-0 text-[13px] leading-relaxed text-neutral-400">
-                    <RichText text={n.text} />
-                    {n.tag && (
-                      <span className="ml-1.5 inline-block rounded-full border border-gold-400/40 bg-gold-400/10 px-1.5 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-[0.1em] text-gold-200">
-                        {n.tag}
-                      </span>
-                    )}
-                  </p>
-                </li>
+        <div className="order-last col-span-12 space-y-8 min-w-0 lg:order-none lg:col-span-9">
+          <Section
+            id="classes"
+            kicker="Start here"
+            title="Pick by class"
+            lede="What to roll, class by class, and the specific interaction that justifies it."
+          >
+            <div className="grid items-start gap-2 lg:grid-cols-2">
+              {CLASS_PICKS.map(p => (
+                <ClassCard key={p.className} pick={p} />
               ))}
-            </ul>
-            <p className="text-sm leading-relaxed text-neutral-400">
-              None of this changes the tier list. What it does is give the PvE and PvP grades much
-              more specific backing, because both class breakdowns named actual race + class + spec
-              combinations worth calling out.
-            </p>
+            </div>
           </Section>
 
-          <Section id="pve" kicker="Raiding" title="PvE tier list">
+          <Section
+            id="racials"
+            kicker="Reference"
+            title="Racial abilities"
+            lede="The kits behind the grades — what each racial actually does."
+          >
+            <div className="grid items-start gap-2 lg:grid-cols-2">
+              {RACIALS.map(r => (
+                <RacialCard key={r.race} entry={r} />
+              ))}
+            </div>
+          </Section>
+
+          <Section
+            id="pve"
+            kicker="Raiding"
+            title="PvE tier list"
+            lede="Graded on damage contribution. A low grade isn't always a bad roll — read Undead's note."
+          >
             <div className="space-y-5">
               {PVE_TIERS.map(block => (
                 <TierGroup key={block.tier} block={block} />
@@ -263,12 +370,13 @@ export default function ClassicForeverClient() {
             </div>
           </Section>
 
-          <Section id="rivalry" kicker="Horde" title="Orc vs Undead">
-            <p className="text-sm leading-relaxed text-neutral-400">
-              Orc vs. Undead is the recurring Horde racial tension, and which one &ldquo;wins&rdquo;
-              depends entirely on class.
-            </p>
-            <div className="sheet-panel space-y-0 p-0">
+          <Section
+            id="rivalry"
+            kicker="Horde"
+            title="Orc vs Undead"
+            lede="The recurring Horde racial tension. Which one wins depends entirely on class."
+          >
+            <div className="sheet-panel p-0">
               {RIVALRY.map((r, i) => (
                 <div
                   key={r.label}
@@ -285,19 +393,21 @@ export default function ClassicForeverClient() {
                 </div>
               ))}
             </div>
-            <div className="panel-elev flex gap-3 p-3.5" style={{ borderLeft: `2px solid ${FACTION_COLOR.Alliance}66` }}>
+            <div
+              className="panel-elev flex gap-3 p-3.5"
+              style={{ borderLeft: `2px solid ${FACTION_COLOR.Alliance}66` }}
+            >
               <RaceIcon raceKey="human" size={28} />
               <p className="min-w-0 text-[13px] leading-relaxed text-neutral-400">
-                On Alliance, Human&rsquo;s stun removal is the one racial that shows up as a hard PvP
-                answer across nearly every class matchup in the source material — not just
-                anti-Rogue, but Paladin mirrors and general stun-lock counterplay. If there&rsquo;s a
-                single &ldquo;best PvP racial on Alliance,&rdquo; both class breakdowns point at
-                Human over Night Elf, despite Night Elf&rsquo;s higher raw burst ceiling.
+                On Alliance there&rsquo;s no equivalent argument — Human&rsquo;s stun removal is a
+                hard answer in nearly every matchup, not just anti-Rogue. If there&rsquo;s a single
+                best PvP racial on Alliance it&rsquo;s Human over Night Elf, despite Night
+                Elf&rsquo;s higher raw burst ceiling.
               </p>
             </div>
           </Section>
 
-          <Section id="verdict" kicker="The short answer" title="If you just want the single best pick">
+          <Section id="verdict" kicker="The short answer" title="If you just want one pick">
             <div className="grid gap-2 sm:grid-cols-3">
               {VERDICTS.map(v => (
                 <article key={v.label} className="panel-elev space-y-2 p-3.5">
@@ -324,7 +434,7 @@ export default function ClassicForeverClient() {
 
         {/* Quick jumps — a table of contents above the body on phones, a
             sticky right rail from lg up. */}
-        <aside className="order-first col-span-12 lg:order-none lg:col-span-3">
+        <aside className="col-span-12 lg:col-span-3">
           <SectionNav groups={NAV_GROUPS} />
         </aside>
       </div>

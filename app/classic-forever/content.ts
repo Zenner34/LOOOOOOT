@@ -1,8 +1,16 @@
 /**
- * "Classic Forever" — the Warcraft Forever racial rework, graded for PvE
- * and PvP. Content is a straight transcription of the guild's racial
- * write-up (verified against Icy Veins' BlizzCon 2026 reporting), kept
- * here as data so the page stays layout-only.
+ * "Classic Forever" — the Warcraft Forever racial rework.
+ *
+ * Sourced from the guild's racial write-up, which was itself verified
+ * against Icy Veins' BlizzCon 2026 reporting. Two rules for anything
+ * added here:
+ *
+ *  1. Every claim traces to that write-up. Where it doesn't cover
+ *     something (Hunter, Priest, Dwarf's actual kit) the page SAYS so
+ *     rather than filling the gap with a plausible guess.
+ *  2. No source bookkeeping. The write-up cites where each fact came
+ *     from because it was a revision pass; a guide just states the fact
+ *     and puts the attribution in the footer.
  *
  * Note strings support `**bold**` and `*italic*`, rendered by <RichText>.
  */
@@ -45,8 +53,228 @@ export const TIER_META: Record<TierKey, { color: string; label: string }> = {
   C: { color: "#9aa4b2", label: "C-Tier" },
 };
 
+/* ── Pick by class ───────────────────────────────────────────────────
+   The question people actually arrive with. Every pick below is one the
+   write-up names outright; a class it never covers gets `uncovered`
+   instead of an invented recommendation. */
+
+export type ClassRec = { race: string; label: string; why: string };
+
+export type ClassPick = {
+  className: string;
+  /** Roles/specs the recommendation is actually about. */
+  scope?: string;
+  recs: ClassRec[];
+  /** Set when the source doesn't cover this class at all. */
+  uncovered?: string;
+};
+
+export const CLASS_PICKS: ClassPick[] = [
+  {
+    className: "Mage",
+    recs: [
+      {
+        race: "orc",
+        label: "PvE & PvP",
+        why: "Blood Fury's spell-power half stacks straight onto the new Arcane Blast → Missile Barrage loop — the most explicit pairing named anywhere in the rework. Curse removal carries it into PvP as the answer to enemy Warlocks.",
+      },
+      {
+        race: "gnome",
+        label: "Alliance PvE",
+        why: "Eureka!'s burst window timed with **Pyroblast** off the new Hot Streak talent.",
+      },
+    ],
+  },
+  {
+    className: "Warlock",
+    recs: [
+      {
+        race: "orc",
+        label: "PvP",
+        why: "Blood Fury's burst and Hardiness's stun reduction on top of the class's SL/SL identity (~38% damage reduction) — one of the strongest duelist packages in the game. Curse and bane removal answers enemy locks directly.",
+      },
+      {
+        race: "undead",
+        label: "PvP",
+        why: "Will of the Forsaken clears fear, charm and sleep — the same counter from the opposite angle. Orc vs Undead is genuinely open here.",
+      },
+      {
+        race: "troll",
+        label: "PvE",
+        why: "Berserking's damage, with SL/SL access making Troll Warlock a real Horde identity — though that half is survivability, not damage.",
+      },
+    ],
+  },
+  {
+    className: "Druid",
+    scope: "Feral / Balance",
+    recs: [
+      {
+        race: "nightelf",
+        label: "PvE & PvP",
+        why: "Elune's Light runs 15 seconds and the new **Berserk** capstone runs 15 seconds. The windows line up exactly — that alignment is the entire case, and it matters more in a PvP kill window than over a long parse.",
+      },
+    ],
+  },
+  {
+    className: "Rogue",
+    recs: [
+      {
+        race: "nightelf",
+        label: "PvE & PvP",
+        why: "Elune's Light lines up with **Blade Flurry** and **Adrenaline Rush** the same way it does with Berserk.",
+      },
+    ],
+  },
+  {
+    className: "Shaman",
+    recs: [
+      {
+        race: "orc",
+        label: "PvE & PvP",
+        why: "Named the strongest overall pick for Shaman — Blood Fury splits into attack power and spell power, so it covers both halves of the class instead of half-wasting on a hybrid.",
+      },
+    ],
+  },
+  {
+    className: "Warrior",
+    scope: "Levelling & duelling — raid PvE isn't covered",
+    recs: [
+      {
+        race: "undead",
+        label: "Levelling",
+        why: "The lifesteal racial is real sustain for **dual-wield levelling**.",
+      },
+      {
+        race: "orc",
+        label: "Duelling",
+        why: "Orc and Human stay the picks for duelling.",
+      },
+    ],
+  },
+  {
+    className: "Paladin",
+    recs: [
+      {
+        race: "human",
+        label: "PvP",
+        why: "Stun removal answers **Hammer of Justice**, which is what wins the Human-vs-Undead Paladin mirror outright.",
+      },
+      {
+        race: "undead",
+        label: "Tanking",
+        why: "Lifesteal self-sustain for **Protection** tanking.",
+      },
+    ],
+  },
+  {
+    className: "Hunter",
+    recs: [],
+    uncovered: "No Hunter-specific racial synergy was surfaced. Fall back to the tier lists below.",
+  },
+  {
+    className: "Priest",
+    recs: [],
+    uncovered: "No Priest-specific racial synergy was surfaced. Fall back to the tier lists below.",
+  },
+];
+
+/* ── Racial ability reference ────────────────────────────────────────
+   Only the abilities the write-up actually names, with only the detail
+   it actually gives. `tag` marks anything it flagged as unconfirmed. */
+
+export type Racial = { name: string; text: string; tag?: string };
+
+export const RACIALS: Array<{ race: string; abilities: Racial[]; gap?: string }> = [
+  {
+    race: "orc",
+    abilities: [
+      {
+        name: "Blood Fury",
+        text: "The cleanest burst cooldown in the game. Splits into an attack-power half and a spell-power half, so it's elite on melee, on casters, and on hybrids that would normally waste half of a racial.",
+      },
+      { name: "Hardiness", text: "Stun duration reduction." },
+      { name: "Curse / bane removal", text: "Strips curses and banes — the direct answer to enemy Warlocks." },
+    ],
+  },
+  {
+    race: "troll",
+    abilities: [
+      { name: "Berserking", text: "A 12-second burst window that matches Blood Fury's damage ceiling." },
+    ],
+  },
+  {
+    race: "undead",
+    abilities: [
+      { name: "Will of the Forsaken", text: "Removes fear, charm and sleep." },
+      {
+        name: "Lifesteal racial",
+        text: "Self-sustain. Carries Warrior dual-wield levelling and Protection Paladin tanking; close to dead weight on a Mage, who is usually either topped off or one-shot.",
+      },
+    ],
+  },
+  {
+    race: "tauren",
+    abilities: [
+      { name: "War Stomp", text: "Stuns all nearby targets, with no target cap stated — a better teamfight and battleground tool than a capped version, and useful on raid adds." },
+    ],
+  },
+  {
+    race: "human",
+    abilities: [
+      {
+        name: "Stun removal",
+        text: "The defining Alliance PvP racial. Answers Hammer of Justice and general stun-lock counterplay, and shows up as a hard answer in nearly every matchup.",
+      },
+      { name: "Perception", text: "Anti-stealth." },
+      { name: "Sword crit", text: "+2% crit with swords — modest, and gated behind the weapon type." },
+    ],
+  },
+  {
+    race: "nightelf",
+    abilities: [
+      {
+        name: "Elune's Light",
+        text: "A 15-second window. Lines up exactly with Druid's Berserk capstone (also 15s) and with Rogue's Blade Flurry and Adrenaline Rush.",
+      },
+      {
+        name: "Quickness",
+        text: "2% dodge / 2% speed. An earlier pass had it at 1% / 2%; either way it doesn't move the grade.",
+        tag: "Unconfirmed",
+      },
+    ],
+  },
+  {
+    race: "gnome",
+    abilities: [
+      { name: "Eureka!", text: "A burst window — pairs with Mage Pyroblast off the new Hot Streak talent." },
+      {
+        name: "Escape Artist",
+        text: "Breaks roots and snares that are already on you, then gives a 5-second immunity window. A cleanse *and* an escape, not just a block on the next one.",
+      },
+      { name: "Engineering Specialization", text: "A flat +10 profession skill. Crafting utility only — zero damage relevance." },
+    ],
+  },
+  {
+    race: "dwarf",
+    abilities: [],
+    gap: "The write-up doesn't detail Dwarf's kit — only that it's weak outside beast-heavy content, and close to irrelevant in PvP outside a Druid beast-form niche.",
+  },
+  {
+    race: "skyborne",
+    abilities: [
+      {
+        name: "Read Ley Line / Skysight",
+        text: "Alliance Skyborne get Read Ley Line. Horde's Skysight isn't broken out separately in the source table, which may just be simplification rather than the two being identical.",
+        tag: "Unconfirmed",
+      },
+    ],
+  },
+];
+
+/* ── Tier lists ──────────────────────────────────────────────────────── */
+
 export type TierEntry = {
-  /** Key into RACES. */
   race: keyof typeof RACES | string;
   /** Overrides the race name in the card header (both Skyborne kits). */
   displayName?: string;
@@ -55,52 +283,17 @@ export type TierEntry = {
 
 export type TierBlock = { tier: TierKey; entries: TierEntry[] };
 
-/* ── What changed on re-check ───────────────────────────────────────── */
-
-export type ChangeNote = { race: string; text: string; tag?: string };
-
-export const CHANGE_NOTES: ChangeNote[] = [
-  {
-    race: "gnome",
-    text: "**Gnome's Engineering Specialization is a flat +10 profession skill**, not gadget reliability. Pure crafting utility — it has zero damage relevance, correcting an aside from the original pass.",
-  },
-  {
-    race: "gnome",
-    text: "**Gnome's Escape Artist also breaks existing Roots/Snares**, not just future ones — it's an active cleanse *and* a 5-second immunity window, which is a better PvP escape tool than “brief immunity” alone suggested.",
-  },
-  {
-    race: "nightelf",
-    text: "**Night Elf's Quickness may be 2% dodge / 2% speed** per Icy Veins, versus the 1%/2% split in the original figures — worth treating as unconfirmed either way since it doesn't move the damage grade.",
-    tag: "Unconfirmed",
-  },
-  {
-    race: "tauren",
-    text: "**Tauren's War Stomp stuns “all nearby targets”** with no stated cap in this source — a stronger group/PvP tool than a capped-target version would be.",
-  },
-  {
-    race: "troll",
-    text: "**Troll's Berserking runs 12 seconds** per Icy Veins, not 10 — still top-tier either way.",
-  },
-  {
-    race: "skyborne",
-    text: "Icy Veins' table only shows one Skyborne kit (Alliance's Read Ley Line version) — it doesn't list Horde Skyborne's Skysight separately, which may just be simplification on their end rather than a real discrepancy.",
-    tag: "Unconfirmed",
-  },
-];
-
-/* ── PvE ─────────────────────────────────────────────────────────────── */
-
 export const PVE_TIERS: TierBlock[] = [
   {
     tier: "S",
     entries: [
       {
         race: "orc",
-        note: "Blood Fury remains the cleanest burst cooldown in the game, and it's now got a named best pairing: **Orc Mage**, where Blood Fury's spell-power half stacks directly onto the new Arcane Blast → Missile Barrage burst loop. The Reddit breakdown separately calls Orc “strongest overall” for Shaman too — this is the one racial that's elite on melee AP, caster SP, and hybrid specs alike.",
+        note: "Blood Fury is the cleanest burst cooldown in the game and the only racial that's elite on melee AP, caster SP and hybrid specs alike. Best pairing is **Orc Mage**, where the spell-power half stacks directly onto the new Arcane Blast → Missile Barrage loop; Orc is also the strongest overall pick for Shaman.",
       },
       {
         race: "troll",
-        note: "Berserking still matches Orc's damage ceiling. New context: Troll Warlock is emerging as a real Horde identity thanks to SL/SL access, though that's a survivability story riding alongside Berserking's damage, not a replacement for it.",
+        note: "Berserking's 12-second window matches Orc's damage ceiling. **Troll Warlock** is emerging as a real Horde identity thanks to SL/SL access — though that's a survivability story riding alongside Berserking's damage, not a replacement for it.",
       },
     ],
   },
@@ -109,11 +302,11 @@ export const PVE_TIERS: TierBlock[] = [
     entries: [
       {
         race: "nightelf",
-        note: "Elune's Light's case got stronger, not just confirmed: its 15-second window lines up exactly with Druid's new Berserk capstone (also 15s) and with Rogue's Blade Flurry/Adrenaline Rush burst windows per the Reddit analysis. Night Elf Druid and Night Elf Rogue both read as genuinely strong PvE picks specifically because of that alignment, not coincidence.",
+        note: "Elune's Light's 15-second window lines up exactly with Druid's new Berserk capstone (also 15s) and with Rogue's Blade Flurry / Adrenaline Rush. **Night Elf Druid** and **Night Elf Rogue** are strong PvE picks specifically because of that alignment, not coincidence.",
       },
       {
         race: "gnome",
-        note: "Eureka! now has a concrete combo: Mage Pyroblast (via the new Hot Streak talent) timed with Eureka!'s burst window, called out directly in the Reddit breakdown.",
+        note: "Eureka! has one concrete combo worth building around: **Mage Pyroblast** off the new Hot Streak talent, timed into Eureka!'s burst window.",
       },
     ],
   },
@@ -122,35 +315,30 @@ export const PVE_TIERS: TierBlock[] = [
     entries: [
       {
         race: "human",
-        note: "Unchanged — 2% sword crit is still a modest, weapon-gated bonus with no new class-specific PvE angle surfaced.",
+        note: "2% sword crit is modest and gated behind the weapon type, with no class-specific PvE angle.",
       },
       {
         race: "tauren",
-        note: "War Stomp's PvE case (trash/add control) gets marginally stronger with the uncapped-target confirmation.",
+        note: "War Stomp's PvE case is trash and add control, helped slightly by the uncapped target count.",
       },
       {
         race: "skyborne",
         displayName: "Alliance / Horde Skyborne",
-        note: "Unchanged — no class-specific PvE synergy surfaced for either version.",
+        note: "No class-specific PvE synergy for either version.",
       },
     ],
   },
   {
     tier: "C",
     entries: [
-      {
-        race: "dwarf",
-        note: "Unchanged — still weak outside beast-heavy content, nothing new surfaced.",
-      },
+      { race: "dwarf", note: "Weak outside beast-heavy content." },
       {
         race: "undead",
-        note: "Still weak on pure damage, but worth a real caveat: the Reddit breakdown specifically flags Undead's lifesteal racial as valuable for **Warrior dual-wield leveling sustain** and (via the trailer discussion) **Undead Protection Paladin tanking**. That's a survivability case, not a damage case, so the tier doesn't move — but “weak for damage” isn't the same as “weak, full stop” for this race.",
+        note: "Weak on pure damage — but not weak, full stop. The lifesteal racial is genuinely valuable for **Warrior dual-wield levelling** and **Protection Paladin tanking**. That's a survivability case, so the damage grade doesn't move; don't read C-tier as “don't roll it.”",
       },
     ],
   },
 ];
-
-/* ── PvP ─────────────────────────────────────────────────────────────── */
 
 export const PVP_TIERS: TierBlock[] = [
   {
@@ -158,11 +346,11 @@ export const PVP_TIERS: TierBlock[] = [
     entries: [
       {
         race: "orc",
-        note: "Still the top PvP pick, now for a sharper reason: **Orc Warlock** stacks Blood Fury's burst and Hardiness's stun reduction on top of the class's new SL/SL identity (~38% damage reduction), reading as one of the strongest duelist packages in the game per the Reddit breakdown. Orc's curse/bane removal is also called out as a direct answer to enemy Warlocks specifically.",
+        note: "**Orc Warlock** stacks Blood Fury's burst and Hardiness's stun reduction on top of SL/SL's ~38% damage reduction — one of the strongest duelist packages in the game. Curse and bane removal is also the direct answer to enemy Warlocks.",
       },
       {
         race: "troll",
-        note: "Berserking's burst value holds; no major new PvP-specific wrinkle beyond what was already covered.",
+        note: "Berserking's burst value holds, with no PvP-specific wrinkle beyond the raw damage.",
       },
     ],
   },
@@ -170,24 +358,24 @@ export const PVP_TIERS: TierBlock[] = [
     tier: "A",
     entries: [
       {
-        race: "nightelf",
-        note: "Same alignment logic as PvE, but for burst trades: Elune's Light lining up with Berserk or Blade Flurry/Adrenaline Rush matters even more in a PvP kill window than over a long PvE parse.",
-      },
-      {
-        race: "gnome",
-        note: "Reinforced: Escape Artist now confirmed to break existing roots too, not just block new ones — a meaningfully better kiting-counter than assumed.",
-      },
-      {
         race: "human",
-        note: "Gets the strongest reinforcement of any race here. Both class breakdowns keep landing on Human's stun removal as *the* defining Alliance PvP racial — it's named directly as giving Human Paladins the edge over Undead Paladins in a mirror matchup (it answers Hammer of Justice), on top of Perception's existing anti-stealth value.",
+        note: "The strongest case of any Alliance race. Stun removal is *the* defining Alliance PvP racial — it wins the **Human-vs-Undead Paladin mirror** outright by answering Hammer of Justice — with Perception covering anti-stealth on top.",
       },
       {
         race: "undead",
-        note: "Same story from the other side: Will of the Forsaken is named as one of the two things (alongside Orc's curse removal) that make Horde Warlock such a strong PvP class, and the poster explicitly isn't sure whether Undead or Orc wins a straight Warlock mirror.",
+        note: "Will of the Forsaken is one of the two things (with Orc's curse removal) that make **Horde Warlock** so strong in PvP. Whether Undead or Orc wins a straight Warlock mirror is genuinely open.",
+      },
+      {
+        race: "nightelf",
+        note: "Elune's Light lining up with Berserk, or with Blade Flurry / Adrenaline Rush, matters even more inside a kill window than it does over a long PvE parse.",
+      },
+      {
+        race: "gnome",
+        note: "Escape Artist breaks roots that are already on you, not just the next one, and adds a 5-second immunity window — a far better kiting counter than a plain immunity blip.",
       },
       {
         race: "tauren",
-        note: "War Stomp's uncapped target count makes it a slightly better teamfight/battleground tool than a capped version would be.",
+        note: "War Stomp's uncapped target count makes it a better teamfight and battleground tool.",
       },
     ],
   },
@@ -197,17 +385,14 @@ export const PVP_TIERS: TierBlock[] = [
       {
         race: "skyborne",
         displayName: "Alliance / Horde Skyborne",
-        note: "Unchanged — no PvP-specific synergy surfaced in either class source.",
+        note: "No PvP-specific synergy for either version.",
       },
     ],
   },
   {
     tier: "C",
     entries: [
-      {
-        race: "dwarf",
-        note: "Unchanged — still close to irrelevant in PvP outside the Druid-beast-form niche.",
-      },
+      { race: "dwarf", note: "Close to irrelevant outside the Druid beast-form niche." },
     ],
   },
 ];
@@ -217,15 +402,15 @@ export const PVP_TIERS: TierBlock[] = [
 export const RIVALRY: Array<{ label: string; text: string }> = [
   {
     label: "Warlock",
-    text: "Orc's curse/bane removal counters enemy locks directly; Undead's fear/charm/sleep removal does the same from the opposite angle. The source material itself isn't sure which wins a straight Orc-vs-Undead Warlock mirror.",
+    text: "Orc's curse and bane removal counters enemy locks directly; Undead's fear, charm and sleep removal does the same job from the opposite angle. This mirror is genuinely open — there's no clear winner.",
   },
   {
     label: "Mage",
-    text: "Orc pulls ahead here — curse removal plus Blood Fury's spell power. Undead reads as comparatively weaker since the lifesteal racial matters less on a class that's often already topped off or one-shot.",
+    text: "Orc pulls ahead — curse removal plus Blood Fury's spell power. Undead's lifesteal matters far less on a class that's usually either topped off or one-shot.",
   },
   {
     label: "Warrior / Paladin",
-    text: "Undead pulls ahead for tanking specifically, via self-sustain from the lifesteal racial, while Orc and Human stay the picks for dueling.",
+    text: "Undead pulls ahead for tanking specifically, via lifesteal self-sustain. Orc and Human stay the picks for duelling.",
   },
 ];
 
@@ -235,16 +420,16 @@ export const VERDICTS: Array<{ label: string; race: string; text: string }> = [
   {
     label: "Best pure PvE damage",
     race: "orc",
-    text: "Orc, specifically **Orc Mage** — Blood Fury's spell power stacks directly onto Arcane's new burst loop, the most explicit single pairing named in either source.",
+    text: "Orc, specifically **Orc Mage** — Blood Fury's spell power stacks directly onto Arcane's new burst loop.",
   },
   {
     label: "Best PvP",
     race: "orc",
-    text: "Also Orc, but the class matters more here — **Orc Warlock** for sustained dueling via SL/SL, or Orc Mage/Shaman if you want Blood Fury's burst without giving up the curse-removal answer to enemy locks.",
+    text: "Also Orc, but the class matters more here — **Orc Warlock** for sustained duelling via SL/SL, or Orc Mage / Shaman if you want Blood Fury's burst without giving up the curse-removal answer to enemy locks.",
   },
   {
-    label: "Best pick on Alliance",
+    label: "Best on Alliance",
     race: "human",
-    text: "Human is the safe, matchup-proof PvP choice across nearly every class; Night Elf is the higher-ceiling PvE/burst-trade pick, especially on Druid or Rogue specifically.",
+    text: "**Human** is the matchup-proof PvP choice across nearly every class. **Night Elf** is the higher-ceiling PvE and burst-trade pick, especially on Druid or Rogue.",
   },
 ];
